@@ -191,6 +191,46 @@
             font-weight: bold;
         }
     </style>
+
+    <style>
+        body {
+            background-color: #f8f9fa;
+            font-family: 'Segoe UI', sans-serif;
+        }
+
+        .report-container {
+            max-width: 500px;
+            margin: 80px auto;
+            background: white;
+            padding: 40px;
+            border-radius: 12px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+        }
+
+        .report-title {
+            text-align: center;
+            font-size: 1.8rem;
+            font-weight: 600;
+            margin-bottom: 30px;
+            color: #007b8f;
+        }
+
+        .form-control {
+            border-radius: 10px;
+        }
+
+        .btn-download {
+            background-color: #007b8f;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            transition: background-color 0.3s ease;
+        }
+
+        .btn-download:hover {
+            background-color: #005f6b;
+        }
+    </style>
 </head>
 
 <body>
@@ -246,12 +286,39 @@
             </div>
 
             <div class="main-body">
-                <!-- please enter the code here -->
+                <div class="container report-container">
+                    <div class="report-title">Generate PDF Report</div>
+
+                    <form id="reportForm">
+                        <!-- Select Month & Year -->
+                        <div class="mb-3">
+                            <label for="reportMonth" class="form-label">Select Month & Year</label>
+                            <input type="month" class="form-control" id="reportMonth" required />
+                        </div>
+
+                        <!-- Download PDF Button -->
+                        <div class="d-grid">
+                            <button type="submit" class="btn btn-download">Download PDF</button>
+                        </div>
+                    </form>
+                </div>
             </div>
         </div>
     </div>
 
-  
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Placeholder for future PDF generation
+        document.getElementById("reportForm").addEventListener("submit", function(e) {
+            e.preventDefault();
+            const selectedDate = document.getElementById("reportMonth").value;
+            if (selectedDate) {
+                alert(`📄 Generating PDF report for: ${selectedDate}`);
+                // Replace this with real PDF logic using jsPDF, html2pdf, or server call
+            }
+        });
+    </script>
+
 </body>
 
 </html>

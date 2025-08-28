@@ -4,9 +4,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Bachat-Buddy | </title>
+    <title>Bachat-Buddy | Set Budget </title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
+    <link
+        href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css"
+        rel="stylesheet" />
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         body {
@@ -191,6 +194,20 @@
             font-weight: bold;
         }
     </style>
+    <style>
+        body {
+            background-color: #f8f9fa;
+        }
+
+        .budget-form {
+            max-width: 500px;
+            margin: 50px auto;
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+    </style>
 </head>
 
 <body>
@@ -198,7 +215,7 @@
         <div class="sidebar">
             <div>
                 <div class="brand d-flex align-items-center mb-4">
-                    <i class="bi bi-bank2 me-2"></i> Prime Bank
+                    <i class="bi bi-bank2 me-2"></i> Bachat-Buddy
                 </div>
                 <ul class="nav flex-column gap-2">
                     <li><a class="nav-link active" href="index.php"><i class="bi bi-speedometer2"></i> Dashboard</a></li>
@@ -223,7 +240,7 @@
 
         <div class="main-content">
             <div class="header">
-                <h5 class="mb-0 fw-bold">Dashboard</h5>
+                <h5 class="mb-0 fw-bold">Set Budget</h5>
                 <div class="d-flex align-items-center gap-3">
                     <div class="search-box">
                         <i class="bi bi-search me-2"></i>
@@ -246,12 +263,35 @@
             </div>
 
             <div class="main-body">
-                <!-- please enter the code here -->
+
+                <div class="container">
+                    <div class="budget-form">
+                        <h3 class="mb-4 text-center">Set Monthly Budget</h3>
+                        <form>
+                            <!-- Month & Year -->
+                            <div class="mb-3">
+                                <label for="monthYear" class="form-label">Month & Year</label>
+                                <input type="month" class="form-control" id="monthYear" required />
+                            </div>
+
+                            <!-- Budget Amount -->
+                            <div class="mb-3">
+                                <label for="budgetAmount" class="form-label">Budget Amount ($)</label>
+                                <input type="number" class="form-control" id="budgetAmount" min="0" placeholder="Enter amount" required />
+                            </div>
+
+                            <!-- Submit Button -->
+                            <div class="d-grid">
+                                <button type="submit" class="btn btn-primary">Save Budget</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
 
-  
+
 </body>
 
 </html>

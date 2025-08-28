@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Bachat-Buddy | </title>
+    <title>Bachat-Buddy | Add Expense</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -191,6 +191,34 @@
             font-weight: bold;
         }
     </style>
+    <style>
+        body {
+            background: linear-gradient(to right, #f8f9fa, #e9ecef);
+            font-family: 'Segoe UI', sans-serif;
+        }
+
+        .transaction-card {
+            max-width: 700px;
+            margin: 60px auto;
+            border: none;
+            border-radius: 20px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            background: white;
+        }
+
+        .form-section-title {
+            font-weight: 600;
+            font-size: 1.2rem;
+        }
+
+        .toggle-btns .btn {
+            border-radius: 30px;
+        }
+
+        .toggle-btns .btn.active {
+            color: #fff;
+        }
+    </style>
 </head>
 
 <body>
@@ -223,7 +251,10 @@
 
         <div class="main-content">
             <div class="header">
-                <h5 class="mb-0 fw-bold">Dashboard</h5>
+                    <h4 class="mb-4 text-center text-black">
+                        <i class="bi bi-wallet2 me-2"></i>New Transaction
+                    </h4>
+               
                 <div class="d-flex align-items-center gap-3">
                     <div class="search-box">
                         <i class="bi bi-search me-2"></i>
@@ -246,12 +277,109 @@
             </div>
 
             <div class="main-body">
-                <!-- please enter the code here -->
+                <div class="container">
+                    <div class="card transaction-card">
+                        <div class="card-body p-4">
+
+                            <!-- Toggle Buttons -->
+                            <div class="d-flex justify-content-center mb-4 toggle-btns">
+                                <button type="button" class="btn btn-outline-success me-2 active" id="incomeBtn">
+                                    <i class="bi bi-arrow-down-circle me-1"></i>Income
+                                </button>
+                                <button type="button" class="btn btn-outline-danger" id="expenseBtn">
+                                    <i class="bi bi-arrow-up-circle me-1"></i>Expense
+                                </button>
+                            </div>
+
+                            <!-- Form -->
+                            <form id="transactionForm">
+                                <input type="hidden" id="transactionType" value="income">
+
+                                <div class="mb-3">
+                                    <label class="form-label form-section-title"><i class="bi bi-cash-coin me-1"></i>Amount</label>
+                                    <input type="number" class="form-control form-control-lg" placeholder="Enter amount" id="amount" required>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label class="form-label form-section-title"><i class="bi bi-tags me-1"></i>Category</label>
+                                    <select class="form-select form-select-lg" id="category" required>
+                                        <option disabled selected>Select category</option>
+                                        <option value="Salary">Salary</option>
+                                        <option value="Groceries">Groceries</option>
+                                        <option value="Rent">Rent</option>
+                                        <option value="Bills">Bills</option>
+                                        <option value="Investment">Investment</option>
+                                        <option value="Miscellaneous">Miscellaneous</option>
+                                    </select>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label class="form-label form-section-title"><i class="bi bi-calendar-date me-1"></i>Date</label>
+                                    <input type="date" class="form-control form-control-lg" id="date" required>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label class="form-label form-section-title"><i class="bi bi-card-text me-1"></i>Description</label>
+                                    <textarea class="form-control form-control-lg" id="description" rows="2" placeholder="Description (optional)"></textarea>
+                                </div>
+
+                                <div class="mb-4">
+                                    <label class="form-label form-section-title"><i class="bi bi-hash me-1"></i>Tags</label>
+                                    <input type="text" class="form-control form-control-lg" id="tags" placeholder="e.g., food, petrol, bonus">
+                                </div>
+
+                                <div class="d-grid">
+                                    <button type="submit" class="btn btn-primary btn-lg">
+                                        <i class="bi bi-check2-circle me-1"></i>Submit Transaction
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
 
-  
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        const incomeBtn = document.getElementById('incomeBtn');
+        const expenseBtn = document.getElementById('expenseBtn');
+        const transactionType = document.getElementById('transactionType');
+
+        incomeBtn.addEventListener('click', () => {
+            incomeBtn.classList.add('active');
+            expenseBtn.classList.remove('active');
+            transactionType.value = 'income';
+            incomeBtn.classList.replace('btn-outline-success', 'btn-success');
+            expenseBtn.classList.replace('btn-danger', 'btn-outline-danger');
+        });
+
+        expenseBtn.addEventListener('click', () => {
+            expenseBtn.classList.add('active');
+            incomeBtn.classList.remove('active');
+            transactionType.value = 'expense';
+            expenseBtn.classList.replace('btn-outline-danger', 'btn-danger');
+            incomeBtn.classList.replace('btn-success', 'btn-outline-success');
+        });
+
+        document.getElementById('transactionForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const data = {
+                type: transactionType.value,
+                amount: document.getElementById('amount').value,
+                category: document.getElementById('category').value,
+                date: document.getElementById('date').value,
+                description: document.getElementById('description').value,
+                tags: document.getElementById('tags').value
+            };
+            console.log("Transaction submitted:", data);
+            alert("Transaction added successfully!");
+            this.reset();
+            incomeBtn.click();
+        });
+    </script>
 </body>
 
 </html>

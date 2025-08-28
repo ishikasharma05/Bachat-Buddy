@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Bachat-Buddy | </title>
+    <title>Prime Bank Dashboard</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -201,7 +201,7 @@
                     <i class="bi bi-bank2 me-2"></i> Prime Bank
                 </div>
                 <ul class="nav flex-column gap-2">
-                    <li><a class="nav-link active" href="index.php"><i class="bi bi-speedometer2"></i> Dashboard</a></li>
+                    <li><a class="nav-link" href="index.php"><i class="bi bi-speedometer2"></i> Dashboard</a></li>
 
                     <li><a class="nav-link" href="profile.php"><i class="bi bi-person-circle"></i> Profile</a></li>
 
@@ -214,6 +214,7 @@
                     <li><a class="nav-link" href="budgets.php"><i class="bi bi-wallet2"></i> Budgets</a></li>
 
                     <li><a class="nav-link" href="goals.php"><i class="bi bi-bullseye"></i> Goals</a></li>
+
                 </ul>
             </div>
             <div class="logout mb-3">
@@ -246,12 +247,141 @@
             </div>
 
             <div class="main-body">
-                <!-- please enter the code here -->
+                <div class="dashboard-grid">
+                    <div class="card card-custom">
+                        <div class="tab-header">
+                            <h6 class="fw-bold">Monthly Details</h6>
+                            <div class="tabs">
+                                <span class="active">Income</span>
+                                <span>Expenses</span>
+                            </div>
+                        </div>
+                        <canvas id="monthlyChart"></canvas>
+                    </div>
+
+                    <div class="card card-custom">
+                        <h6 class="fw-bold">Your Card</h6>
+                        <!-- Placeholder for card and payments info -->
+                        <p class="text-muted">(Mockup this section as per your image)</p>
+                    </div>
+                </div>
+
+                <div class="grid-2">
+                    <div class="card card-custom">
+                        <div class="d-flex justify-content-between align-items-start mb-4">
+                            <h6 class="fw-bold">Expense Summary</h6>
+                            <select class="form-select form-select-sm w-auto">
+                                <option selected>April</option>
+                                <option>March</option>
+                                <option>May</option>
+                            </select>
+                        </div>
+                        <div class="d-flex">
+                            <div class="donut-container">
+                                <canvas id="expenseDonut"></canvas>
+                                <div class="donut-center-text">
+                                    <small>Total</small>
+                                    <div class="fw-bold">$8900</div>
+                                </div>
+                            </div>
+                            <div class="d-flex flex-wrap gap-3">
+                                <div class="d-flex flex-column gap-2">
+                                    <div><span class="legend-dot" style="background:#A7C7FF"></span> Various shopping<br><span class="legend-value">$2,650.00</span></div>
+                                    <div><span class="legend-dot" style="background:#C6E2FF"></span> Entertainments<br><span class="legend-value">$1,350.00</span></div>
+                                    <div><span class="legend-dot" style="background:#F9D5E5"></span> Kids Education<br><span class="legend-value">$1,950.00</span></div>
+                                </div>
+                                <div class="d-flex flex-column gap-2">
+                                    <div><span class="legend-dot" style="background:#EAC8F2"></span> Vehicle cost<br><span class="legend-value">$1,850.00</span></div>
+                                    <div><span class="legend-dot" style="background:#FDD9C1"></span> Households<br><span class="legend-value">$850.00</span></div>
+                                    <div><span class="legend-dot" style="background:#C6F8D5"></span> Insurance<br><span class="legend-value">$250.00</span></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card card-custom">
+                        <h6 class="fw-bold">Need more stats?</h6>
+                        <p>Upgrade to pro max for added benefits</p>
+                        <button class="btn btn-primary">Get now</button>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
 
-  
+    <script>
+        new Chart(document.getElementById('monthlyChart'), {
+            type: 'bar',
+            data: {
+                labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul'],
+                datasets: [{
+                    data: [12000, 8700, 9300, 12861, 11000, 6700, 8900],
+                    backgroundColor: ['#eac8f2', '#fdd9c1', '#c6defc', '#a8c6ff', '#c6f8d5', '#c0f0fc', '#f9d5e5'],
+                    borderRadius: 10,
+                    borderSkipped: false
+                }]
+            },
+            options: {
+                plugins: {
+                    legend: {
+                        display: false
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: ctx => `+ $${ctx.raw.toLocaleString()}`
+                        }
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            callback: val => val === 0 ? '0k' : val / 1000 + 'k'
+                        },
+                        grid: {
+                            color: '#eee',
+                            borderDash: [5, 5]
+                        }
+                    },
+                    x: {
+                        ticks: {
+                            font: {
+                                weight: ctx => ctx.tick.label === 'Apr' ? 'bold' : ''
+                            }
+                        },
+                        grid: {
+                            display: false
+                        }
+                    }
+                }
+            }
+        });
+
+        new Chart(document.getElementById('expenseDonut'), {
+            type: 'doughnut',
+            data: {
+                labels: ['Shopping', 'Entertainment', 'Education', 'Vehicle', 'Household', 'Insurance'],
+                datasets: [{
+                    data: [2650, 1350, 1950, 1850, 850, 250],
+                    backgroundColor: ['#A7C7FF', '#C6E2FF', '#F9D5E5', '#EAC8F2', '#FDD9C1', '#C6F8D5'],
+                    borderWidth: 0,
+                    cutout: '70%'
+                }]
+            },
+            options: {
+                plugins: {
+                    legend: {
+                        display: false
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: ctx => `$${ctx.raw.toLocaleString()}`
+                        }
+                    }
+                }
+            }
+        });
+    </script>
 </body>
 
 </html>
