@@ -215,7 +215,7 @@
         <div class="sidebar">
             <div>
                 <div class="brand d-flex align-items-center mb-4">
-                    <i class="bi bi-bank2 me-2"></i> Bachat-Buddy
+                    <i class="bi bi-piggy-bank me-2"></i> Bachat-Buddy
                 </div>
                 <ul class="nav flex-column gap-2">
                     <li><a class="nav-link active" href="index.php"><i class="bi bi-speedometer2"></i> Dashboard</a></li>

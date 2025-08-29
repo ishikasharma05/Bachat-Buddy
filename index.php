@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Prime Bank Dashboard</title>
+    <title>Bachat-Buddy </title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -198,7 +198,7 @@
         <div class="sidebar">
             <div>
                 <div class="brand d-flex align-items-center mb-4">
-                    <i class="bi bi-bank2 me-2"></i> Prime Bank
+                    <i class="bi bi-piggy-bank me-2"></i> Bachat-Buddy
                 </div>
                 <ul class="nav flex-column gap-2">
                     <li><a class="nav-link" href="index.php"><i class="bi bi-speedometer2"></i> Dashboard</a></li>
