@@ -1,330 +1,143 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>BudgetMaster</title>
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet" />
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Bachat Buddy | Login</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
   <style>
     body {
-      background-color: #1e293b;
-      color: #ffffff;
+      background: #f9fafb; /* plain light background */
+      font-family: "Segoe UI", sans-serif;
+      color: #111827;
     }
-
-    .form-section {
-      padding: 2rem;
-      background-color: #1e293b;
+    .login-box {
+      max-width: 420px;
+      margin: 70px auto;
+      background: #ffffff;
+      padding: 35px;
+      border-radius: 16px;
+      box-shadow: 0 6px 15px rgba(0,0,0,0.08);
     }
-
-    .feature-section {
-      padding: 2rem;
-      background-color: #1e293b;
-    }
-
-    .form-control {
-      background-color: #334155;
-      color: #fff;
-      border: none;
-    }
-
-    .form-control:focus {
-      box-shadow: none;
-      border-color: #3b82f6;
-      background-color: #334155;
-      color: #fff;
-    }
-
-    .form-control::placeholder {
-      color: #94a3b8;
-    }
-
-    .form-check-label {
-      color: #fff;
-    }
-
-    .input-group-text {
-      background-color: transparent;
-      border: none;
-      color: white;
-    }
-
-    .btn-primary {
-      background-color: #3b82f6;
-      border-color: #3b82f6;
-    }
-
-    .btn-primary:hover {
-      background-color: #2563eb;
-    }
-
-    .feature-card {
-      background-color: #334155;
-      border-radius: 1rem;
-      padding: 1.5rem;
-      height: 100%;
+    .login-box h2 {
       text-align: center;
+      margin-bottom: 20px;
+      color: #2563eb;
+      font-weight: bold;
     }
-
-    .feature-icon {
-      font-size: 2rem;
-      color: #3b82f6;
-      margin-bottom: 1rem;
+    .form-control {
+      background: #f3f4f6;
+      border: 1px solid #e5e7eb;
     }
-
-    .feature-title {
+    .form-control:focus {
+      background: #fff;
+      border-color: #2563eb;
+      box-shadow: 0 0 0 0.2rem rgba(37,99,235,0.2);
+    }
+    .btn-primary {
+      background: #2563eb;
+      border: none;
       font-weight: 600;
-      margin-bottom: 0.5rem;
     }
-
-    .feature-text {
-      color: #94a3b8;
-      font-size: 0.95rem;
+    .btn-primary:hover {
+      background: #1d4ed8;
     }
-
+    .error {
+      color: #dc2626;
+      font-size: 0.9rem;
+      display: none;
+    }
+    .extra-links {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 15px;
+    }
+    .extra-links a {
+      font-size: 0.9rem;
+      color: #2563eb;
+      text-decoration: none;
+    }
+    .extra-links a:hover {
+      text-decoration: underline;
+    }
     .brand-icon {
-      font-size: 3rem;
-      color: #3b82f6;
-    }
-
-    .brand-title {
       font-size: 2.5rem;
-      font-weight: 700;
-      color: #3b82f6;
-    }
-
-    .brand-subtitle {
-      font-size: 1.1rem;
-      color: #f1f5f9;
-    }
-
-    html {
-      scroll-behavior: smooth;
+      color: #2563eb;
+      display: block;
+      text-align: center;
+      margin-bottom: 10px;
     }
   </style>
 </head>
-
 <body>
-  <div class="container py-5">
-    <div class="form-section">
-      <div class="container text-center py-2">
-        <i class="bi bi-wallet2 brand-icon mb-3"></i>
-        <h1 class="brand-title">BudgetMaster</h1>
-        <p class="brand-subtitle">Take control of your financial future</p>
+  <div class="login-box">
+    <i class="bi bi-wallet2 brand-icon"></i>
+    <h2>Login</h2>
+    <p class="text-center text-muted mb-4">Welcome back! Please sign in</p>
+    <form id="loginForm" novalidate>
+      <div class="mb-3">
+        <label class="form-label">Email Address</label>
+        <input type="email" class="form-control" id="email" required>
+        <div class="error" id="emailError">Please enter a valid email</div>
       </div>
-
-      <form id="loginForm" validate>
-        <!-- Email -->
-        <div class="mb-3">
-          <label for="email" class="form-label">Email Address</label>
-          <div class="input-group has-validation">
-            <span class="input-group-text"><i class="bi bi-envelope"></i></span>
-            <input type="email" class="form-control" id="email" name="email" placeholder="name@example.com" required />
-            <div class="invalid-feedback">Please enter a valid email address.</div>
-          </div>
+      <div class="mb-3">
+        <label class="form-label">Password</label>
+        <div class="input-group">
+          <input type="password" class="form-control" id="password" required minlength="6">
+          <span class="input-group-text" id="togglePassword" style="cursor: pointer;">
+            <i class="bi bi-eye"></i>
+          </span>
         </div>
-
-        <!-- Password -->
-        <div class="mb-3">
-          <label for="password" class="form-label">Password</label>
-          <div class="input-group has-validation">
-            <span class="input-group-text"><i class="bi bi-lock"></i></span>
-            <input type="password" class="form-control" id="password" name="password" placeholder="Enter your password" required
-              minlength="6" />
-            <span class="input-group-text"><i class="bi bi-eye" id="togglePassword" style="cursor: pointer;"></i></span>
-            <div class="invalid-feedback">Password must be at least 6 characters long.</div>
-          </div>
-        </div>
-
-        <!-- Remember Me & Forgot Password -->
-        <div class="d-flex justify-content-between align-items-center mb-3">
-          <div class="form-check">
-            <input class="form-check-input" type="checkbox" id="remember" />
-            <label class="form-check-label" for="remember">Remember me</label>
-          </div>
-          <a href="#" class="text-decoration-none text-primary">Forgot Password?</a>
-        </div>
-
-        <!-- Sign In Button -->
-        <button type="submit" class="btn btn-primary w-100 d-flex justify-content-center align-items-center gap-2">
-          <i class="bi bi-box-arrow-in-right"></i> Sign In
-        </button>
-
-        <!-- Social Login and Sign Up Section -->
-        <div class="text-center mt-4">
-          <div class="d-flex align-items-center my-3">
-            <hr class="flex-grow-1 text-secondary" />
-            <span class="mx-2 text-secondary">Or continue with</span>
-            <hr class="flex-grow-1 text-secondary" />
-          </div>
-
-          <div class="d-flex justify-content-center gap-3 mb-3">
-            <button class="btn btn-dark rounded-3" style="background-color: #334155; width: 48px; height: 48px;">
-              <i class="bi bi-google text-white"></i>
-            </button>
-            <button class="btn btn-dark rounded-3" style="background-color: #334155; width: 48px; height: 48px;">
-              <i class="bi bi-facebook text-white"></i>
-            </button>
-            <button class="btn btn-dark rounded-3" style="background-color: #334155; width: 48px; height: 48px;">
-              <i class="bi bi-apple text-white"></i>
-            </button>
-          </div>
-
-          <p class="text-white-50">Don't have an account? <a href="#" class="text-primary text-decoration-none">Sign
-              up</a></p>
-        </div>
-      </form>
-    </div>
-
-    <!-- Features Section -->
-    <div class="feature-section mt-2">
-      <h2 class="text-center fw-bold mb-5">Why Choose BudgetMaster?</h2>
-      <div class="row g-4">
-        <div class="col-md-4">
-          <div class="feature-card">
-            <i class="bi bi-graph-up feature-icon"></i>
-            <div class="feature-title">Expense Tracking</div>
-            <div class="feature-text">Monitor all your expenses in one place with detailed categorization</div>
-          </div>
-        </div>
-        <div class="col-md-4">
-          <div class="feature-card">
-            <i class="bi bi-pie-chart feature-icon"></i>
-            <div class="feature-title">Budget Planning</div>
-            <div class="feature-text">Create custom budgets and track your progress in real-time</div>
-          </div>
-        </div>
-        <div class="col-md-4">
-          <div class="feature-card">
-            <i class="bi bi-bell feature-icon"></i>
-            <div class="feature-title">Smart Alerts</div>
-            <div class="feature-text">Get notified when you're approaching budget limits</div>
-          </div>
-        </div>
-        <div class="col-md-4">
-          <div class="feature-card">
-            <i class="bi bi-piggy-bank feature-icon"></i>
-            <div class="feature-title">Savings Goals</div>
-            <div class="feature-text">Set and track savings goals for your future</div>
-          </div>
-        </div>
-        <div class="col-md-4">
-          <div class="feature-card">
-            <i class="bi bi-shield-check feature-icon"></i>
-            <div class="feature-title">Secure Data</div>
-            <div class="feature-text">Bank-level encryption keeps your financial data safe</div>
-          </div>
-        </div>
-        <div class="col-md-4">
-          <div class="feature-card">
-            <i class="bi bi-phone feature-icon"></i>
-            <div class="feature-title">Mobile Access</div>
-            <div class="feature-text">Access your budget anytime, anywhere from any device</div>
-          </div>
-        </div>
+        <div class="error" id="passwordError">Password must be at least 6 characters</div>
       </div>
-    </div>
+      <button type="submit" class="btn btn-primary w-100">Login</button>
+
+      <div class="extra-links mt-3">
+        <a href="forget-password.php">Forgot Password?</a>
+        <a href="sign-up.php">Create Account</a>
+      </div>
+    </form>
   </div>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
+
   <script>
-    window.addEventListener("load", () => {
-      gsap.registerPlugin(ScrollTrigger);
-
-      // Animate Brand Section
-      gsap.from(".brand-icon", {
-        opacity: 0,
-        y: -40,
-        duration: 1,
-        ease: "power2.out"
-      });
-
-      gsap.from(".brand-title", {
-        opacity: 0,
-        y: -20,
-        duration: 1,
-        delay: 0.3,
-        ease: "power2.out"
-      });
-
-      gsap.from(".brand-subtitle", {
-        opacity: 0,
-        y: -10,
-        duration: 1,
-        delay: 0.5,
-        ease: "power2.out"
-      });
-
-      // Animate Form Fields
-      gsap.from("#loginForm .mb-3", {
-        opacity: 0,
-        x: -30,
-        stagger: 0.2,
-        delay: 0.8,
-        duration: 0.6
-      });
-
-      // Sign In Button
-      gsap.from("#loginForm button[type='submit']", {
-        opacity: 0,
-        scale: 0.8,
-        duration: 0.5,
-        delay: 1.5
-      });
-
-      // Social Login Buttons
-      gsap.from(".form-section .btn-dark", {
-        opacity: 0,
-        scale: 0.8,
-        stagger: 0.2,
-        delay: 1.8
-      });
-
-      // Feature Section Title
-      gsap.from(".feature-section h2", {
-        scrollTrigger: ".feature-section h2",
-        opacity: 0,
-        y: 40,
-        duration: 0.8
-      });
-
-      // Feature Cards
-      gsap.from(".feature-card", {
-        scrollTrigger: {
-          trigger: ".feature-section",
-          start: "top 80%",
-          toggleActions: "play none none none"
-        },
-        opacity: 0,
-        y: 30,
-        scale: 0.95,
-        stagger: 0.2,
-        duration: 0.6,
-        ease: "power2.out"
-      });
-    });
-
-
-    // Form validation
-    document.getElementById("loginForm").addEventListener("submit", function (e) {
-      if (!this.checkValidity()) {
-        e.preventDefault();
-        e.stopPropagation();
-      }
-      this.classList.add("was-validated");
-    });
-
     // Toggle password visibility
     document.getElementById("togglePassword").addEventListener("click", function () {
       const passwordField = document.getElementById("password");
       const type = passwordField.getAttribute("type") === "password" ? "text" : "password";
       passwordField.setAttribute("type", type);
-      this.classList.toggle("bi-eye");
-      this.classList.toggle("bi-eye-slash");
+
+      this.querySelector("i").classList.toggle("bi-eye");
+      this.querySelector("i").classList.toggle("bi-eye-slash");
+    });
+
+    // Form validation
+    document.getElementById("loginForm").addEventListener("submit", function(e) {
+      e.preventDefault();
+      let valid = true;
+
+      const email = document.getElementById("email").value.trim();
+      const emailPattern = /^[^ ]+@[^ ]+\.[a-z]{2,3}$/;
+      if (!email.match(emailPattern)) {
+        document.getElementById("emailError").style.display = "block";
+        valid = false;
+      } else {
+        document.getElementById("emailError").style.display = "none";
+      }
+
+      const password = document.getElementById("password").value;
+      if (password.length < 6) {
+        document.getElementById("passwordError").style.display = "block";
+        valid = false;
+      } else {
+        document.getElementById("passwordError").style.display = "none";
+      }
+
+      if (valid) {
+        alert("Login Successful! (Front-end demo)");
+        document.getElementById("loginForm").reset();
+      }
     });
   </script>
 </body>
-
 </html>
