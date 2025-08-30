@@ -347,10 +347,24 @@
                 <!-- Profile Card -->
                 <div class="profile-card text-center">
                     <!-- Profile Picture -->
-                    <img src=".." alt="Profile Picture" class="profile-pic mb-3">
+                    <!-- Profile Picture -->
+                    <div class="mb-3">
+                        <img id="profileImg" src="../Bachat-Buddy/assets/images/ian.jpg"
+                            alt="Profile Picture" class="profile-pic mb-3">
+
+                        <!-- Hidden file input -->
+                        <input type="file" id="uploadImg" accept="image/*" style="display: none;" onchange="previewImage(event)">
+
+                        <!-- Change button -->
+                        <br>
+                        <button class="btn btn-sm btn-outline-primary" onclick="document.getElementById('uploadImg').click();">
+                            Change Picture
+                        </button>
+                    </div>
+
 
                     <!-- User Info -->
-                    <h4 id="userName">Ishika Sharma</h4>
+                    <h4 id="userName">Ian Somerhalder</h4>
                     <p class="text-muted">Regular User</p>
 
                     <!-- Edit Button -->
@@ -373,7 +387,7 @@
                     <!-- Profile Info -->
                     <div class="text-start">
                         <div class="info-box">
-                            <i class="bi bi-envelope-fill"></i> <span id="userEmail">ishika@example.com</span>
+                            <i class="bi bi-envelope-fill"></i> <span id="userEmail">iansomerhalder@example.com</span>
                         </div>
                         <div class="info-box">
                             <i class="bi bi-telephone-fill"></i> <span id="userPhone">+91 9876543210</span>
@@ -386,6 +400,14 @@
                         </div>
                     </div>
                 </div>
+
+                <!-- Footer -->
+                <footer class="footer mt-5 py-3 text-center text-white">
+                    <div class="container">
+                        <p class="mb-1 fw-bold"><i class="bi bi-piggy-bank-fill me-2"></i>Bachat Buddy</p>
+                        <p class="small mb-0">© 2025 Bachat Buddy | Smart Budget Tracker with AI Guide</p>
+                    </div>
+                </footer>
 
                 <!-- Edit Profile Modal -->
                 <div class="modal fade" id="editModal" tabindex="-1">
@@ -426,60 +448,52 @@
                                 <button class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
                                 <button class="btn btn-primary" onclick="saveProfile()">Save</button>
                             </div>
-
-                            <!-- Footer -->
-                            <footer class="footer mt-5 py-3 text-center text-white">
-                                <div class="container">
-                                    <p class="mb-1 fw-bold"><i class="bi bi-piggy-bank-fill me-2"></i>Bachat Buddy</p>
-                                    <p class="small mb-0">© 2025 Bachat Buddy | Smart Budget Tracker with AI Guide</p>
-                                </div>
-                            </footer>
-
                         </div>
                     </div>
                 </div>
-
-                <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-                <script>
-                    let profile = {
-                        name: "Ishika Sharma",
-                        email: "ishika@example.com",
-                        phone: "+91 9876543210",
-                        budget: "₹25,000",
-                        language: "English"
-                    };
-
-                    // Pre-fill form when modal opens
-                    const editModal = document.getElementById("editModal");
-                    editModal.addEventListener("show.bs.modal", () => {
-                        document.getElementById("editName").value = profile.name;
-                        document.getElementById("editEmail").value = profile.email;
-                        document.getElementById("editPhone").value = profile.phone;
-                        document.getElementById("editBudget").value = profile.budget;
-                        document.getElementById("editLang").value = profile.language;
-                    });
-
-                    // Save profile
-                    function saveProfile() {
-                        profile.name = document.getElementById("editName").value;
-                        profile.email = document.getElementById("editEmail").value;
-                        profile.phone = document.getElementById("editPhone").value;
-                        profile.budget = document.getElementById("editBudget").value;
-                        profile.language = document.getElementById("editLang").value;
-
-                        document.getElementById("userName").innerText = profile.name;
-                        document.getElementById("userEmail").innerText = profile.email;
-                        document.getElementById("userPhone").innerText = profile.phone;
-                        document.getElementById("userBudget").innerText = "Monthly Budget: " + profile.budget;
-                        document.getElementById("userLang").innerText = "Preferred Language: " + profile.language;
-
-                        const modal = bootstrap.Modal.getInstance(editModal);
-                        modal.hide();
-                    }
-                </script>
             </div>
         </div>
     </div>
+
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        let profile = {
+            name: "Ian Somerhalder",
+            email: "iansomerhalder@example.com",
+            phone: "+91 9876543210",
+            budget: "₹25,000",
+            language: "English"
+        };
+
+        // Pre-fill form when modal opens
+        const editModal = document.getElementById("editModal");
+        editModal.addEventListener("show.bs.modal", () => {
+            document.getElementById("editName").value = profile.name;
+            document.getElementById("editEmail").value = profile.email;
+            document.getElementById("editPhone").value = profile.phone;
+            document.getElementById("editBudget").value = profile.budget;
+            document.getElementById("editLang").value = profile.language;
+        });
+
+        // Save profile
+        function saveProfile() {
+            profile.name = document.getElementById("editName").value;
+            profile.email = document.getElementById("editEmail").value;
+            profile.phone = document.getElementById("editPhone").value;
+            profile.budget = document.getElementById("editBudget").value;
+            profile.language = document.getElementById("editLang").value;
+
+            document.getElementById("userName").innerText = profile.name;
+            document.getElementById("userEmail").innerText = profile.email;
+            document.getElementById("userPhone").innerText = profile.phone;
+            document.getElementById("userBudget").innerText = "Monthly Budget: " + profile.budget;
+            document.getElementById("userLang").innerText = "Preferred Language: " + profile.language;
+
+            const modal = bootstrap.Modal.getInstance(editModal);
+            modal.hide();
+        }
+    </script>
 
 
 </body>
