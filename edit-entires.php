@@ -219,6 +219,12 @@
             color: #fff;
         }
     </style>
+    <style>
+        .footer {
+            background: linear-gradient(135deg, #2a9d8f, #4cafef);
+            border-radius: 20px 20px 0 0;
+        }
+    </style>
 </head>
 
 <body>
@@ -251,10 +257,10 @@
 
         <div class="main-content">
             <div class="header">
-                    <h4 class="mb-4 text-center text-black">
-                        <i class="bi bi-wallet2 me-2"></i>Edit Transaction
-                    </h4>
-               
+                <h4 class="mb-4 text-center text-black">
+                    <i class="bi bi-wallet2 me-2"></i>Edit Transaction
+                </h4>
+
                 <div class="d-flex align-items-center gap-3">
                     <div class="search-box">
                         <i class="bi bi-search me-2"></i>
@@ -337,6 +343,13 @@
                         </div>
                     </div>
                 </div>
+                <!-- Footer -->
+                <footer class="footer mt-5 py-3 text-center text-white">
+                    <div class="container">
+                        <p class="mb-1 fw-bold"><i class="bi bi-piggy-bank-fill me-2"></i>Bachat Buddy</p>
+                        <p class="small mb-0">© 2025 Bachat Buddy | Smart Budget Tracker with AI Guide</p>
+                    </div>
+                </footer>
             </div>
         </div>
     </div>

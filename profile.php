@@ -289,6 +289,12 @@
             color: #555;
         }
     </style>
+    <style>
+        .footer {
+            background: linear-gradient(135deg, #2a9d8f, #4cafef);
+            border-radius: 20px 20px 0 0;
+        }
+    </style>
 </head>
 
 <body>
@@ -323,11 +329,11 @@
             <div class="header">
                 <h5 class="mb-0 fw-bold">Profile</h5>
                 <div class="d-flex align-items-center gap-3">
-                    
+
                     <div class="notification">
                         <i class="bi bi-bell"></i>
                     </div>
-                   
+
 
                 </div>
             </div>
@@ -420,6 +426,15 @@
                                 <button class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
                                 <button class="btn btn-primary" onclick="saveProfile()">Save</button>
                             </div>
+
+                            <!-- Footer -->
+                            <footer class="footer mt-5 py-3 text-center text-white">
+                                <div class="container">
+                                    <p class="mb-1 fw-bold"><i class="bi bi-piggy-bank-fill me-2"></i>Bachat Buddy</p>
+                                    <p class="small mb-0">© 2025 Bachat Buddy | Smart Budget Tracker with AI Guide</p>
+                                </div>
+                            </footer>
+
                         </div>
                     </div>
                 </div>
