@@ -191,6 +191,13 @@
             font-weight: bold;
         }
     </style>
+
+    <style>
+        .footer {
+            background: linear-gradient(135deg, #2a9d8f, #4cafef);
+            border-radius: 20px 20px 0 0;
+        }
+    </style>
 </head>
 
 <body>
@@ -198,7 +205,7 @@
         <div class="sidebar">
             <div>
                 <div class="brand d-flex align-items-center mb-4">
-                   <i class="bi bi-piggy-bank me-2"></i> Bachat-Buddy
+                    <i class="bi bi-piggy-bank me-2"></i> Bachat-Buddy
                 </div>
                 <ul class="nav flex-column gap-2">
                     <li><a class="nav-link active" href="index.php"><i class="bi bi-speedometer2"></i> Dashboard</a></li>
@@ -248,10 +255,17 @@
             <div class="main-body">
                 <!-- please enter the code here -->
             </div>
+            <!-- Footer -->
+            <footer class="footer mt-5 py-3 text-center text-white">
+                <div class="container">
+                    <p class="mb-1 fw-bold"><i class="bi bi-piggy-bank-fill me-2"></i>Bachat Buddy</p>
+                    <p class="small mb-0">© 2025 Bachat Buddy | Smart Budget Tracker with AI Guide</p>
+                </div>
+            </footer>
+
         </div>
     </div>
 
-  
 </body>
 
 </html>

@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Bachat-Buddy | Profile </title>
+    <title>Bachat-Buddy | </title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -192,7 +192,103 @@
         }
     </style>
 
-   
+    <style>
+        body {
+            background: #f5f7fa;
+            font-family: "Poppins", sans-serif;
+        }
+
+        /* Header */
+        .navbar {
+            background: linear-gradient(135deg, #4cafef, #2a9d8f);
+        }
+
+        .navbar-brand {
+            font-weight: bold;
+            color: #fff !important;
+        }
+
+        .navbar-nav .nav-link {
+            color: #fff !important;
+            margin-left: 15px;
+        }
+
+        /* Profile Card */
+        .cover {
+            background: linear-gradient(135deg, #a8edea, #fed6e3);
+            height: 200px;
+            border-radius: 0 0 30px 30px;
+            position: relative;
+        }
+
+        .profile-card {
+            max-width: 850px;
+            margin: -80px auto 50px;
+            background: #fff;
+            border-radius: 20px;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+            padding: 30px;
+            position: relative;
+            z-index: 2;
+        }
+
+        .profile-pic {
+            width: 140px;
+            height: 140px;
+            object-fit: cover;
+            border-radius: 50%;
+            border: 5px solid #fff;
+            margin-top: -100px;
+            background: #eee;
+        }
+
+        .btn-edit {
+            border-radius: 30px;
+            padding: 8px 20px;
+        }
+
+        /* Info Boxes */
+        .info-box {
+            background: #f9fafc;
+            border-radius: 15px;
+            padding: 15px 20px;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+        }
+
+        .info-box i {
+            color: #4cafef;
+            margin-right: 10px;
+            font-size: 1.3rem;
+        }
+
+        /* Stats */
+        .stats {
+            display: flex;
+            justify-content: space-around;
+            margin: 20px 0;
+        }
+
+        .stat-box {
+            background: #eef6ff;
+            border-radius: 15px;
+            padding: 20px;
+            width: 45%;
+            text-align: center;
+            box-shadow: 0 3px 8px rgba(0, 0, 0, 0.05);
+        }
+
+        .stat-box h4 {
+            margin: 0;
+            color: #2a9d8f;
+        }
+
+        .stat-box p {
+            margin: 5px 0 0;
+            color: #555;
+        }
+    </style>
 </head>
 
 <body>
@@ -225,31 +321,147 @@
 
         <div class="main-content">
             <div class="header">
-                <h5 class="mb-0 fw-bold">Dashboard</h5>
+                <h5 class="mb-0 fw-bold">Profile</h5>
                 <div class="d-flex align-items-center gap-3">
-                    <div class="search-box">
-                        <i class="bi bi-search me-2"></i>
-                        <input type="text" placeholder="Search..." />
-                    </div>
+                    
                     <div class="notification">
                         <i class="bi bi-bell"></i>
                     </div>
-                    <div class="profile-info">
-                        <div class="bg-secondary text-white rounded-circle d-flex justify-content-center align-items-center" style="width: 36px; height: 36px;">
-                            <i class="bi bi-person-circle fs-5"></i>
-                        </div>
-                        <div class="profile-text">
-                            <div class="fw-bold">Sajib Das Supriyo</div>
-                            <small>supriyoosajib@gmail.com</small>
-                        </div>
-                    </div>
+                   
 
                 </div>
             </div>
 
             <div class="main-body">
                 <!-- please enter the code here -->
-                
+
+                <!-- Cover -->
+                <div class="cover"></div>
+
+                <!-- Profile Card -->
+                <div class="profile-card text-center">
+                    <!-- Profile Picture -->
+                    <img src=".." alt="Profile Picture" class="profile-pic mb-3">
+
+                    <!-- User Info -->
+                    <h4 id="userName">Ishika Sharma</h4>
+                    <p class="text-muted">Regular User</p>
+
+                    <!-- Edit Button -->
+                    <button class="btn btn-primary btn-edit mb-3" data-bs-toggle="modal" data-bs-target="#editModal">
+                        <i class="bi bi-pencil-square me-1"></i> Edit Profile
+                    </button>
+
+                    <!-- Stats -->
+                    <div class="stats">
+                        <div class="stat-box">
+                            <h4>₹12,500</h4>
+                            <p>Total Expenses</p>
+                        </div>
+                        <div class="stat-box">
+                            <h4>50%</h4>
+                            <p>Budget Used</p>
+                        </div>
+                    </div>
+
+                    <!-- Profile Info -->
+                    <div class="text-start">
+                        <div class="info-box">
+                            <i class="bi bi-envelope-fill"></i> <span id="userEmail">ishika@example.com</span>
+                        </div>
+                        <div class="info-box">
+                            <i class="bi bi-telephone-fill"></i> <span id="userPhone">+91 9876543210</span>
+                        </div>
+                        <div class="info-box">
+                            <i class="bi bi-wallet2"></i> <span id="userBudget">Monthly Budget: ₹25,000</span>
+                        </div>
+                        <div class="info-box">
+                            <i class="bi bi-translate"></i> <span id="userLang">Preferred Language: English</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Edit Profile Modal -->
+                <div class="modal fade" id="editModal" tabindex="-1">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title">Edit Profile</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                            </div>
+                            <div class="modal-body">
+                                <form id="editForm">
+                                    <div class="mb-3">
+                                        <label class="form-label">Name</label>
+                                        <input type="text" id="editName" class="form-control">
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label">Email</label>
+                                        <input type="email" id="editEmail" class="form-control">
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label">Phone</label>
+                                        <input type="text" id="editPhone" class="form-control">
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label">Monthly Budget</label>
+                                        <input type="text" id="editBudget" class="form-control">
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label">Preferred Language</label>
+                                        <select id="editLang" class="form-select">
+                                            <option>English</option>
+                                            <option>Hindi</option>
+                                        </select>
+                                    </div>
+                                </form>
+                            </div>
+                            <div class="modal-footer">
+                                <button class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                                <button class="btn btn-primary" onclick="saveProfile()">Save</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+                <script>
+                    let profile = {
+                        name: "Ishika Sharma",
+                        email: "ishika@example.com",
+                        phone: "+91 9876543210",
+                        budget: "₹25,000",
+                        language: "English"
+                    };
+
+                    // Pre-fill form when modal opens
+                    const editModal = document.getElementById("editModal");
+                    editModal.addEventListener("show.bs.modal", () => {
+                        document.getElementById("editName").value = profile.name;
+                        document.getElementById("editEmail").value = profile.email;
+                        document.getElementById("editPhone").value = profile.phone;
+                        document.getElementById("editBudget").value = profile.budget;
+                        document.getElementById("editLang").value = profile.language;
+                    });
+
+                    // Save profile
+                    function saveProfile() {
+                        profile.name = document.getElementById("editName").value;
+                        profile.email = document.getElementById("editEmail").value;
+                        profile.phone = document.getElementById("editPhone").value;
+                        profile.budget = document.getElementById("editBudget").value;
+                        profile.language = document.getElementById("editLang").value;
+
+                        document.getElementById("userName").innerText = profile.name;
+                        document.getElementById("userEmail").innerText = profile.email;
+                        document.getElementById("userPhone").innerText = profile.phone;
+                        document.getElementById("userBudget").innerText = "Monthly Budget: " + profile.budget;
+                        document.getElementById("userLang").innerText = "Preferred Language: " + profile.language;
+
+                        const modal = bootstrap.Modal.getInstance(editModal);
+                        modal.hide();
+                    }
+                </script>
             </div>
         </div>
     </div>
