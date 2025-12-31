@@ -148,16 +148,22 @@
         .dark .transaction-card {
             background-color: #1e293b !important;
             border: 1px solid #334155 !important;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
             color: #f8fafc;
         }
 
         .dark .nav-link { color: #cbd5e1 !important; }
         .dark .nav-link:hover { background-color: #334155 !important; color: #fff !important; }
+        .dark .nav-link.active { background-color: #3b82f6 !important; color: white !important; }
 
         .dark .form-control, .dark .form-select {
             background-color: #0f172a !important;
             border-color: #334155 !important;
             color: #fff !important;
+        }
+
+        .dark .form-control::placeholder {
+            color: #64748b;
         }
 
         .dark .notification, .dark .profile-info, .dark #theme-toggle {
@@ -166,6 +172,7 @@
         }
 
         .dark .text-black { color: #f8fafc !important; }
+        .dark .form-section-title { color: #e2e8f0; }
 
         #theme-toggle {
             width: 40px;
@@ -189,14 +196,9 @@
                     <li><a class="nav-link" href="index.php"><i class="bi bi-speedometer2"></i> Dashboard</a></li>
                     <li><a class="nav-link" href="profile.php"><i class="bi bi-person-circle"></i> Profile</a></li>
                     <li><a class="nav-link" href="transaction.php"><i class="bi bi-arrow-left-right"></i> Transactions</a></li>
-                    <li><a class="nav-link active" href="add-entry.php"><i class="bi bi-journal-plus"></i> Add Entry</a></li>
-                    <li><a class="nav-link" href="reports.php"><i class="bi bi-bar-chart"></i> Reports</a></li>
-                    <li><a class="nav-link" href="budgets.php"><i class="bi bi-wallet2"></i> Budgets</a></li>
+                    <li><a class="nav-link active" href="add-entry.php" style="background: #3b82f6; color: #fff;"><i class="bi bi-journal-plus"></i> Add Entry</a></li>
                     <li><a class="nav-link" href="goals.php"><i class="bi bi-bullseye"></i> Goals</a></li>
                 </ul>
-            </div>
-            <div class="logout mb-3">
-                <a class="nav-link" href="#"><i class="bi bi-box-arrow-left"></i> Log out</a>
             </div>
         </div>
 
@@ -210,14 +212,9 @@
                     <div class="notification">
                         <i class="bi bi-bell"></i>
                     </div>
-                    <div class="profile-info d-none d-md-flex">
-                        <div class="bg-secondary text-white rounded-circle d-flex justify-content-center align-items-center" style="width: 32px; height: 32px;">
-                            <i class="bi bi-person-circle fs-6"></i>
-                        </div>
-                        <div class="profile-text">
-                            <div class="fw-bold small">Sajib Das Supriyo</div>
-                        </div>
-                    </div>
+                    <button id="logout-btn" class="notification p-2 rounded-full border-0" title="Close session">
+                        <i class="fas fa-sign-out-alt"></i>
+                    </button>
                 </div>
             </div>
 
@@ -312,6 +309,7 @@
             }
         };
 
+        // Load saved preference
         const savedTheme = localStorage.getItem('theme') || 'light';
         setTheme(savedTheme === 'dark');
 
@@ -321,7 +319,7 @@
             setTheme(isNowDark);
         });
 
-        // Transaction Type Toggle Logic
+        // Transaction Type Selection Logic
         const incomeBtn = document.getElementById('incomeBtn');
         const expenseBtn = document.getElementById('expenseBtn');
         const savingsBtn = document.getElementById('savingsBtn');
@@ -363,7 +361,7 @@
             transactionType.value = 'withdraw-savings';
         });
 
-        // Form Submission
+        // Form Handling
         document.getElementById('transactionForm').addEventListener('submit', function(e) {
             e.preventDefault();
             const data = {
@@ -374,13 +372,14 @@
                 description: document.getElementById('description').value,
                 tags: document.getElementById('tags').value
             };
-            console.log("Transaction saved:", data);
+            console.log("Transaction recorded:", data);
             alert("Transaction added successfully!");
             this.reset();
-            incomeBtn.click(); // Reset to default state
+            incomeBtn.click(); // Default back to Income
+            document.getElementById('date').valueAsDate = new Date(); // Reset date to today
         });
 
-        // Set default date to today
+        // Set default date to today on load
         document.getElementById('date').valueAsDate = new Date();
     </script>
 </body>

@@ -4,15 +4,42 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Bachat-Buddy | </title>
+    <title>Bachat-Buddy | Goals</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
+        :root {
+            --bg-main: #f2f6f9;
+            --bg-card: #ffffff;
+            --text-main: #333333;
+            --text-muted: #6c757d;
+            --border-color: #eeeeee;
+            --sidebar-bg: #ffffff;
+            --header-bg: #ffffff;
+            --input-bg: #f5f5f5;
+            --label-color: #495057;
+        }
+
+        [data-theme="dark"] {
+            --bg-main: #0f172a;
+            --bg-card: #1e293b;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --border-color: #334155;
+            --sidebar-bg: #1e293b;
+            --header-bg: #1e293b;
+            --input-bg: #334155;
+            --label-color: #ffffff; /* High contrast for labels like 'Goal Name' */
+        }
+
         body {
             margin: 0;
             font-family: 'Segoe UI', sans-serif;
-            background-color: #f2f6f9;
+            background-color: var(--bg-main);
+            color: var(--text-main);
+            transition: all 0.3s ease;
         }
 
         .layout {
@@ -23,12 +50,13 @@
 
         .sidebar {
             width: 250px;
-            background-color: #fff;
-            border-right: 1px solid #eee;
+            background-color: var(--sidebar-bg);
+            border-right: 1px solid var(--border-color);
             display: flex;
             flex-direction: column;
             justify-content: space-between;
             padding: 2rem 1rem;
+            transition: all 0.3s ease;
         }
 
         .sidebar .nav-link {
@@ -36,8 +64,9 @@
             align-items: center;
             padding: 10px 15px;
             border-radius: 10px;
-            color: #333;
+            color: var(--text-main);
             font-weight: 500;
+            text-decoration: none;
             transition: 0.3s ease;
         }
 
@@ -49,10 +78,6 @@
         .sidebar .nav-link i {
             margin-right: 12px;
             font-size: 1.1rem;
-        }
-
-        .sidebar .logout {
-            padding-left: 15px;
         }
 
         .brand {
@@ -70,16 +95,17 @@
         }
 
         .header {
-            background-color: #fff;
+            background-color: var(--header-bg);
             padding: 1rem 2rem;
             display: flex;
             align-items: center;
             justify-content: space-between;
-            border-bottom: 1px solid #eee;
+            border-bottom: 1px solid var(--border-color);
+            transition: all 0.3s ease;
         }
 
         .search-box {
-            background: #f5f5f5;
+            background: var(--input-bg);
             border-radius: 10px;
             padding: 5px 15px;
             width: 300px;
@@ -92,164 +118,107 @@
             background: transparent;
             outline: none;
             width: 100%;
+            color: var(--text-main);
         }
 
-        .notification {
-            background: #f5f5f5;
+        .notification,
+        #theme-toggle {
+            background: var(--input-bg);
             padding: 8px;
             border-radius: 10px;
+            cursor: pointer;
+            border: none;
+            color: var(--text-main);
         }
 
         .profile-info {
             display: flex;
             align-items: center;
             gap: 10px;
-            background: #f5f5f5;
+            background: var(--input-bg);
             padding: 6px 12px;
             border-radius: 20px;
-        }
-
-        .profile-info img {
-            width: 36px;
-            height: 36px;
-            border-radius: 50%;
         }
 
         .main-body {
             padding: 2rem;
             overflow-y: auto;
-            background-color: #f2f6f9;
+            background-color: var(--bg-main);
+            transition: all 0.3s ease;
         }
 
-        .dashboard-grid {
-            display: grid;
-            grid-template-columns: 2fr 1.2fr;
-            gap: 2rem;
-        }
-
-        .grid-2 {
-            display: grid;
-            grid-template-columns: 1.1fr 1fr;
-            gap: 2rem;
-            margin-top: 2rem;
-        }
-
-        .card-custom {
-            border-radius: 16px;
-            padding: 1.5rem;
-            background: #fff;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.04);
-        }
-
-        .tab-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 1rem;
-        }
-
-        .tabs span {
-            margin-left: 1rem;
-            font-weight: 500;
-            cursor: pointer;
-            color: #999;
-        }
-
-        .tabs .active {
-            color: #000;
-        }
-
-        .donut-container {
-            position: relative;
-            width: 160px;
-            height: 160px;
-            margin-right: 2rem;
-        }
-
-        .donut-center-text {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            text-align: center;
-        }
-
-        .legend-dot {
-            width: 10px;
-            height: 10px;
-            border-radius: 50%;
-            display: inline-block;
-            margin-right: 8px;
-        }
-
-        .legend-label {
-            font-size: 0.9rem;
-            color: #555;
-        }
-
-        .legend-value {
-            font-weight: bold;
-        }
-    </style>
-
-    <style>
-        body {
-            background: #f5f7fa;
-            font-family: "Poppins", sans-serif;
-        }
-
-        .navbar-brand,
-        .navbar-nav .nav-link {
-            color: #fff !important;
-        }
-
-        /* Page Header */
         .page-header {
             background: linear-gradient(135deg, #a8edea, #fed6e3);
             padding: 40px 20px;
             border-radius: 0 0 30px 30px;
             text-align: center;
             margin-bottom: 30px;
+            color: #333;
         }
 
-        .page-header h2 {
-            font-weight: bold;
+        [data-theme="dark"] .page-header {
+            background: linear-gradient(135deg, #1e3a8a, #4c1d95);
+            color: #fff;
         }
 
-        /* Goal Card */
+        /* --- VISIBILITY FIX FOR LABELS --- */
+        .form-label, .text-muted, small.d-block {
+            color: var(--label-color) !important;
+            opacity: 1;
+        }
+
         .goal-card {
-            background: #fff;
+            background: var(--bg-card);
             border-radius: 20px;
             box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
             padding: 20px;
             margin-bottom: 20px;
-            transition: transform 0.2s;
+            transition: transform 0.2s, background 0.3s;
+            border: 1px solid var(--border-color);
         }
 
         .goal-card:hover {
             transform: translateY(-5px);
         }
 
-        .progress {
-            height: 14px;
-            border-radius: 10px;
-        }
-
-        .btn-add {
-            border-radius: 30px;
-            padding: 8px 20px;
-        }
-
-        .btn-update {
-            font-size: 0.8rem;
-            padding: 4px 12px;
+        .modal-content {
+            background-color: var(--bg-card);
+            color: var(--text-main);
+            border: 1px solid var(--border-color);
             border-radius: 20px;
         }
-    </style>
-    <style>
+
+        /* --- FIXING THE CROSS (CLOSE BUTTON) VISIBILITY --- */
+        [data-theme="dark"] .btn-close {
+            filter: invert(1) grayscale(100%) brightness(200%);
+        }
+
+        .form-control {
+            background-color: var(--input-bg);
+            border-color: var(--border-color);
+            color: var(--text-main);
+        }
+
+        .form-control:focus {
+            background-color: var(--input-bg);
+            color: var(--text-main);
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 0.25rem rgba(59, 130, 246, 0.25);
+        }
+
+        .form-control::placeholder {
+            color: var(--text-muted);
+            opacity: 0.7;
+        }
+
         .footer {
             background: linear-gradient(135deg, #2a9d8f, #4cafef);
             border-radius: 20px 20px 0 0;
+        }
+
+        .badge.bg-success {
+            background-color: #059669 !important;
+            color: #ecfdf5;
         }
     </style>
 </head>
@@ -262,114 +231,95 @@
                     <i class="bi bi-piggy-bank me-2"></i> Bachat-Buddy
                 </div>
                 <ul class="nav flex-column gap-2">
-                    <li><a class="nav-link active" href="index.php"><i class="bi bi-speedometer2"></i> Dashboard</a></li>
-
+                    <li><a class="nav-link" href="index.php"><i class="bi bi-speedometer2"></i> Dashboard</a></li>
                     <li><a class="nav-link" href="profile.php"><i class="bi bi-person-circle"></i> Profile</a></li>
-
                     <li><a class="nav-link" href="transaction.php"><i class="bi bi-arrow-left-right"></i> Transactions</a></li>
-
                     <li><a class="nav-link" href="add-entry.php"><i class="bi bi-journal-plus"></i> Add Entry</a></li>
-
-                    <li><a class="nav-link" href="reports.php"><i class="bi bi-bar-chart"></i> Reports</a></li>
-
-                    <li><a class="nav-link" href="budgets.php"><i class="bi bi-wallet2"></i> Budgets</a></li>
-
-                    <li><a class="nav-link" href="goals.php"><i class="bi bi-bullseye"></i> Goals</a></li>
+                    <li><a class="nav-link active" href="goals.php" style="background: #3b82f6; color: #fff;"><i class="bi bi-bullseye"></i> Goals</a></li>
                 </ul>
-            </div>
-            <div class="logout mb-3">
-                <a class="nav-link" href="#"><i class="bi bi-box-arrow-left"></i>Log out</a>
             </div>
         </div>
 
         <div class="main-content">
             <div class="header">
-                <h5 class="mb-0 fw-bold">Dashboard</h5>
+                <h5 class="mb-0 fw-bold">Savings Goals</h5>
                 <div class="d-flex align-items-center gap-3">
-                    <div class="search-box">
-                        <i class="bi bi-search me-2"></i>
-                        <input type="text" placeholder="Search..." />
-                    </div>
+                    <button id="theme-toggle">
+                        <i class="fas fa-moon"></i>
+                    </button>
                     <div class="notification">
                         <i class="bi bi-bell"></i>
                     </div>
-                    <div class="profile-info">
-                        <div class="bg-secondary text-white rounded-circle d-flex justify-content-center align-items-center" style="width: 36px; height: 36px;">
-                            <i class="bi bi-person-circle fs-5"></i>
-                        </div>
-                        <div class="profile-text">
-                            <div class="fw-bold">Sajib Das Supriyo</div>
-                            <small>supriyoosajib@gmail.com</small>
-                        </div>
-                    </div>
-
+                  <button id="logout-btn" class="notification p-2 rounded-full border-0" title="Close session">
+                        <i class="fas fa-sign-out-alt"></i>
+                    </button>
                 </div>
             </div>
 
             <div class="main-body">
-                <!-- please enter the code here -->
-
-                <!-- Page Header -->
                 <div class="page-header">
                     <h2>🎯 My Savings Goals</h2>
-                    <p class="text-muted">Track your progress and achieve your financial dreams</p>
-                    <button class="btn btn-primary btn-add mt-2" data-bs-toggle="modal" data-bs-target="#goalModal">
+                    <p class="opacity-75">Track your progress and achieve your financial dreams</p>
+                    <button class="btn btn-primary rounded-pill px-4 mt-2" data-bs-toggle="modal" data-bs-target="#goalModal">
                         <i class="bi bi-plus-circle me-1"></i> Add New Goal
                     </button>
                 </div>
 
-                <!-- Goals List -->
                 <div class="container" id="goalList">
-                    <!-- Default Goal -->
                     <div class="goal-card">
                         <div class="d-flex justify-content-between align-items-center">
-                            <h5>Buy a Laptop 💻</h5>
-                            <span class="badge bg-success">In Progress</span>
+                            <h5 class="fw-bold">car</h5>
+                            <span class="badge bg-success rounded-pill px-3">In Progress</span>
                         </div>
-                        <p class="text-muted mb-2">Target: ₹50,000 | Saved: ₹20,000</p>
-                        <div class="progress mb-2">
-                            <div class="progress-bar bg-info" style="width: 40%"></div>
+                        <p class="text-muted mb-2">Target: ₹500,000 | Saved: ₹100,000</p>
+                        <div class="progress mb-2" style="height: 10px; background-color: var(--input-bg);">
+                            <div class="progress-bar bg-info" style="width: 20%"></div>
                         </div>
-                        <button class="btn btn-sm btn-outline-primary btn-update" onclick="updateGoal(this)">Update Saved</button>
+                        <div class="d-flex justify-content-between align-items-center mt-3">
+                            <button class="btn btn-sm btn-outline-primary rounded-pill px-3" onclick="updateGoal(this)">Add Funds</button>
+                            <div>
+                                <i class="bi bi-pencil text-muted me-2" style="cursor:pointer"></i>
+                                <i class="bi bi-trash text-danger" style="cursor:pointer"></i>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
-                <!-- Add Goal Modal -->
                 <div class="modal fade" id="goalModal" tabindex="-1">
-                    <div class="modal-dialog">
-                        <div class="modal-content">
-                            <div class="modal-header">
-                                <h5 class="modal-title">Add New Goal</h5>
-                                <button class="btn-close" data-bs-dismiss="modal"></button>
+                    <div class="modal-dialog modal-dialog-centered">
+                        <div class="modal-content shadow-lg">
+                            <div class="modal-header border-0 pb-0">
+                                <h5 class="modal-title fw-bold">Add New Goal</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                             </div>
-                            <div class="modal-body">
+                            <div class="modal-body p-4">
                                 <form id="goalForm">
                                     <div class="mb-3">
-                                        <label class="form-label">Goal Name</label>
-                                        <input type="text" id="goalName" class="form-control" placeholder="e.g. Buy a Laptop">
+                                        <label class="form-label small fw-bold">Goal Name</label>
+                                        <input type="text" id="goalName" class="form-control rounded-3" placeholder="e.g. Dream Vacation">
                                     </div>
                                     <div class="mb-3">
-                                        <label class="form-label">Target Amount (₹)</label>
-                                        <input type="number" id="goalTarget" class="form-control" placeholder="e.g. 50000">
+                                        <label class="form-label small fw-bold">Target Amount (₹)</label>
+                                        <input type="number" id="goalTarget" class="form-control rounded-3" placeholder="0.00">
                                     </div>
                                     <div class="mb-3">
-                                        <label class="form-label">Initial Saved Amount (₹)</label>
-                                        <input type="number" id="goalSaved" class="form-control" placeholder="e.g. 10000">
+                                        <label class="form-label small fw-bold">Initial Saved Amount (₹)</label>
+                                        <input type="number" id="goalSaved" class="form-control rounded-3" placeholder="0.00">
                                     </div>
                                 </form>
                             </div>
-                            <div class="modal-footer">
-                                <button class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                                <button class="btn btn-primary" onclick="addGoal()">Save Goal</button>
+                            <div class="modal-footer border-0 pt-0 d-flex justify-content-center gap-3">
+                                <button class="btn btn-light rounded-pill px-4" data-bs-dismiss="modal">Cancel</button>
+                                <button class="btn btn-primary rounded-pill px-4" onclick="addGoal()">Save Goal</button>
                             </div>
                         </div>
                     </div>
                 </div>
-                <!-- Footer -->
-                <footer class="footer mt-5 py-3 text-center text-white">
+
+                <footer class="footer mt-5 py-4 text-center text-white">
                     <div class="container">
                         <p class="mb-1 fw-bold"><i class="bi bi-piggy-bank-fill me-2"></i>Bachat Buddy</p>
-                        <p class="small mb-0">© 2025 Bachat Buddy | Smart Budget Tracker with AI Guide</p>
+                        <p class="small mb-0 opacity-75">© 2025 Bachat Buddy | Smart Budget Tracker with AI Guide</p>
                     </div>
                 </footer>
             </div>
@@ -378,64 +328,66 @@
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
     <script>
-        // Add Goal
+        const themeToggle = document.getElementById('theme-toggle');
+        const setTheme = (theme) => {
+            document.documentElement.setAttribute('data-theme', theme);
+            themeToggle.innerHTML = theme === 'dark' ? '<i class="fas fa-sun text-warning"></i>' : '<i class="fas fa-moon"></i>';
+            localStorage.setItem('theme', theme);
+        };
+
+        themeToggle.addEventListener('click', () => {
+            const currentTheme = document.documentElement.getAttribute('data-theme');
+            setTheme(currentTheme === 'dark' ? 'light' : 'dark');
+        });
+
+        // Initialize Theme
+        setTheme(localStorage.getItem('theme') || 'dark');
+
         function addGoal() {
             const name = document.getElementById("goalName").value;
             const target = document.getElementById("goalTarget").value;
             const saved = document.getElementById("goalSaved").value || 0;
-
             if (!name || !target) {
                 alert("Please fill in all fields");
                 return;
             }
-
             const progress = Math.min((saved / target) * 100, 100);
-
             const goalCard = document.createElement("div");
             goalCard.className = "goal-card";
             goalCard.innerHTML = `
-        <div class="d-flex justify-content-between align-items-center">
-          <h5>${name}</h5>
-          <span class="badge ${progress >= 100 ? "bg-primary" : "bg-success"}">
-            ${progress >= 100 ? "Completed" : "In Progress"}
-          </span>
-        </div>
-        <p class="text-muted mb-2">Target: ₹${target} | Saved: ₹${saved}</p>
-        <div class="progress mb-2">
-          <div class="progress-bar ${progress >= 100 ? "bg-primary" : "bg-info"}" style="width: ${progress}%"></div>
-        </div>
-        <button class="btn btn-sm btn-outline-primary btn-update" onclick="updateGoal(this)">Update Saved</button>
-      `;
-
+                <div class="d-flex justify-content-between align-items-center">
+                  <h5 class="fw-bold">${name}</h5>
+                  <span class="badge rounded-pill px-3 ${progress >= 100 ? "bg-primary" : "bg-success"}">${progress >= 100 ? "Completed" : "In Progress"}</span>
+                </div>
+                <p class="text-muted mb-2">Target: ₹${target} | Saved: ₹${saved}</p>
+                <div class="progress mb-2" style="height: 10px; background-color: var(--input-bg);"><div class="progress-bar ${progress >= 100 ? "bg-primary" : "bg-info"}" style="width: ${progress}%"></div></div>
+                <div class="d-flex justify-content-between align-items-center mt-3">
+                    <button class="btn btn-sm btn-outline-primary rounded-pill px-3" onclick="updateGoal(this)">Add Funds</button>
+                    <div>
+                        <i class="bi bi-pencil text-muted me-2" style="cursor:pointer"></i>
+                        <i class="bi bi-trash text-danger" style="cursor:pointer"></i>
+                    </div>
+                </div>`;
             document.getElementById("goalList").appendChild(goalCard);
-
-            // Reset form & close modal
             document.getElementById("goalForm").reset();
-            const modal = bootstrap.Modal.getInstance(document.getElementById("goalModal"));
-            modal.hide();
+            bootstrap.Modal.getInstance(document.getElementById("goalModal")).hide();
         }
 
-        // Update Saved Amount
         function updateGoal(button) {
             const card = button.closest(".goal-card");
             const details = card.querySelector("p");
             let [target, saved] = details.innerText.match(/\d+/g).map(Number);
-
             const addMore = prompt("Enter amount to add to savings:");
             if (!addMore || isNaN(addMore)) return;
-
             saved += parseInt(addMore);
             const progress = Math.min((saved / target) * 100, 100);
-
-            // Update UI
             details.innerText = `Target: ₹${target} | Saved: ₹${saved}`;
             card.querySelector(".progress-bar").style.width = `${progress}%`;
             card.querySelector(".progress-bar").className = `progress-bar ${progress >= 100 ? "bg-primary" : "bg-info"}`;
-            card.querySelector(".badge").className = `badge ${progress >= 100 ? "bg-primary" : "bg-success"}`;
+            card.querySelector(".badge").className = `badge rounded-pill px-3 ${progress >= 100 ? "bg-primary" : "bg-success"}`;
             card.querySelector(".badge").innerText = progress >= 100 ? "Completed" : "In Progress";
         }
     </script>
-
 </body>
 
 </html>
