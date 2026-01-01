@@ -13,102 +13,104 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="components/style.css">
 </head>
-<style>        .main-body {
-            padding: 2rem;
-            overflow-y: auto;
-            background-color: #f2f6f9;
-            transition: background-color 0.3s ease;
-        }
+<style>
+    .main-body {
+        padding: 2rem;
+        overflow-y: auto;
+        background-color: #f2f6f9;
+        transition: background-color 0.3s ease;
+    }
 
-        /* 4 summary boxes row */
-        .summary-row {
-            display: grid;
-            grid-template-columns: repeat(4, minmax(0, 1fr));
-            gap: 1.5rem;
-            margin-bottom: 2rem;
-        }
+    /* 4 summary boxes row */
+    .summary-row {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 1.5rem;
+        margin-bottom: 2rem;
+    }
 
-        .summary-card {
-            position: relative;
-            border-radius: 16px;
-            background: #fff;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.04);
-            padding: 1.25rem 1.5rem;
-            transition: background-color 0.3s ease, transform 0.2s;
-        }
+    .summary-card {
+        position: relative;
+        border-radius: 16px;
+        background: #fff;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.04);
+        padding: 1.25rem 1.5rem;
+        transition: background-color 0.3s ease, transform 0.2s;
+    }
 
-        .summary-card-accent {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 6px;
-            height: 100%;
-            border-radius: 16px 0 0 16px;
-        }
+    .summary-card-accent {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 6px;
+        height: 100%;
+        border-radius: 16px 0 0 16px;
+    }
 
-        .dashboard-two-cols {
-            display: grid;
-            grid-template-columns: repeat(2, minmax(0, 1fr));
-            gap: 2rem;
-        }
+    .dashboard-two-cols {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 2rem;
+    }
 
-        .card-custom {
-            border-radius: 16px;
-            padding: 1.5rem;
-            background: #fff;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.04);
-            transition: background-color 0.3s ease;
-        }
+    .card-custom {
+        border-radius: 16px;
+        padding: 1.5rem;
+        background: #fff;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.04);
+        transition: background-color 0.3s ease;
+    }
 
-        .tab-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 1rem;
-        }
+    .tab-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1rem;
+    }
 
-        .tabs span {
-            margin-left: 1rem;
-            font-weight: 500;
-            cursor: pointer;
-            color: #999;
-        }
+    .tabs span {
+        margin-left: 1rem;
+        font-weight: 500;
+        cursor: pointer;
+        color: #999;
+    }
 
-        .tabs .active {
-            color: #000;
-        }
+    .tabs .active {
+        color: #000;
+    }
 
-        .donut-container {
-            position: relative;
-            width: 160px;
-            height: 160px;
-            margin-right: 2rem;
-        }
+    .donut-container {
+        position: relative;
+        width: 160px;
+        height: 160px;
+        margin-right: 2rem;
+    }
 
-        .donut-center-text {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            text-align: center;
-        }
+    .donut-center-text {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        text-align: center;
+    }
 
-        .legend-dot {
-            width: 10px;
-            height: 10px;
-            border-radius: 50%;
-            display: inline-block;
-            margin-right: 8px;
-        }
+    .legend-dot {
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        display: inline-block;
+        margin-right: 8px;
+    }
 
-        .legend-label {
-            font-size: 0.9rem;
-            color: #555;
-        }
+    .legend-label {
+        font-size: 0.9rem;
+        color: #555;
+    }
 
-        .legend-value {
-            font-weight: bold;
-        }</style>
+    .legend-value {
+        font-weight: bold;
+    }
+</style>
 
 <body>
     <div class="layout">
@@ -242,18 +244,31 @@
         // Global chart variables for color updates
         let mChart, eDonut;
 
+        // 1. Define your data for both categories
+        const chartData = {
+            income: [12000, 8700, 9300, 12861, 11000, 6700, 8900],
+            expenses: [7500, 6200, 8100, 5400, 9200, 4300, 6100],
+            // Different color palettes to distinguish the views
+            incomeColors: ['#eac8f2', '#fdd9c1', '#c6defc', '#a8c6ff', '#c6f8d5', '#c0f0fc', '#f9d5e5'],
+            expenseColors: ['#fecaca', '#fed7aa', '#fef08a', '#bbf7d0', '#99f6e4', '#bae6fd', '#e9d5ff']
+        };
+
         const initCharts = () => {
             const isDark = document.documentElement.classList.contains('dark');
             const gridColor = isDark ? 'rgba(255, 255, 255, 0.1)' : '#eee';
             const textColor = isDark ? '#94a3b8' : '#666';
 
-            mChart = new Chart(document.getElementById('monthlyChart'), {
+            const ctx = document.getElementById('monthlyChart').getContext('2d');
+
+            // 2. Initialize chart with Income data by default
+            mChart = new Chart(ctx, {
                 type: 'bar',
                 data: {
                     labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul'],
                     datasets: [{
-                        data: [12000, 8700, 9300, 12861, 11000, 6700, 8900],
-                        backgroundColor: ['#eac8f2', '#fdd9c1', '#c6defc', '#a8c6ff', '#c6f8d5', '#c0f0fc', '#f9d5e5'],
+                        label: 'Income', // Added label to track state
+                        data: chartData.income,
+                        backgroundColor: chartData.incomeColors,
                         borderRadius: 10,
                         borderSkipped: false
                     }]
@@ -265,7 +280,12 @@
                         },
                         tooltip: {
                             callbacks: {
-                                label: ctx => `+ ₹${ctx.raw.toLocaleString()}`
+                                // Dynamic label based on active dataset
+                                label: ctx => {
+                                    const isIncome = mChart.data.datasets[0].label === 'Income';
+                                    const prefix = isIncome ? '+' : '-';
+                                    return `${prefix} ₹${ctx.raw.toLocaleString()}`;
+                                }
                             }
                         }
                     },
@@ -296,31 +316,60 @@
                 }
             });
 
-            eDonut = new Chart(document.getElementById('expenseDonut'), {
-                type: 'doughnut',
-                data: {
-                    labels: ['Shopping', 'Entertainment', 'Education', 'Vehicle', 'Household', 'Insurance'],
-                    datasets: [{
-                        data: [2650, 1350, 1950, 1850, 850, 250],
-                        backgroundColor: ['#A7C7FF', '#C6E2FF', '#F9D5E5', '#EAC8F2', '#FDD9C1', '#C6F8D5'],
-                        borderWidth: 0,
-                        cutout: '70%'
-                    }]
-                },
-                options: {
-                    plugins: {
-                        legend: {
-                            display: false
-                        },
-                        tooltip: {
-                            callbacks: {
-                                label: ctx => `₹${ctx.raw.toLocaleString()}`
-                            }
+            // 3. Tab Switching Logic
+            const tabs = document.querySelectorAll('.tabs span');
+            tabs.forEach(tab => {
+                tab.addEventListener('click', function() {
+                    // UI: Update active class
+                    tabs.forEach(t => t.classList.remove('active'));
+                    this.classList.add('active');
+
+                    // Data: Check which tab was clicked
+                    const selectedTab = this.innerText.trim();
+
+                    if (selectedTab === 'Income') {
+                        mChart.data.datasets[0].data = chartData.income;
+                        mChart.data.datasets[0].backgroundColor = chartData.incomeColors;
+                        mChart.data.datasets[0].label = 'Income';
+                    } else {
+                        mChart.data.datasets[0].data = chartData.expenses;
+                        mChart.data.datasets[0].backgroundColor = chartData.expenseColors;
+                        mChart.data.datasets[0].label = 'Expenses';
+                    }
+
+                    // Refresh the chart
+                    mChart.update();
+                });
+            });
+        };
+
+        // Call initialization
+        initCharts();
+
+        eDonut = new Chart(document.getElementById('expenseDonut'), {
+            type: 'doughnut',
+            data: {
+                labels: ['Shopping', 'Entertainment', 'Education', 'Vehicle', 'Household', 'Insurance'],
+                datasets: [{
+                    data: [2650, 1350, 1950, 1850, 850, 250],
+                    backgroundColor: ['#A7C7FF', '#C6E2FF', '#F9D5E5', '#EAC8F2', '#FDD9C1', '#C6F8D5'],
+                    borderWidth: 0,
+                    cutout: '70%'
+                }]
+            },
+            options: {
+                plugins: {
+                    legend: {
+                        display: false
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: ctx => `₹${ctx.raw.toLocaleString()}`
                         }
                     }
                 }
-            });
-        };
+            }
+        });
 
         const updateCharts = () => {
             if (mChart) mChart.destroy();
