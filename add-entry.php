@@ -9,6 +9,7 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.tailwindcss.com"></script>
+    <link src="components/styles.css" rel="stylesheet">
     <style>
         body {
             margin: 0;
@@ -134,12 +135,14 @@
         }
 
         /* ===== DARK MODE REFINEMENTS ===== */
-        .dark body, .dark .main-body {
+        .dark body,
+        .dark .main-body {
             background-color: #0f172a !important;
             color: #f8fafc;
         }
 
-        .dark .header, .dark .sidebar {
+        .dark .header,
+        .dark .sidebar {
             background-color: #1e293b !important;
             border-color: #334155 !important;
             color: #f8fafc;
@@ -152,11 +155,22 @@
             color: #f8fafc;
         }
 
-        .dark .nav-link { color: #cbd5e1 !important; }
-        .dark .nav-link:hover { background-color: #334155 !important; color: #fff !important; }
-        .dark .nav-link.active { background-color: #3b82f6 !important; color: white !important; }
+        .dark .nav-link {
+            color: #cbd5e1 !important;
+        }
 
-        .dark .form-control, .dark .form-select {
+        .dark .nav-link:hover {
+            background-color: #334155 !important;
+            color: #fff !important;
+        }
+
+        .dark .nav-link.active {
+            background-color: #3b82f6 !important;
+            color: white !important;
+        }
+
+        .dark .form-control,
+        .dark .form-select {
             background-color: #0f172a !important;
             border-color: #334155 !important;
             color: #fff !important;
@@ -166,13 +180,20 @@
             color: #64748b;
         }
 
-        .dark .notification, .dark .profile-info, .dark #theme-toggle {
+        .dark .notification,
+        .dark .profile-info,
+        .dark #theme-toggle {
             background-color: #334155 !important;
             color: #f8fafc;
         }
 
-        .dark .text-black { color: #f8fafc !important; }
-        .dark .form-section-title { color: #e2e8f0; }
+        .dark .text-black {
+            color: #f8fafc !important;
+        }
+
+        .dark .form-section-title {
+            color: #e2e8f0;
+        }
 
         #theme-toggle {
             width: 40px;
@@ -188,41 +209,28 @@
 <body>
     <div class="layout">
         <div class="sidebar">
-            <div>
-                <div class="brand d-flex align-items-center mb-4">
-                    <i class="bi bi-piggy-bank me-2 text-success"></i> Bachat-Buddy
-                </div>
-                <ul class="nav flex-column gap-2">
-                    <li><a class="nav-link" href="index.php"><i class="bi bi-speedometer2"></i> Dashboard</a></li>
-                    <li><a class="nav-link" href="profile.php"><i class="bi bi-person-circle"></i> Profile</a></li>
-                    <li><a class="nav-link" href="transaction.php"><i class="bi bi-arrow-left-right"></i> Transactions</a></li>
-                    <li><a class="nav-link active" href="add-entry.php" style="background: #3b82f6; color: #fff;"><i class="bi bi-journal-plus"></i> Add Entry</a></li>
-                    <li><a class="nav-link" href="goals.php"><i class="bi bi-bullseye"></i> Goals</a></li>
-                </ul>
-            </div>
+    <div>
+        <div class="brand d-flex align-items-center mb-4">
+            <i class="bi bi-piggy-bank me-2 text-success"></i> Bachat-Buddy
         </div>
+        <ul class="nav flex-column gap-2">
+            <li><a class="nav-link" href="index.php" ><i class="bi bi-speedometer2"></i> Dashboard</a></li>
+            <li><a class="nav-link" href="profile.php"><i class="bi bi-person-circle"></i> Profile</a></li>
+            <li><a class="nav-link" href="transaction.php"><i class="bi bi-arrow-left-right"></i> Transactions</a></li>
+            <li><a class="nav-link" href="add-entry.php" style="background: #3b82f6; color: #fff;"><i class="bi bi-journal-plus"></i> Add Entry</a></li>
+            <li><a class="nav-link" href="goals.php"><i class="bi bi-bullseye"></i> Goals</a></li>
+        </ul>
+    </div>
+</div>
 
         <div class="main-content">
-            <div class="header">
-                <h5 class="mb-0 fw-bold text-black"><i class="bi bi-plus-circle me-2"></i>New Transaction</h5>
-                <div class="d-flex align-items-center gap-3">
-                    <button id="theme-toggle" class="notification border-0 rounded-full">
-                        <i class="fas fa-moon"></i>
-                    </button>
-                    <div class="notification">
-                        <i class="bi bi-bell"></i>
-                    </div>
-                    <button id="logout-btn" class="notification p-2 rounded-full border-0" title="Close session">
-                        <i class="fas fa-sign-out-alt"></i>
-                    </button>
-                </div>
-            </div>
+            <?php include 'components/header.php'; ?>
 
             <div class="main-body">
                 <div class="container">
                     <div class="card transaction-card">
                         <div class="card-body p-4 p-md-5">
-                            
+
                             <div class="d-flex justify-content-center mb-5 toggle-btns flex-wrap gap-2">
                                 <button type="button" class="btn btn-outline-success active" id="incomeBtn">
                                     <i class="bi bi-arrow-down-circle me-1"></i>Income
@@ -284,13 +292,7 @@
                         </div>
                     </div>
                 </div>
-
-                <footer class="footer mt-5 py-4 text-center text-white">
-                    <div class="container">
-                        <p class="mb-1 fw-bold"><i class="bi bi-piggy-bank-fill me-2"></i>Bachat Buddy</p>
-                        <p class="small mb-0 opacity-75">© 2025 Bachat Buddy | Smart Budget Tracker with AI Guide</p>
-                    </div>
-                </footer>
+                <?php include 'components/footer.php'; ?>
             </div>
         </div>
     </div>

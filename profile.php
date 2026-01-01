@@ -10,6 +10,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="components/styles.css">
     <style>
         body {
             margin: 0;
@@ -125,7 +126,7 @@
             margin-top: -110px;
             background: #eee;
             transition: all 0.3s ease;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
         }
 
         .info-box {
@@ -161,12 +162,14 @@
         }
 
         /* ===== DARK MODE REFINEMENTS ===== */
-        .dark body, .dark .main-body {
+        .dark body,
+        .dark .main-body {
             background-color: #0f172a !important;
             color: #f8fafc;
         }
 
-        .dark .header, .dark .sidebar {
+        .dark .header,
+        .dark .sidebar {
             background-color: #1e293b !important;
             border-color: #334155 !important;
             color: #f8fafc;
@@ -179,27 +182,58 @@
             color: #f8fafc !important;
         }
 
-        .dark .nav-link { color: #cbd5e1 !important; }
-        .dark .nav-link:hover { background-color: #334155 !important; color: #fff !important; }
+        .dark .nav-link {
+            color: #cbd5e1 !important;
+        }
 
-        .dark .info-box { background-color: #334155 !important; color: #f8fafc; }
+        .dark .nav-link:hover {
+            background-color: #334155 !important;
+            color: #fff !important;
+        }
+
+        .dark .info-box {
+            background-color: #334155 !important;
+            color: #f8fafc;
+        }
+
         /* Fix for tag labels in dark mode */
-        .dark .info-box .text-muted { color: #94a3b8 !important; } 
+        .dark .info-box .text-muted {
+            color: #94a3b8 !important;
+        }
 
-        .dark .stat-box { background-color: #0f172a !important; border: 1px solid #334155; }
+        .dark .stat-box {
+            background-color: #0f172a !important;
+            border: 1px solid #334155;
+        }
+
         /* Fix for stat labels in dark mode */
-        .dark .stat-box .text-muted { color: #94a3b8 !important; }
-        
-        .dark .cover { background: linear-gradient(135deg, #1e3a8a, #4c1d95); }
-        .dark .profile-pic { border-color: #1e293b; box-shadow: 0 5px 20px rgba(0,0,0,0.5); }
-        .dark .notification, .dark #theme-toggle { background-color: #334155 !important; color: #f8fafc; }
+        .dark .stat-box .text-muted {
+            color: #94a3b8 !important;
+        }
+
+        .dark .cover {
+            background: linear-gradient(135deg, #1e3a8a, #4c1d95);
+        }
+
+        .dark .profile-pic {
+            border-color: #1e293b;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.5);
+        }
+
+        .dark .notification,
+        .dark #theme-toggle {
+            background-color: #334155 !important;
+            color: #f8fafc;
+        }
 
         .dark .modal-content {
             background-color: #1e293b;
             color: #f8fafc;
             border: 1px solid #334155;
         }
-        .dark .form-control, .dark .form-select {
+
+        .dark .form-control,
+        .dark .form-select {
             background-color: #0f172a;
             border-color: #475569;
             color: #fff;
@@ -222,7 +256,10 @@
             overflow: hidden;
             margin-top: 10px;
         }
-        .dark .progress-custom { background-color: #334155; }
+
+        .dark .progress-custom {
+            background-color: #334155;
+        }
     </style>
 </head>
 
@@ -235,7 +272,7 @@
                 </div>
                 <ul class="nav flex-column gap-2">
                     <li><a class="nav-link" href="index.php"><i class="bi bi-speedometer2"></i> Dashboard</a></li>
-                    <li><a class="nav-link active" href="profile.php" style="background: #3b82f6; color: #fff;"><i class="bi bi-person-circle"></i> Profile</a></li>
+                    <li><a class="nav-link" href="profile.php" style="background: #3b82f6; color: #fff;"><i class="bi bi-person-circle"></i> Profile</a></li>
                     <li><a class="nav-link" href="transaction.php"><i class="bi bi-arrow-left-right"></i> Transactions</a></li>
                     <li><a class="nav-link" href="add-entry.php"><i class="bi bi-journal-plus"></i> Add Entry</a></li>
                     <li><a class="nav-link" href="goals.php"><i class="bi bi-bullseye"></i> Goals</a></li>
@@ -244,18 +281,7 @@
         </div>
 
         <div class="main-content">
-            <div class="header">
-                <h5 class="mb-0 fw-bold">My Account</h5>
-                <div class="d-flex align-items-center gap-3">
-                    <div class="notification">
-                        <i class="bi bi-bell"></i>
-                    </div>
-                    <button id="theme-toggle" class="notification border-0 rounded-full">
-                        <i class="fas fa-moon"></i>
-                    </button>
-                </div>
-            </div>
-
+            <?php include 'components/header.php'; ?>
             <div class="main-body">
                 <div class="cover"></div>
 
@@ -283,40 +309,44 @@
                         <div class="stat-box">
                             <h4 class="fw-bold text-danger mb-0">₹12,500</h4>
                             <p class="text-muted small mb-0">Total Expenses</p>
-                            <div class="progress-custom"><div class="bg-danger h-100" style="width: 70%"></div></div>
+                            <div class="progress-custom">
+                                <div class="bg-danger h-100" style="width: 70%"></div>
+                            </div>
                         </div>
                         <div class="stat-box">
                             <h4 class="fw-bold text-success mb-0">50%</h4>
                             <p class="text-muted small mb-0">Savings Reached</p>
-                            <div class="progress-custom"><div class="bg-success h-100" style="width: 50%"></div></div>
+                            <div class="progress-custom">
+                                <div class="bg-success h-100" style="width: 50%"></div>
+                            </div>
                         </div>
                     </div>
 
                     <div class="text-start mx-auto" style="max-width: 650px;">
                         <h6 class="fw-bold mb-3 px-2 text-uppercase small opacity-75">Personal Information</h6>
                         <div class="info-box">
-                            <i class="bi bi-envelope-fill me-3 fs-5 text-primary"></i> 
+                            <i class="bi bi-envelope-fill me-3 fs-5 text-primary"></i>
                             <div>
                                 <small class="text-muted d-block">Email Address</small>
                                 <span id="userEmail" class="fw-semibold">iansomerhalder@example.com</span>
                             </div>
                         </div>
                         <div class="info-box">
-                            <i class="bi bi-telephone-fill me-3 fs-5 text-primary"></i> 
+                            <i class="bi bi-telephone-fill me-3 fs-5 text-primary"></i>
                             <div>
                                 <small class="text-muted d-block">Phone Number</small>
                                 <span id="userPhone" class="fw-semibold">+91 9876543210</span>
                             </div>
                         </div>
                         <div class="info-box">
-                            <i class="bi bi-wallet2 me-3 fs-5 text-primary"></i> 
+                            <i class="bi bi-wallet2 me-3 fs-5 text-primary"></i>
                             <div>
                                 <small class="text-muted d-block">Financial Settings</small>
                                 <span id="userBudget" class="fw-semibold">Monthly Budget: ₹25,000</span>
                             </div>
                         </div>
                         <div class="info-box">
-                            <i class="bi bi-translate me-3 fs-5 text-primary"></i> 
+                            <i class="bi bi-translate me-3 fs-5 text-primary"></i>
                             <div>
                                 <small class="text-muted d-block">App Preference</small>
                                 <span id="userLang" class="fw-semibold">Language: English</span>
@@ -325,13 +355,7 @@
                     </div>
                 </div>
 
-                <footer class="footer mt-5 py-5 text-center text-white">
-                    <div class="container">
-                        <p class="mb-1 fw-bold fs-5"><i class="bi bi-piggy-bank-fill me-2"></i>Bachat Buddy</p>
-                        <p class="small mb-0 opacity-75">Your Smart Financial Companion</p>
-                        <p class="x-small mt-2 opacity-50">© 2025 Bachat Buddy | Developed with ❤️</p>
-                    </div>
-                </footer>
+                <?php include 'components/footer.php'; ?>
             </div>
         </div>
     </div>
@@ -372,10 +396,14 @@
                         </div>
                     </form>
                 </div>
+
                 <div class="modal-footer border-0">
-                    <button class="btn btn-light rounded-pill px-4" data-bs-dismiss="modal">Discard</button>
-                    <button class="btn btn-primary rounded-pill px-4" onclick="saveProfile()">Apply Changes</button>
+                    <button type="button" class="btn btn-secondary rounded-pill px-4" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary rounded-pill px-4" onclick="saveProfile()">
+                        <i class="bi bi-check-lg me-2"></i>Apply Changes
+                    </button>
                 </div>
+
             </div>
         </div>
     </div>
@@ -448,7 +476,7 @@
         // Image Preview with quality preservation
         function previewImage(event) {
             const reader = new FileReader();
-            reader.onload = function(){
+            reader.onload = function() {
                 const output = document.getElementById('profileImg');
                 output.src = reader.result;
             };
@@ -456,4 +484,5 @@
         }
     </script>
 </body>
+
 </html>

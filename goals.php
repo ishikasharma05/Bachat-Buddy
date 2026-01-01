@@ -9,6 +9,7 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="components/styles.css">
     <style>
         :root {
             --bg-main: #f2f6f9;
@@ -31,7 +32,8 @@
             --sidebar-bg: #1e293b;
             --header-bg: #1e293b;
             --input-bg: #334155;
-            --label-color: #ffffff; /* High contrast for labels like 'Goal Name' */
+            --label-color: #ffffff;
+            /* High contrast for labels like 'Goal Name' */
         }
 
         body {
@@ -162,7 +164,9 @@
         }
 
         /* --- VISIBILITY FIX FOR LABELS --- */
-        .form-label, .text-muted, small.d-block {
+        .form-label,
+        .text-muted,
+        small.d-block {
             color: var(--label-color) !important;
             opacity: 1;
         }
@@ -228,33 +232,21 @@
         <div class="sidebar">
             <div>
                 <div class="brand d-flex align-items-center mb-4">
-                    <i class="bi bi-piggy-bank me-2"></i> Bachat-Buddy
+                    <i class="bi bi-piggy-bank me-2 text-success"></i> Bachat-Buddy
                 </div>
                 <ul class="nav flex-column gap-2">
-                    <li><a class="nav-link" href="index.php"><i class="bi bi-speedometer2"></i> Dashboard</a></li>
+                    <li><a class="nav-link" href="index.php" ><i class="bi bi-speedometer2"></i> Dashboard</a></li>
                     <li><a class="nav-link" href="profile.php"><i class="bi bi-person-circle"></i> Profile</a></li>
                     <li><a class="nav-link" href="transaction.php"><i class="bi bi-arrow-left-right"></i> Transactions</a></li>
                     <li><a class="nav-link" href="add-entry.php"><i class="bi bi-journal-plus"></i> Add Entry</a></li>
-                    <li><a class="nav-link active" href="goals.php" style="background: #3b82f6; color: #fff;"><i class="bi bi-bullseye"></i> Goals</a></li>
+                    <li><a class="nav-link" href="goals.php" style="background: #3b82f6; color: #fff;"><i class="bi bi-bullseye"></i> Goals</a></li>
                 </ul>
             </div>
         </div>
 
+
         <div class="main-content">
-            <div class="header">
-                <h5 class="mb-0 fw-bold">Savings Goals</h5>
-                <div class="d-flex align-items-center gap-3">
-                    <button id="theme-toggle">
-                        <i class="fas fa-moon"></i>
-                    </button>
-                    <div class="notification">
-                        <i class="bi bi-bell"></i>
-                    </div>
-                  <button id="logout-btn" class="notification p-2 rounded-full border-0" title="Close session">
-                        <i class="fas fa-sign-out-alt"></i>
-                    </button>
-                </div>
-            </div>
+            <?php include 'components/header.php'; ?>
 
             <div class="main-body">
                 <div class="page-header">
@@ -316,12 +308,7 @@
                     </div>
                 </div>
 
-                <footer class="footer mt-5 py-4 text-center text-white">
-                    <div class="container">
-                        <p class="mb-1 fw-bold"><i class="bi bi-piggy-bank-fill me-2"></i>Bachat Buddy</p>
-                        <p class="small mb-0 opacity-75">© 2025 Bachat Buddy | Smart Budget Tracker with AI Guide</p>
-                    </div>
-                </footer>
+                <?php include 'components/footer.php'; ?>
             </div>
         </div>
     </div>

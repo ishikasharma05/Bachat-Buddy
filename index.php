@@ -11,118 +11,9 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <style>
-        body {
-            margin: 0;
-            font-family: 'Segoe UI', sans-serif;
-            background-color: #f2f6f9;
-            transition: background-color 0.3s ease;
-        }
-
-        .layout {
-            display: flex;
-            height: 100vh;
-            overflow: hidden;
-        }
-
-        .sidebar {
-            width: 250px;
-            background-color: #fff;
-            border-right: 1px solid #eee;
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-            padding: 2rem 1rem;
-            transition: background-color 0.3s ease, border-color 0.3s ease;
-        }
-
-        .sidebar .nav-link {
-            display: flex;
-            align-items: center;
-            padding: 10px 15px;
-            border-radius: 10px;
-            color: #333;
-            font-weight: 500;
-            transition: 0.3s ease;
-        }
-
-        .sidebar .nav-link:hover {
-            background-color: #000;
-            color: #fff;
-        }
-
-        .sidebar .nav-link i {
-            margin-right: 12px;
-            font-size: 1.1rem;
-        }
-
-        .sidebar .logout {
-            padding-left: 15px;
-        }
-
-        .brand {
-            font-weight: bold;
-            font-size: 1.2rem;
-            padding-left: 15px;
-            margin-bottom: 2rem;
-        }
-
-        .main-content {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            height: 100vh;
-        }
-
-        .header {
-            background-color: #fff;
-            padding: 1rem 2rem;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            border-bottom: 1px solid #eee;
-            transition: background-color 0.3s ease, border-color 0.3s ease;
-        }
-
-        .search-box {
-            background: #f5f5f5;
-            border-radius: 10px;
-            padding: 5px 15px;
-            width: 300px;
-            display: flex;
-            align-items: center;
-        }
-
-        .search-box input {
-            border: none;
-            background: transparent;
-            outline: none;
-            width: 100%;
-        }
-
-        .notification {
-            background: #f5f5f5;
-            padding: 8px;
-            border-radius: 10px;
-            transition: background-color 0.3s ease;
-        }
-
-        .profile-info {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            background: #f5f5f5;
-            padding: 6px 12px;
-            border-radius: 20px;
-        }
-
-        .profile-info img {
-            width: 36px;
-            height: 36px;
-            border-radius: 50%;
-        }
-
-        .main-body {
+    <link rel="stylesheet" href="components/style.css">
+</head>
+<style>        .main-body {
             padding: 2rem;
             overflow-y: auto;
             background-color: #f2f6f9;
@@ -217,157 +108,14 @@
 
         .legend-value {
             font-weight: bold;
-        }
-
-        .footer {
-            background: linear-gradient(135deg, #2a9d8f, #4cafef);
-            border-radius: 20px 20px 0 0;
-            transition: background 0.3s ease;
-        }
-
-        @media (max-width: 992px) {
-            .summary-row {
-                grid-template-columns: repeat(2, minmax(0, 1fr));
-            }
-
-            .dashboard-two-cols {
-                grid-template-columns: 1fr;
-            }
-        }
-
-        @media (max-width: 576px) {
-            .summary-row {
-                grid-template-columns: 1fr;
-            }
-        }
-
-
-        /* ===== REFINED DARK MODE STYLES ===== */
-        .dark body, 
-        .dark .main-body {
-            background-color: #0f172a !important;
-            color: #f8fafc;
-        }
-
-        .dark .header,
-        .dark .sidebar {
-            background-color: #1e293b !important;
-            border-color: #334155 !important;
-            color: #f8fafc;
-        }
-
-        .dark .card-custom,
-        .dark .summary-card,
-        .dark .card {
-            background-color: #1e293b !important;
-            border: 1px solid #334155 !important;
-            color: #f8fafc !important;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
-        }
-
-        .dark .nav-link {
-            color: #cbd5e1 !important;
-        }
-
-        .dark .nav-link:hover {
-            background-color: #334155 !important;
-            color: #ffffff !important;
-        }
-
-        .dark .search-box,
-        .dark .notification,
-        .dark .profile-info {
-            background-color: #334155 !important;
-            color: #f8fafc;
-        }
-
-        .dark input {
-            color: #f8fafc !important;
-        }
-
-        .dark .text-muted {
-            color: #94a3b8 !important;
-        }
-
-        .dark .tabs .active {
-            color: #38bdf8 !important;
-        }
-
-        .dark .footer {
-            background: linear-gradient(135deg, #0f172a, #1e3a8a) !important;
-        }
-        
-        .dark select {
-            background-color: #334155 !important;
-            color: #f8fafc !important;
-            border-color: #475569 !important;
-        }
-
-        #theme-toggle {
-            width: 40px;
-            height: 40px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: all 0.3s ease;
-            background: #f5f5f5;
-        }
-
-        .dark #theme-toggle {
-            background: #334155;
-            color: #fbbf24;
-        }
-
-        .dark #logout-btn {
-            background: #334155;
-            color: #f8fafc;
-        }
-
-        /* Recent transactions item adjustments for dark mode */
-        .dark .rounded-3[style*="background:#f8fafc"] {
-            background: #334155 !important;
-        }
-    </style>
-</head>
+        }</style>
 
 <body>
     <div class="layout">
-        <div class="sidebar">
-            <div>
-                <div class="brand d-flex align-items-center mb-4">
-                    <i class="bi bi-piggy-bank me-2 text-success"></i> Bachat-Buddy
-                </div>
-                <ul class="nav flex-column gap-2">
-                    <li><a class="nav-link" href="index.php" style="background: #3b82f6; color: #fff;"><i class="bi bi-speedometer2"></i> Dashboard</a></li>
-                    <li><a class="nav-link" href="profile.php"><i class="bi bi-person-circle"></i> Profile</a></li>
-                    <li><a class="nav-link" href="transaction.php"><i class="bi bi-arrow-left-right"></i> Transactions</a></li>
-                    <li><a class="nav-link" href="add-entry.php"><i class="bi bi-journal-plus"></i> Add Entry</a></li>
-                    <li><a class="nav-link" href="goals.php"><i class="bi bi-bullseye"></i> Goals</a></li>
-                </ul>
-            </div>
-        </div>
-
+        <?php include 'components/sidebar.php'; ?>
         <div class="main-content">
-            <div class="header">
-                <h5 class="mb-0 fw-bold">Dashboard</h5>
-                <div class="d-flex align-items-center gap-3">
-                    <div class="notification p-2 rounded-full">
-                        <i class="bi bi-bell"></i>
-                    </div>
-
-                    <button id="theme-toggle" class="p-2 rounded-full border-0">
-                        <i class="fas fa-moon"></i>
-                    </button>
-
-                    <button id="logout-btn" class="notification p-2 rounded-full border-0" title="Close session">
-                        <i class="fas fa-sign-out-alt"></i>
-                    </button>
-                </div>
-
-            </div>
-
+            <?php include 'components/header.php'; ?>
             <div class="main-body">
-
                 <div class="summary-row">
                     <div class="summary-card">
                         <div class="summary-card-accent" style="background:#c6f8d5;"></div>
@@ -485,14 +233,7 @@
                         </div>
                     </div>
                 </div>
-
-
-                <footer class="footer mt-5 py-3 text-center text-white">
-                    <div class="container">
-                        <p class="mb-1 fw-bold"><i class="bi bi-piggy-bank-fill me-2"></i>Bachat Buddy</p>
-                        <p class="small mb-0">© 2025 Bachat Buddy | Smart Budget Tracker with AI Guide</p>
-                    </div>
-                </footer>
+                <?php include 'components/footer.php'; ?>
             </div>
         </div>
     </div>
@@ -519,24 +260,37 @@
                 },
                 options: {
                     plugins: {
-                        legend: { display: false },
-                        tooltip: { callbacks: { label: ctx => `+ ₹${ctx.raw.toLocaleString()}` } }
+                        legend: {
+                            display: false
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: ctx => `+ ₹${ctx.raw.toLocaleString()}`
+                            }
+                        }
                     },
                     scales: {
                         y: {
                             beginAtZero: true,
-                            ticks: { 
+                            ticks: {
                                 color: textColor,
-                                callback: val => val === 0 ? '0' : val / 1000 + 'k' 
+                                callback: val => val === 0 ? '0' : val / 1000 + 'k'
                             },
-                            grid: { color: gridColor, borderDash: [5, 5] }
+                            grid: {
+                                color: gridColor,
+                                borderDash: [5, 5]
+                            }
                         },
                         x: {
-                            ticks: { 
+                            ticks: {
                                 color: textColor,
-                                font: { weight: ctx => ctx.tick.label === 'Apr' ? 'bold' : '' } 
+                                font: {
+                                    weight: ctx => ctx.tick.label === 'Apr' ? 'bold' : ''
+                                }
                             },
-                            grid: { display: false }
+                            grid: {
+                                display: false
+                            }
                         }
                     }
                 }
@@ -555,8 +309,14 @@
                 },
                 options: {
                     plugins: {
-                        legend: { display: false },
-                        tooltip: { callbacks: { label: ctx => `₹${ctx.raw.toLocaleString()}` } }
+                        legend: {
+                            display: false
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: ctx => `₹${ctx.raw.toLocaleString()}`
+                            }
+                        }
                     }
                 }
             });
