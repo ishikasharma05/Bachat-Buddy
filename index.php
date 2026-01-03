@@ -160,10 +160,19 @@
                     <div class="card-custom">
                         <div class="d-flex justify-content-between align-items-start mb-4">
                             <h6 class="fw-bold">Expense Summary</h6>
-                            <select class="form-select form-select-sm w-auto">
-                                <option selected>April</option>
-                                <option>March</option>
-                                <option>May</option>
+                            <select id="monthSelect" class="form-select form-select-sm w-auto">
+                                <option value="Jan">January</option>
+                                <option value="Feb">February</option>
+                                <option value="Mar">March</option>
+                                <option value="Apr" selected>April</option>
+                                <option value="May">May</option>
+                                <option value="Jun">June</option>
+                                <option value="Jul">July</option>
+                                <option value="Aug">August</option>
+                                <option value="Sep">September</option>
+                                <option value="Oct">October</option>
+                                <option value="Nov">November</option>
+                                <option value="Dec">December</option>
                             </select>
                         </div>
                         <div class="d-flex">
@@ -171,7 +180,7 @@
                                 <canvas id="expenseDonut"></canvas>
                                 <div class="donut-center-text">
                                     <small class="text-muted">Total</small>
-                                    <div class="fw-bold">₹8900</div>
+                                    <div id="donutTotalAmount" class="fw-bold">₹8,900</div>
                                 </div>
                             </div>
                             <div class="d-flex flex-wrap gap-3">
@@ -248,9 +257,24 @@
         const chartData = {
             income: [12000, 8700, 9300, 12861, 11000, 6700, 8900],
             expenses: [7500, 6200, 8100, 5400, 9200, 4300, 6100],
-            // Different color palettes to distinguish the views
             incomeColors: ['#eac8f2', '#fdd9c1', '#c6defc', '#a8c6ff', '#c6f8d5', '#c0f0fc', '#f9d5e5'],
             expenseColors: ['#fecaca', '#fed7aa', '#fef08a', '#bbf7d0', '#99f6e4', '#bae6fd', '#e9d5ff']
+        };
+
+        // Data for monthly donut (Expense breakdown example)
+        const donutMonthlyData = {
+            'Jan': [1000, 500, 800, 700, 400, 100],
+            'Feb': [1200, 600, 700, 900, 300, 200],
+            'Mar': [2000, 1000, 1500, 1500, 600, 150],
+            'Apr': [2650, 1350, 1950, 1850, 850, 250],
+            'May': [2100, 1100, 1400, 1200, 700, 200],
+            'Jun': [1500, 800, 1100, 900, 500, 150],
+            'Jul': [2200, 1200, 1800, 1600, 800, 250],
+            'Aug': [1800, 900, 1300, 1100, 600, 200],
+            'Sep': [1900, 1000, 1400, 1300, 700, 210],
+            'Oct': [2300, 1150, 1650, 1450, 750, 230],
+            'Nov': [2500, 1300, 1900, 1700, 800, 240],
+            'Dec': [3000, 1500, 2000, 2000, 1000, 300]
         };
 
         const initCharts = () => {
@@ -258,15 +282,16 @@
             const gridColor = isDark ? 'rgba(255, 255, 255, 0.1)' : '#eee';
             const textColor = isDark ? '#94a3b8' : '#666';
 
-            const ctx = document.getElementById('monthlyChart').getContext('2d');
+            const ctxMonthly = document.getElementById('monthlyChart').getContext('2d');
+            const ctxDonut = document.getElementById('expenseDonut').getContext('2d');
 
-            // 2. Initialize chart with Income data by default
-            mChart = new Chart(ctx, {
+            // 2. Initialize bar chart
+            mChart = new Chart(ctxMonthly, {
                 type: 'bar',
                 data: {
                     labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul'],
                     datasets: [{
-                        label: 'Income', // Added label to track state
+                        label: 'Income',
                         data: chartData.income,
                         backgroundColor: chartData.incomeColors,
                         borderRadius: 10,
@@ -275,12 +300,9 @@
                 },
                 options: {
                     plugins: {
-                        legend: {
-                            display: false
-                        },
+                        legend: { display: false },
                         tooltip: {
                             callbacks: {
-                                // Dynamic label based on active dataset
                                 label: ctx => {
                                     const isIncome = mChart.data.datasets[0].label === 'Income';
                                     const prefix = isIncome ? '+' : '-';
@@ -308,25 +330,44 @@
                                     weight: ctx => ctx.tick.label === 'Apr' ? 'bold' : ''
                                 }
                             },
-                            grid: {
-                                display: false
+                            grid: { display: false }
+                        }
+                    }
+                }
+            });
+
+            // 3. Initialize Donut chart
+            const currentMonth = document.getElementById('monthSelect').value;
+            eDonut = new Chart(ctxDonut, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Shopping', 'Entertainment', 'Education', 'Vehicle', 'Household', 'Insurance'],
+                    datasets: [{
+                        data: donutMonthlyData[currentMonth],
+                        backgroundColor: ['#A7C7FF', '#C6E2FF', '#F9D5E5', '#EAC8F2', '#FDD9C1', '#C6F8D5'],
+                        borderWidth: 0,
+                        cutout: '70%'
+                    }]
+                },
+                options: {
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            callbacks: {
+                                label: ctx => `₹${ctx.raw.toLocaleString()}`
                             }
                         }
                     }
                 }
             });
 
-            // 3. Tab Switching Logic
+            // Tab Switching Logic for Bar Chart
             const tabs = document.querySelectorAll('.tabs span');
             tabs.forEach(tab => {
                 tab.addEventListener('click', function() {
-                    // UI: Update active class
                     tabs.forEach(t => t.classList.remove('active'));
                     this.classList.add('active');
-
-                    // Data: Check which tab was clicked
                     const selectedTab = this.innerText.trim();
-
                     if (selectedTab === 'Income') {
                         mChart.data.datasets[0].data = chartData.income;
                         mChart.data.datasets[0].backgroundColor = chartData.incomeColors;
@@ -336,40 +377,24 @@
                         mChart.data.datasets[0].backgroundColor = chartData.expenseColors;
                         mChart.data.datasets[0].label = 'Expenses';
                     }
-
-                    // Refresh the chart
                     mChart.update();
                 });
             });
+
+            // Month Select Logic for Donut Chart
+            document.getElementById('monthSelect').addEventListener('change', function() {
+                const selectedMonth = this.value;
+                const newData = donutMonthlyData[selectedMonth];
+                
+                // Update Chart
+                eDonut.data.datasets[0].data = newData;
+                eDonut.update();
+
+                // Update Total Text in Center
+                const total = newData.reduce((a, b) => a + b, 0);
+                document.getElementById('donutTotalAmount').innerText = `₹${total.toLocaleString()}`;
+            });
         };
-
-        // Call initialization
-        initCharts();
-
-        eDonut = new Chart(document.getElementById('expenseDonut'), {
-            type: 'doughnut',
-            data: {
-                labels: ['Shopping', 'Entertainment', 'Education', 'Vehicle', 'Household', 'Insurance'],
-                datasets: [{
-                    data: [2650, 1350, 1950, 1850, 850, 250],
-                    backgroundColor: ['#A7C7FF', '#C6E2FF', '#F9D5E5', '#EAC8F2', '#FDD9C1', '#C6F8D5'],
-                    borderWidth: 0,
-                    cutout: '70%'
-                }]
-            },
-            options: {
-                plugins: {
-                    legend: {
-                        display: false
-                    },
-                    tooltip: {
-                        callbacks: {
-                            label: ctx => `₹${ctx.raw.toLocaleString()}`
-                        }
-                    }
-                }
-            }
-        });
 
         const updateCharts = () => {
             if (mChart) mChart.destroy();
@@ -382,35 +407,33 @@
     <script>
         const themeToggleBtn = document.getElementById('theme-toggle');
 
-        // Function to set theme
         const setTheme = (isDark) => {
             if (isDark) {
                 document.documentElement.classList.add('dark');
-                themeToggleBtn.innerHTML = '<i class="fas fa-sun"></i>';
+                if(themeToggleBtn) themeToggleBtn.innerHTML = '<i class="fas fa-sun"></i>';
             } else {
                 document.documentElement.classList.remove('dark');
-                themeToggleBtn.innerHTML = '<i class="fas fa-moon"></i>';
+                if(themeToggleBtn) themeToggleBtn.innerHTML = '<i class="fas fa-moon"></i>';
             }
             updateCharts();
         };
 
-        // Load saved theme
         const savedTheme = localStorage.getItem('theme');
         if (savedTheme === 'dark') {
             setTheme(true);
         } else if (savedTheme === 'light') {
             setTheme(false);
         } else {
-            // Default to dark as per your original script preference
             setTheme(true);
         }
 
-        // Toggle theme listener
-        themeToggleBtn.addEventListener('click', () => {
-            const isNowDark = !document.documentElement.classList.contains('dark');
-            localStorage.setItem('theme', isNowDark ? 'dark' : 'light');
-            setTheme(isNowDark);
-        });
+        if(themeToggleBtn) {
+            themeToggleBtn.addEventListener('click', () => {
+                const isNowDark = !document.documentElement.classList.contains('dark');
+                localStorage.setItem('theme', isNowDark ? 'dark' : 'light');
+                setTheme(isNowDark);
+            });
+        }
     </script>
 </body>
 

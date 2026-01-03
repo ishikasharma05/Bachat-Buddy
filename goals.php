@@ -235,7 +235,7 @@
                     <i class="bi bi-piggy-bank me-2 text-success"></i> Bachat-Buddy
                 </div>
                 <ul class="nav flex-column gap-2">
-                    <li><a class="nav-link" href="index.php" ><i class="bi bi-speedometer2"></i> Dashboard</a></li>
+                    <li><a class="nav-link" href="index.php"><i class="bi bi-speedometer2"></i> Dashboard</a></li>
                     <li><a class="nav-link" href="profile.php"><i class="bi bi-person-circle"></i> Profile</a></li>
                     <li><a class="nav-link" href="transaction.php"><i class="bi bi-arrow-left-right"></i> Transactions</a></li>
                     <li><a class="nav-link" href="add-entry.php"><i class="bi bi-journal-plus"></i> Add Entry</a></li>
@@ -252,7 +252,7 @@
                 <div class="page-header">
                     <h2>🎯 My Savings Goals</h2>
                     <p class="opacity-75">Track your progress and achieve your financial dreams</p>
-                    <button class="btn btn-primary rounded-pill px-4 mt-2" data-bs-toggle="modal" data-bs-target="#goalModal">
+                    <button class="btn btn-primary rounded-pill px-4 mt-2" data-bs-toggle="modal" data-bs-target="#goalModal" onclick="prepareAddGoal()">
                         <i class="bi bi-plus-circle me-1"></i> Add New Goal
                     </button>
                 </div>
@@ -270,8 +270,8 @@
                         <div class="d-flex justify-content-between align-items-center mt-3">
                             <button class="btn btn-sm btn-outline-primary rounded-pill px-3" onclick="updateGoal(this)">Add Funds</button>
                             <div>
-                                <i class="bi bi-pencil text-muted me-2" style="cursor:pointer"></i>
-                                <i class="bi bi-trash text-danger" style="cursor:pointer"></i>
+                                <i class="bi bi-pencil text-muted me-2" style="cursor:pointer" onclick="editGoal(this)"></i>
+                                <i class="bi bi-trash text-danger" style="cursor:pointer" onclick="deleteGoal(this)"></i>
                             </div>
                         </div>
                     </div>
@@ -281,11 +281,12 @@
                     <div class="modal-dialog modal-dialog-centered">
                         <div class="modal-content shadow-lg">
                             <div class="modal-header border-0 pb-0">
-                                <h5 class="modal-title fw-bold">Add New Goal</h5>
+                                <h5 class="modal-title fw-bold" id="modalTitle">Add New Goal</h5>
                                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                             </div>
                             <div class="modal-body p-4">
                                 <form id="goalForm">
+                                    <input type="hidden" id="editGoalId">
                                     <div class="mb-3">
                                         <label class="form-label small fw-bold">Goal Name</label>
                                         <input type="text" id="goalName" class="form-control rounded-3" placeholder="e.g. Dream Vacation">
@@ -302,7 +303,7 @@
                             </div>
                             <div class="modal-footer border-0 pt-0 d-flex justify-content-center gap-3">
                                 <button class="btn btn-light rounded-pill px-4" data-bs-dismiss="modal">Cancel</button>
-                                <button class="btn btn-primary rounded-pill px-4" onclick="addGoal()">Save Goal</button>
+                                <button class="btn btn-primary rounded-pill px-4" id="saveGoalBtn" onclick="addGoal()">Save Goal</button>
                             </div>
                         </div>
                     </div>
@@ -330,18 +331,28 @@
         // Initialize Theme
         setTheme(localStorage.getItem('theme') || 'dark');
 
+        let currentEditCard = null;
+
+        function prepareAddGoal() {
+            currentEditCard = null;
+            document.getElementById("modalTitle").innerText = "Add New Goal";
+            document.getElementById("goalForm").reset();
+            document.getElementById("saveGoalBtn").innerText = "Save Goal";
+        }
+
         function addGoal() {
             const name = document.getElementById("goalName").value;
             const target = document.getElementById("goalTarget").value;
             const saved = document.getElementById("goalSaved").value || 0;
+            
             if (!name || !target) {
                 alert("Please fill in all fields");
                 return;
             }
+
             const progress = Math.min((saved / target) * 100, 100);
-            const goalCard = document.createElement("div");
-            goalCard.className = "goal-card";
-            goalCard.innerHTML = `
+            
+            const cardHTML = `
                 <div class="d-flex justify-content-between align-items-center">
                   <h5 class="fw-bold">${name}</h5>
                   <span class="badge rounded-pill px-3 ${progress >= 100 ? "bg-primary" : "bg-success"}">${progress >= 100 ? "Completed" : "In Progress"}</span>
@@ -351,11 +362,22 @@
                 <div class="d-flex justify-content-between align-items-center mt-3">
                     <button class="btn btn-sm btn-outline-primary rounded-pill px-3" onclick="updateGoal(this)">Add Funds</button>
                     <div>
-                        <i class="bi bi-pencil text-muted me-2" style="cursor:pointer"></i>
-                        <i class="bi bi-trash text-danger" style="cursor:pointer"></i>
+                        <i class="bi bi-pencil text-muted me-2" style="cursor:pointer" onclick="editGoal(this)"></i>
+                        <i class="bi bi-trash text-danger" style="cursor:pointer" onclick="deleteGoal(this)"></i>
                     </div>
                 </div>`;
-            document.getElementById("goalList").appendChild(goalCard);
+
+            if (currentEditCard) {
+                // Updating existing card
+                currentEditCard.innerHTML = cardHTML;
+            } else {
+                // Adding new card
+                const goalCard = document.createElement("div");
+                goalCard.className = "goal-card";
+                goalCard.innerHTML = cardHTML;
+                document.getElementById("goalList").appendChild(goalCard);
+            }
+
             document.getElementById("goalForm").reset();
             bootstrap.Modal.getInstance(document.getElementById("goalModal")).hide();
         }
@@ -373,6 +395,32 @@
             card.querySelector(".progress-bar").className = `progress-bar ${progress >= 100 ? "bg-primary" : "bg-info"}`;
             card.querySelector(".badge").className = `badge rounded-pill px-3 ${progress >= 100 ? "bg-primary" : "bg-success"}`;
             card.querySelector(".badge").innerText = progress >= 100 ? "Completed" : "In Progress";
+        }
+
+        function deleteGoal(icon) {
+            if (confirm("Are you sure you want to delete this goal?")) {
+                const card = icon.closest(".goal-card");
+                card.remove();
+            }
+        }
+
+        function editGoal(icon) {
+            currentEditCard = icon.closest(".goal-card");
+            const name = currentEditCard.querySelector("h5").innerText;
+            const details = currentEditCard.querySelector("p").innerText;
+            const [target, saved] = details.match(/\d+/g).map(Number);
+
+            // Populate Modal
+            document.getElementById("goalName").value = name;
+            document.getElementById("goalTarget").value = target;
+            document.getElementById("goalSaved").value = saved;
+            
+            document.getElementById("modalTitle").innerText = "Edit Goal";
+            document.getElementById("saveGoalBtn").innerText = "Update Goal";
+
+            // Show Modal
+            const modal = new bootstrap.Modal(document.getElementById('goalModal'));
+            modal.show();
         }
     </script>
 </body>
