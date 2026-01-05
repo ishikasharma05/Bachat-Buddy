@@ -48,6 +48,18 @@
       font-size: 0.85rem;
       display: none;
     }
+    /* New Success Message Style */
+    #successBox {
+      display: none;
+      background: #dcfce7;
+      color: #166534;
+      border: 1px solid #bbf7d0;
+      padding: 12px;
+      border-radius: 8px;
+      text-align: center;
+      margin-bottom: 20px;
+      font-size: 0.9rem;
+    }
     .extra-links {
       text-align: center;
       margin-top: 15px;
@@ -74,6 +86,11 @@
     <i class="bi bi-shield-lock brand-icon"></i>
     <h2>Forgot Password</h2>
     <p class="text-center text-muted mb-4">Enter your email to receive reset instructions</p>
+
+    <div id="successBox">
+      <i class="bi bi-check-circle-fill me-2"></i>
+      Email has been sent! Redirecting to login...
+    </div>
 
     <form id="forgotForm" novalidate>
       <div class="mb-3">
@@ -106,8 +123,16 @@
       }
 
       if (valid) {
-        alert("Password reset link has been sent! (Demo only)");
+        // Show success message instead of alert
+        document.getElementById("successBox").style.display = "block";
+        
+        // Reset form
         document.getElementById("forgotForm").reset();
+
+        // Redirect to login.php after 2 seconds
+        setTimeout(() => {
+          window.location.href = "login.php";
+        }, 2000);
       }
     });
   </script>

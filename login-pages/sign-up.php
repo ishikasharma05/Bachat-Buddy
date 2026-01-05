@@ -8,7 +8,7 @@
   <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
   <style>
     body {
-      background: #f9fafb; /* soft light background */
+      background: #f9fafb;
       font-family: "Segoe UI", sans-serif;
       color: #111827;
     }
@@ -23,7 +23,7 @@
     .signup-box h2 {
       text-align: center;
       margin-bottom: 15px;
-      color: #2563eb; /* blue heading */
+      color: #2563eb;
       font-weight: bold;
     }
     .form-control {
@@ -47,6 +47,18 @@
       color: #dc2626;
       font-size: 0.85rem;
       display: none;
+    }
+    /* New Success Message Style */
+    #successMessage {
+      display: none;
+      background-color: #d1e7dd;
+      color: #0f5132;
+      border: 1px solid #badbcc;
+      padding: 10px;
+      border-radius: 8px;
+      text-align: center;
+      margin-bottom: 20px;
+      font-size: 0.9rem;
     }
     .extra-links {
       text-align: center;
@@ -74,6 +86,11 @@
     <i class="bi bi-wallet2 brand-icon"></i>
     <h2>Sign Up</h2>
     <p class="text-center text-muted mb-4">Create your Bachat Buddy account</p>
+
+    <div id="successMessage">
+      <i class="bi bi-check-circle-fill me-2"></i> 
+      Sign up successful! Now you can login.
+    </div>
 
     <form id="signupForm" novalidate>
       <div class="mb-3">
@@ -144,8 +161,17 @@
       }
 
       if (valid) {
-        alert("Sign Up Successful! (Front-end demo)");
+        // Show success message on screen
+        const successBox = document.getElementById("successMessage");
+        successBox.style.display = "block";
+        
+        // Reset the form fields
         document.getElementById("signupForm").reset();
+
+        // Redirect to login.php after 2 seconds
+        setTimeout(() => {
+          window.location.href = "login.php";
+        }, 2000);
       }
     });
   </script>

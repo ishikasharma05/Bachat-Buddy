@@ -134,8 +134,8 @@
       }
 
       if (valid) {
-        alert("Login Successful! (Front-end demo)");
-        document.getElementById("loginForm").reset();
+        // Use ../ to move out of 'login-pages' folder and find index.php
+        window.location.href = "../index.php";
       }
     });
   </script>
