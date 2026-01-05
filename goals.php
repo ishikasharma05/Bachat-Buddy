@@ -10,6 +10,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link rel="stylesheet" href="components/styles.css">
+    <script src="https://cdn.tailwindcss.com"></script>
     <style>
         :root {
             --bg-main: #f2f6f9;
@@ -247,7 +248,6 @@
 
         <div class="main-content">
             <?php include 'components/header.php'; ?>
-
             <div class="main-body">
                 <div class="page-header">
                     <h2>🎯 My Savings Goals</h2>
