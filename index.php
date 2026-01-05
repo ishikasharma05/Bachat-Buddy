@@ -11,6 +11,7 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="components/style.css">
+    <script src="components/java.js" defer></script>
 </head>
 <style>
     .main-body {
@@ -119,6 +120,7 @@
         margin-bottom: 10px;
         font-size: 0.9rem;
     }
+
     .dark .insight-pill {
         background: #2d2d1a;
         color: #ffe08a;
@@ -228,7 +230,9 @@
                                         <div class="col-md-6 mb-3 mb-md-0">
                                             <p class="text-muted mb-2">Expense Categories</p>
                                             <div class="d-flex justify-content-between align-items-center">
-                                                <div><p class="mb-1">Food</p></div>
+                                                <div>
+                                                    <p class="mb-1">Food</p>
+                                                </div>
                                                 <div class="text-end">
                                                     <span class="fw-semibold">₹2,000</span>
                                                     <span class="text-muted ms-1">(100.0%)</span>
@@ -272,24 +276,24 @@
             const categories = ['Shopping', 'Entertainment', 'Education', 'Vehicle', 'Household', 'Insurance'];
             const tipsContainer = document.getElementById('expenseTipsContainer');
             tipsContainer.innerHTML = ''; // Clear existing
-            
+
             // Logic: Find the highest spending category
             let maxVal = Math.max(...dataArray);
             let maxIndex = dataArray.indexOf(maxVal);
             let topCategory = categories[maxIndex];
 
             let tips = [];
-            
+
             // Tip 1: Top Spending Alert
             tips.push(`<div class="insight-pill"><strong>High Spend:</strong> Your biggest expense is <b>${topCategory}</b>. Consider setting a 10% lower limit here next month.</div>`);
 
             // Tip 2: Category Specific Advice
-            if(topCategory === 'Shopping') tips.push(`<div class="insight-pill"><strong>Tip:</strong> Wait 24 hours before any "Shopping" purchase to avoid impulse buying.</div>`);
-            if(topCategory === 'Entertainment') tips.push(`<div class="insight-pill"><strong>Tip:</strong> Look for group discounts or free weekend events to lower fun costs.</div>`);
-            
+            if (topCategory === 'Shopping') tips.push(`<div class="insight-pill"><strong>Tip:</strong> Wait 24 hours before any "Shopping" purchase to avoid impulse buying.</div>`);
+            if (topCategory === 'Entertainment') tips.push(`<div class="insight-pill"><strong>Tip:</strong> Look for group discounts or free weekend events to lower fun costs.</div>`);
+
             // Tip 3: General Savings Advice
             const total = dataArray.reduce((a, b) => a + b, 0);
-            if(total > 5000) {
+            if (total > 5000) {
                 tips.push(`<div class="insight-pill"><strong>Savings:</strong> You spent over ₹5,000. Putting ₹500 into a SIP now could grow to ₹10,000 in a few years!</div>`);
             }
 
@@ -342,10 +346,23 @@
                     }]
                 },
                 options: {
-                    plugins: { legend: { display: false } },
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    },
                     scales: {
-                        y: { beginAtZero: true, ticks: { color: textColor } },
-                        x: { ticks: { color: textColor } }
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                color: textColor
+                            }
+                        },
+                        x: {
+                            ticks: {
+                                color: textColor
+                            }
+                        }
                     }
                 }
             });
@@ -365,7 +382,13 @@
                         cutout: '70%'
                     }]
                 },
-                options: { plugins: { legend: { display: false } } }
+                options: {
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    }
+                }
             });
 
             // Tab Switching Logic
@@ -392,7 +415,7 @@
                 const newData = donutMonthlyData[selectedMonth];
                 eDonut.data.datasets[0].data = newData;
                 eDonut.update();
-                
+
                 // Update Total and Generate NEW TIPS for the selected month
                 const total = newData.reduce((a, b) => a + b, 0);
                 document.getElementById('donutTotalAmount').innerText = `₹${total.toLocaleString()}`;
@@ -422,13 +445,55 @@
         const savedTheme = localStorage.getItem('theme') || 'light';
         setTheme(savedTheme === 'dark');
 
-        if(themeToggleBtn) {
+        if (themeToggleBtn) {
             themeToggleBtn.addEventListener('click', () => {
                 const isNowDark = !document.documentElement.classList.contains('dark');
                 localStorage.setItem('theme', isNowDark ? 'dark' : 'light');
                 setTheme(isNowDark);
             });
         }
+
+        // --- Notification Applet Logic ---
+        const notificationBtn = document.getElementById('notificationBtn');
+        const notificationDropdown = document.getElementById('notificationDropdown');
+        const notificationBadge = document.getElementById('notificationBadge');
+
+        // 1. Toggle visibility when clicking the bell
+        notificationBtn.addEventListener('click', (e) => {
+            e.stopPropagation(); // Prevents immediate closing
+            notificationDropdown.classList.toggle('hidden');
+        });
+
+        // 2. Close the applet if the user clicks anywhere else on the page
+        window.addEventListener('click', (e) => {
+            if (!notificationBtn.contains(e.target) && !notificationDropdown.contains(e.target)) {
+                notificationDropdown.classList.add('hidden');
+            }
+        });
+
+        // 3. Clear Notifications Function
+        function clearNotifications() {
+            const list = document.getElementById('notificationList');
+            list.innerHTML = `
+        <div class="p-4 text-center text-sm text-gray-500">
+            <i class="bi bi-check2-all text-success d-block fs-4 mb-2"></i>
+            All caught up!
+        </div>
+    `;
+            // Hide the badge count
+            notificationBadge.style.display = 'none';
+        }
+
+        // 4. (Optional) Function to update the number dynamically from other parts of your app
+        function updateNotificationCount(count) {
+            if (count > 0) {
+                notificationBadge.innerText = count;
+                notificationBadge.style.display = 'inline-flex';
+            } else {
+                notificationBadge.style.display = 'none';
+            }
+        }
     </script>
 </body>
+
 </html>

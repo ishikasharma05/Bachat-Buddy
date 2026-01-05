@@ -482,6 +482,47 @@
             };
             reader.readAsDataURL(event.target.files[0]);
         }
+
+        // --- Notification Applet Logic ---
+        const notificationBtn = document.getElementById('notificationBtn');
+        const notificationDropdown = document.getElementById('notificationDropdown');
+        const notificationBadge = document.getElementById('notificationBadge');
+
+        // 1. Toggle visibility when clicking the bell
+        notificationBtn.addEventListener('click', (e) => {
+            e.stopPropagation(); // Prevents immediate closing
+            notificationDropdown.classList.toggle('hidden');
+        });
+
+        // 2. Close the applet if the user clicks anywhere else on the page
+        window.addEventListener('click', (e) => {
+            if (!notificationBtn.contains(e.target) && !notificationDropdown.contains(e.target)) {
+                notificationDropdown.classList.add('hidden');
+            }
+        });
+
+        // 3. Clear Notifications Function
+        function clearNotifications() {
+            const list = document.getElementById('notificationList');
+            list.innerHTML = `
+        <div class="p-4 text-center text-sm text-gray-500">
+            <i class="bi bi-check2-all text-success d-block fs-4 mb-2"></i>
+            All caught up!
+        </div>
+    `;
+            // Hide the badge count
+            notificationBadge.style.display = 'none';
+        }
+
+        // 4. (Optional) Function to update the number dynamically from other parts of your app
+        function updateNotificationCount(count) {
+            if (count > 0) {
+                notificationBadge.innerText = count;
+                notificationBadge.style.display = 'inline-flex';
+            } else {
+                notificationBadge.style.display = 'none';
+            }
+        }
     </script>
 </body>
 

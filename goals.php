@@ -344,14 +344,14 @@
             const name = document.getElementById("goalName").value;
             const target = document.getElementById("goalTarget").value;
             const saved = document.getElementById("goalSaved").value || 0;
-            
+
             if (!name || !target) {
                 alert("Please fill in all fields");
                 return;
             }
 
             const progress = Math.min((saved / target) * 100, 100);
-            
+
             const cardHTML = `
                 <div class="d-flex justify-content-between align-items-center">
                   <h5 class="fw-bold">${name}</h5>
@@ -414,13 +414,54 @@
             document.getElementById("goalName").value = name;
             document.getElementById("goalTarget").value = target;
             document.getElementById("goalSaved").value = saved;
-            
+
             document.getElementById("modalTitle").innerText = "Edit Goal";
             document.getElementById("saveGoalBtn").innerText = "Update Goal";
 
             // Show Modal
             const modal = new bootstrap.Modal(document.getElementById('goalModal'));
             modal.show();
+        }
+
+        // --- Notification Applet Logic ---
+        const notificationBtn = document.getElementById('notificationBtn');
+        const notificationDropdown = document.getElementById('notificationDropdown');
+        const notificationBadge = document.getElementById('notificationBadge');
+
+        // 1. Toggle visibility when clicking the bell
+        notificationBtn.addEventListener('click', (e) => {
+            e.stopPropagation(); // Prevents immediate closing
+            notificationDropdown.classList.toggle('hidden');
+        });
+
+        // 2. Close the applet if the user clicks anywhere else on the page
+        window.addEventListener('click', (e) => {
+            if (!notificationBtn.contains(e.target) && !notificationDropdown.contains(e.target)) {
+                notificationDropdown.classList.add('hidden');
+            }
+        });
+
+        // 3. Clear Notifications Function
+        function clearNotifications() {
+            const list = document.getElementById('notificationList');
+            list.innerHTML = `
+        <div class="p-4 text-center text-sm text-gray-500">
+            <i class="bi bi-check2-all text-success d-block fs-4 mb-2"></i>
+            All caught up!
+        </div>
+    `;
+            // Hide the badge count
+            notificationBadge.style.display = 'none';
+        }
+
+        // 4. (Optional) Function to update the number dynamically from other parts of your app
+        function updateNotificationCount(count) {
+            if (count > 0) {
+                notificationBadge.innerText = count;
+                notificationBadge.style.display = 'inline-flex';
+            } else {
+                notificationBadge.style.display = 'none';
+            }
         }
     </script>
 </body>

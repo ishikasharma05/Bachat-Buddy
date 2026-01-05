@@ -275,23 +275,23 @@
 
 <body>
     <div class="layout">
-       <div class="sidebar">
-    <div>
-        <div class="brand d-flex align-items-center mb-4">
-            <i class="bi bi-piggy-bank me-2 text-success"></i> Bachat-Buddy
+        <div class="sidebar">
+            <div>
+                <div class="brand d-flex align-items-center mb-4">
+                    <i class="bi bi-piggy-bank me-2 text-success"></i> Bachat-Buddy
+                </div>
+                <ul class="nav flex-column gap-2">
+                    <li><a class="nav-link" href="index.php"><i class="bi bi-speedometer2"></i> Dashboard</a></li>
+                    <li><a class="nav-link" href="profile.php"><i class="bi bi-person-circle"></i> Profile</a></li>
+                    <li><a class="nav-link" href="transaction.php" style="background: #3b82f6; color: #fff;"><i class="bi bi-arrow-left-right"></i> Transactions</a></li>
+                    <li><a class="nav-link" href="add-entry.php"><i class="bi bi-journal-plus"></i> Add Entry</a></li>
+                    <li><a class="nav-link" href="goals.php"><i class="bi bi-bullseye"></i> Goals</a></li>
+                </ul>
+            </div>
         </div>
-        <ul class="nav flex-column gap-2">
-            <li><a class="nav-link" href="index.php"><i class="bi bi-speedometer2"></i> Dashboard</a></li>
-            <li><a class="nav-link" href="profile.php"><i class="bi bi-person-circle"></i> Profile</a></li>
-            <li><a class="nav-link" href="transaction.php" style="background: #3b82f6; color: #fff;"><i class="bi bi-arrow-left-right"></i> Transactions</a></li>
-            <li><a class="nav-link" href="add-entry.php"><i class="bi bi-journal-plus"></i> Add Entry</a></li>
-            <li><a class="nav-link" href="goals.php"><i class="bi bi-bullseye"></i> Goals</a></li>
-        </ul>
-    </div>
-</div>
 
         <div class="main-content">
-           <?php include 'components/header.php'; ?>
+            <?php include 'components/header.php'; ?>
             <div class="main-body">
                 <div class="container py-2">
                     <div class="mb-4">
@@ -518,6 +518,47 @@
         });
 
         renderTransactions();
+
+        // --- Notification Applet Logic ---
+        const notificationBtn = document.getElementById('notificationBtn');
+        const notificationDropdown = document.getElementById('notificationDropdown');
+        const notificationBadge = document.getElementById('notificationBadge');
+
+        // 1. Toggle visibility when clicking the bell
+        notificationBtn.addEventListener('click', (e) => {
+            e.stopPropagation(); // Prevents immediate closing
+            notificationDropdown.classList.toggle('hidden');
+        });
+
+        // 2. Close the applet if the user clicks anywhere else on the page
+        window.addEventListener('click', (e) => {
+            if (!notificationBtn.contains(e.target) && !notificationDropdown.contains(e.target)) {
+                notificationDropdown.classList.add('hidden');
+            }
+        });
+
+        // 3. Clear Notifications Function
+        function clearNotifications() {
+            const list = document.getElementById('notificationList');
+            list.innerHTML = `
+        <div class="p-4 text-center text-sm text-gray-500">
+            <i class="bi bi-check2-all text-success d-block fs-4 mb-2"></i>
+            All caught up!
+        </div>
+    `;
+            // Hide the badge count
+            notificationBadge.style.display = 'none';
+        }
+
+        // 4. (Optional) Function to update the number dynamically from other parts of your app
+        function updateNotificationCount(count) {
+            if (count > 0) {
+                notificationBadge.innerText = count;
+                notificationBadge.style.display = 'inline-flex';
+            } else {
+                notificationBadge.style.display = 'none';
+            }
+        }
     </script>
 </body>
 
