@@ -424,6 +424,18 @@
                 notificationBadge.style.display = 'none';
             }
         }
+
+         // --- Logout Confirmation Logic ---
+        document.getElementById("logout-btn").addEventListener("click", function() {
+            // Asks for user permission
+            const confirmLogout = confirm("Are you sure you want to logout?");
+
+            // If the user clicks 'OK', it redirects
+            if (confirmLogout) {
+                window.location.href = "login-pages/login.php";
+            }
+            // If they click 'Cancel', nothing happens and they stay on the page
+        });
     </script>
 </body>
 
