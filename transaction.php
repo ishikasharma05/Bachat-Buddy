@@ -271,6 +271,154 @@
             color: var(--text-muted) !important;
             cursor: not-allowed;
         }
+
+        /* ================== MOBILE SIDEBAR & HEADER ================== */
+        .mobile-sidebar {
+            position: fixed;
+            top: 0;
+            left: -300px;
+            width: 250px;
+            height: 100vh;
+            background-color: var(--sidebar-bg);
+            z-index: 1050;
+            transition: left 0.3s ease;
+            overflow-y: auto;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.3);
+        }
+
+        .mobile-sidebar.active {
+            left: 0;
+        }
+
+        .sidebar-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.4);
+            z-index: 1040;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease;
+        }
+
+        .sidebar-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .header .btn.d-lg-none {
+            background: transparent;
+            border: none;
+            padding: 0;
+        }
+
+        .header .btn.d-lg-none i {
+            font-size: 1.8rem;
+            color: var(--text-main);
+            transition: color 0.3s ease;
+        }
+
+        /* Close button in mobile sidebar */
+        .mobile-sidebar .btn-close i {
+            color: var(--text-main);
+            font-size: 1.3rem;
+        }
+
+        /* ================== RESPONSIVE SIDEBAR & CONTENT ================== */
+        @media (max-width: 991px) {
+            .sidebar.d-lg-block {
+                display: none;
+            }
+
+            .main-content {
+                flex: 1;
+                width: 100%;
+                overflow: hidden;
+            }
+
+            .main-body {
+                padding: 1rem;
+            }
+
+            .transaction-card {
+                margin: 10px 0;
+            }
+        }
+
+        /* ================== FORM & TABLES ON SMALL SCREENS ================== */
+        @media (max-width: 767px) {
+
+            .input-group input,
+            .input-group select {
+                font-size: 0.9rem;
+            }
+
+            .transaction-card .input-group {
+                flex-direction: column;
+            }
+
+            .transaction-card .input-group .form-control,
+            .transaction-card .input-group .form-select,
+            .transaction-card .input-group .input-group-text {
+                width: 100%;
+                margin-bottom: 0.5rem;
+            }
+
+            .transaction-card .input-group .input-group-text {
+                justify-content: flex-start;
+            }
+        }
+
+        /* ================== TABLE RESPONSIVENESS ================== */
+        .table-responsive {
+            overflow-x: auto;
+        }
+
+        @media (max-width: 575px) {
+            .table thead {
+                display: none;
+            }
+
+            .table tbody tr {
+                display: block;
+                margin-bottom: 1rem;
+                border: 1px solid var(--border-color);
+                border-radius: 8px;
+                padding: 0.5rem;
+                background-color: var(--bg-card);
+            }
+
+            .table tbody td {
+                display: flex;
+                justify-content: space-between;
+                padding: 0.5rem 0;
+                white-space: normal;
+            }
+
+            .table tbody td::before {
+                content: attr(data-label);
+                font-weight: 500;
+                color: var(--text-muted);
+                flex-basis: 50%;
+            }
+
+            .table tbody td:last-child {
+                justify-content: flex-end;
+            }
+        }
+
+        /* ================== PAGINATION RESPONSIVENESS ================== */
+        @media (max-width: 575px) {
+            .pagination {
+                flex-wrap: wrap;
+            }
+
+            .page-item {
+                margin-bottom: 5px;
+            }
+        }
     </style>
 </head>
 

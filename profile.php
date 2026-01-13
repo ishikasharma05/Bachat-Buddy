@@ -260,6 +260,163 @@
         .dark .progress-custom {
             background-color: #334155;
         }
+
+        /* ===== MOBILE SIDEBAR HARD FIX ===== */
+
+        /* hidden by default */
+        .mobile-sidebar {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 260px;
+            height: 100vh;
+            background: #ffffff;
+            z-index: 1050;
+            overflow-y: auto;
+        }
+
+        /* dark mode */
+        .dark .mobile-sidebar {
+            background: #1e293b;
+        }
+
+        /* show only when hamburger clicked */
+        .mobile-sidebar.active {
+            display: block;
+        }
+
+        /* overlay */
+        .sidebar-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.45);
+            z-index: 1040;
+        }
+
+        .sidebar-overlay.active {
+            display: block;
+        }
+
+        /* lock scroll */
+        body.sidebar-open {
+            overflow: hidden;
+        }
+
+        /* ===============================
+   PROFILE – TABLET RESPONSIVE
+   ≤ 992px
+================================ */
+
+        @media (max-width: 992px) {
+
+            .layout {
+                flex-direction: column;
+                height: auto;
+            }
+
+            .main-content {
+                height: auto;
+            }
+
+            .main-body {
+                padding: 1.5rem;
+            }
+
+            /* Profile card scaling */
+            .profile-card {
+                max-width: 100%;
+                margin: -60px 1rem 40px;
+                padding: 30px;
+            }
+
+            /* Cover height reduced */
+            .cover {
+                height: 200px;
+            }
+
+            /* Profile image resize */
+            .profile-pic {
+                width: 130px;
+                height: 130px;
+                margin-top: -90px;
+            }
+
+            /* Stat boxes spacing */
+            .stat-box {
+                width: 48%;
+            }
+        }
+
+        /* ===============================
+   PROFILE – MOBILE RESPONSIVE
+   ≤ 576px
+================================ */
+
+        @media (max-width: 576px) {
+
+            .main-body {
+                padding: 1rem;
+            }
+
+            /* Cover smaller on mobile */
+            .cover {
+                height: 160px;
+                border-radius: 18px;
+            }
+
+            /* Profile card full width */
+            .profile-card {
+                margin: -50px 0.75rem 30px;
+                padding: 20px;
+                border-radius: 20px;
+            }
+
+            /* Profile image centered & smaller */
+            .profile-pic {
+                width: 110px;
+                height: 110px;
+                margin-top: -75px;
+            }
+
+            /* Info boxes stack clean */
+            .info-box {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 6px;
+                padding: 14px;
+            }
+
+            /* Stats go single column */
+            .stat-box {
+                width: 100%;
+                margin-bottom: 12px;
+            }
+
+            /* Header spacing fix */
+            .header {
+                padding: 0.75rem 1rem;
+            }
+
+            /* Notification alignment */
+            #notificationDropdown {
+                width: calc(100vw - 2rem);
+                right: -0.5rem;
+            }
+        }
+
+        /* ===== HAMBURGER VISIBILITY FIX ===== */
+
+        /* default (light mode) */
+        .header .bi-list {
+            color: #0f172a;
+        }
+
+        /* dark mode */
+        .dark .header .bi-list {
+            color: #f8fafc !important;
+        }
     </style>
 </head>
 
@@ -290,7 +447,7 @@
                 </div>
                 <ul class="nav flex-column gap-2">
                     <li><a class="nav-link" href="index.php"><i class="bi bi-speedometer2"></i> Dashboard</a></li>
-                    <li><a class="nav-link" href="profile.php"  style="background: #3b82f6; color: #fff;"><i class="bi bi-person-circle"></i> Profile</a></li>
+                    <li><a class="nav-link" href="profile.php" style="background: #3b82f6; color: #fff;"><i class="bi bi-person-circle"></i> Profile</a></li>
                     <li><a class="nav-link" href="transaction.php"><i class="bi bi-arrow-left-right"></i> Transactions</a></li>
                     <li><a class="nav-link" href="add-entry.php"><i class="bi bi-journal-plus"></i> Add Entry</a></li>
                     <li><a class="nav-link" href="goals.php"><i class="bi bi-bullseye"></i> Goals</a></li>

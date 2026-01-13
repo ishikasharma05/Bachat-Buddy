@@ -203,6 +203,131 @@
             justify-content: center;
             cursor: pointer;
         }
+
+        /* ---------- RESPONSIVE ADJUSTMENTS ---------- */
+
+        /* MOBILE SIDEBAR */
+        .mobile-sidebar {
+            position: fixed;
+            top: 0;
+            left: -300px;
+            width: 250px;
+            height: 100vh;
+            background-color: var(--sidebar-bg, #fff);
+            z-index: 1050;
+            transition: left 0.3s ease;
+            overflow-y: auto;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.3);
+        }
+
+        .mobile-sidebar.active {
+            left: 0;
+        }
+
+        /* OVERLAY */
+        .sidebar-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.4);
+            z-index: 1040;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease;
+        }
+
+        .sidebar-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        /* HAMBURGER ICON IN HEADER */
+        .header .btn.d-lg-none {
+            background: transparent;
+            border: none;
+            padding: 0;
+        }
+
+        .header .btn.d-lg-none i {
+            font-size: 1.8rem;
+            color: var(--text-main, #333);
+            transition: color 0.3s ease;
+        }
+
+        /* DARK MODE FIX FOR HAMBURGER */
+        .dark .header .btn.d-lg-none i {
+            color: var(--text-main, #f8fafc);
+        }
+
+        /* CLOSE BUTTON IN MOBILE SIDEBAR */
+        .mobile-sidebar .btn-close i {
+            color: var(--text-main, #333);
+        }
+
+        .dark .mobile-sidebar .btn-close i {
+            color: var(--text-main, #f8fafc);
+        }
+
+        /* RESPONSIVE SIDEBAR + MAIN CONTENT */
+        @media (max-width: 991px) {
+            .sidebar.d-lg-block {
+                display: none;
+            }
+
+            .main-content {
+                flex: 1;
+                width: 100%;
+                overflow: hidden;
+            }
+
+            .main-body {
+                padding: 1rem;
+            }
+
+            .transaction-card {
+                margin: 10px;
+            }
+        }
+
+        /* FORM ELEMENTS ON SMALLER SCREENS */
+        @media (max-width: 767px) {
+            .toggle-btns .btn {
+                flex: 1 1 45%;
+                margin-bottom: 5px;
+            }
+
+            .form-label.form-section-title {
+                font-size: 0.95rem;
+            }
+
+            .form-control.form-control-lg {
+                font-size: 0.95rem;
+                padding: 10px;
+            }
+        }
+
+        /* PAGE HEADER ADJUSTMENTS FOR MOBILE */
+        .page-header {
+            padding: 20px 15px;
+        }
+
+        .page-header h2 {
+            font-size: 1.4rem;
+        }
+
+        .page-header p {
+            font-size: 0.9rem;
+        }
+
+        /* BUTTONS FULL WIDTH ON MOBILE */
+        @media (max-width: 575px) {
+            .d-grid .btn {
+                width: 100%;
+                font-size: 0.95rem;
+            }
+        }
     </style>
 </head>
 
@@ -217,7 +342,7 @@
                     <li><a class="nav-link" href="index.php"><i class="bi bi-speedometer2"></i> Dashboard</a></li>
                     <li><a class="nav-link" href="profile.php"><i class="bi bi-person-circle"></i> Profile</a></li>
                     <li><a class="nav-link" href="transaction.php"><i class="bi bi-arrow-left-right"></i> Transactions</a></li>
-                    <li><a class="nav-link" href="add-entry.php"  style="background: #3b82f6; color: #fff;"><i class="bi bi-journal-plus"></i> Add Entry</a></li>
+                    <li><a class="nav-link" href="add-entry.php" style="background: #3b82f6; color: #fff;"><i class="bi bi-journal-plus"></i> Add Entry</a></li>
                     <li><a class="nav-link" href="goals.php"><i class="bi bi-bullseye"></i> Goals</a></li>
                 </ul>
             </div>

@@ -225,6 +225,141 @@
             background-color: #059669 !important;
             color: #ecfdf5;
         }
+
+        /* ---------------- RESPONSIVE LAYOUT ---------------- */
+        @media (max-width: 992px) {
+
+            /* --- Sidebar for mobile --- */
+            .mobile-sidebar {
+                position: fixed;
+                top: 0;
+                left: -300px;
+                /* Hidden initially */
+                width: 250px;
+                height: 100%;
+                background-color: var(--sidebar-bg);
+                z-index: 1050;
+                transition: all 0.3s ease;
+                box-shadow: 5px 0 15px rgba(0, 0, 0, 0.2);
+                overflow-y: auto;
+                padding: 2rem 1rem;
+            }
+
+            .mobile-sidebar.active {
+                left: 0;
+            }
+
+            /* Overlay when sidebar is open */
+            .sidebar-overlay {
+                display: none;
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background-color: rgba(0, 0, 0, 0.4);
+                z-index: 1040;
+                transition: all 0.3s ease;
+            }
+
+            .sidebar-overlay.active {
+                display: block;
+            }
+
+            /* Hide desktop sidebar */
+            .sidebar.d-lg-block {
+                display: none;
+            }
+
+            /* Header adjustments */
+            .header {
+                padding: 0.75rem 1rem;
+                justify-content: space-between;
+            }
+
+            .header h5 {
+                font-size: 1rem;
+            }
+
+            .search-box {
+                width: 100%;
+                max-width: 200px;
+            }
+
+            .hamburger {
+                display: block;
+                font-size: 1.75rem;
+                cursor: pointer;
+                color: var(--text-main);
+            }
+
+            .btn-close {
+                font-size: 1.5rem;
+                color: var(--text-main);
+                opacity: 1;
+            }
+
+            [data-theme="dark"] .btn-close {
+                filter: invert(1) grayscale(100%) brightness(200%);
+            }
+        }
+
+        @media (max-width: 768px) {
+            .main-body {
+                padding: 1rem;
+            }
+
+            .page-header {
+                padding: 30px 15px;
+                border-radius: 0 0 20px 20px;
+                font-size: 0.95rem;
+            }
+
+            .goal-card {
+                padding: 15px;
+                margin-bottom: 15px;
+            }
+
+            .search-box {
+                max-width: 150px;
+            }
+        }
+
+        @media (max-width: 576px) {
+            .header {
+                flex-wrap: wrap;
+                gap: 8px;
+            }
+
+            .profile-info {
+                flex: 1 1 100%;
+                justify-content: flex-end;
+            }
+
+            .goal-card {
+                padding: 12px;
+                margin-bottom: 12px;
+            }
+
+            .search-box {
+                width: 100%;
+            }
+        }
+
+        /* Hamburger menu for mobile */
+        .header .btn i.bi-list {
+            color: var(--text-main);
+            /* ensures it uses text color variable */
+            transition: color 0.3s ease;
+        }
+
+        /* Dark mode */
+        [data-theme="dark"] .header .btn i.bi-list {
+            color: var(--text-main);
+            /* ensures it's visible in dark mode */
+            filter: invert(0);
+            /* no need to invert icons like close button if using var color */
+        }
     </style>
 </head>
 
@@ -332,7 +467,7 @@
         </div>
     </div>
 
-  <script>
+    <script>
         function toggleMenu() {
             document.getElementById("mobileSidebar").classList.toggle("active");
             document.getElementById("sidebarOverlay").classList.toggle("active");
