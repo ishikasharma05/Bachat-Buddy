@@ -130,7 +130,39 @@
 
 <body>
     <div class="layout">
-        <?php include 'components/sidebar.php'; ?>
+        <div class="sidebar d-none d-lg-block">
+            <div>
+                <div class="brand d-flex align-items-center mb-4">
+                    <i class="bi bi-piggy-bank me-2 text-success"></i> Bachat-Buddy
+                </div>
+                <ul class="nav flex-column gap-2">
+                    <li><a class="nav-link" href="index.php" style="background: #3b82f6; color: #fff;"><i class="bi bi-speedometer2"></i> Dashboard</a></li>
+                    <li><a class="nav-link" href="profile.php"><i class="bi bi-person-circle"></i> Profile</a></li>
+                    <li><a class="nav-link" href="transaction.php"><i class="bi bi-arrow-left-right"></i> Transactions</a></li>
+                    <li><a class="nav-link" href="add-entry.php"><i class="bi bi-journal-plus"></i> Add Entry</a></li>
+                    <li><a class="nav-link" href="goals.php"><i class="bi bi-bullseye"></i> Goals</a></li>
+                </ul>
+            </div>
+        </div>
+
+        <div id="mobileSidebar" class="mobile-sidebar d-lg-none">
+            <div class="p-4">
+                <div class="brand d-flex align-items-center justify-content-between mb-4">
+                    <span><i class="bi bi-piggy-bank me-2 text-success"></i> Bachat-Buddy</span>
+                    <button onclick="toggleMenu()" class="btn-close border-0 bg-transparent text-muted fs-4">
+                        <i class="bi bi-x-lg"></i>
+                    </button>
+                </div>
+                <ul class="nav flex-column gap-2">
+                    <li><a class="nav-link" href="index.php" style="background: #3b82f6; color: #fff;"><i class="bi bi-speedometer2"></i> Dashboard</a></li>
+                    <li><a class="nav-link" href="profile.php"><i class="bi bi-person-circle"></i> Profile</a></li>
+                    <li><a class="nav-link" href="transaction.php"><i class="bi bi-arrow-left-right"></i> Transactions</a></li>
+                    <li><a class="nav-link" href="add-entry.php"><i class="bi bi-journal-plus"></i> Add Entry</a></li>
+                    <li><a class="nav-link" href="goals.php"><i class="bi bi-bullseye"></i> Goals</a></li>
+                </ul>
+            </div>
+        </div>
+        <div id="sidebarOverlay" class="sidebar-overlay d-lg-none" onclick="toggleMenu()"></div>
         <div class="main-content">
             <?php include 'components/header.php'; ?>
             <div class="main-body">
@@ -269,6 +301,43 @@
             </div>
         </div>
     </div>
+
+
+    <script>
+        const sidebar = document.querySelector('.sidebar');
+        const hamburgerBtn = document.getElementById('hamburgerBtn');
+        const overlay = document.getElementById('sidebarOverlay');
+
+        if (hamburgerBtn) {
+            hamburgerBtn.addEventListener('click', () => {
+                sidebar.classList.toggle('active');
+                overlay.classList.toggle('show');
+            });
+        }
+
+        if (overlay) {
+            overlay.addEventListener('click', () => {
+                sidebar.classList.remove('active');
+                overlay.classList.remove('show');
+            });
+        }
+
+        /* Auto close sidebar on resize to desktop */
+        window.addEventListener('resize', () => {
+            if (window.innerWidth > 991) {
+                sidebar.classList.remove('active');
+                overlay.classList.remove('show');
+            }
+        });
+    </script>
+    <script>
+        function toggleMenu() {
+            document.getElementById("mobileSidebar").classList.toggle("active");
+            document.getElementById("sidebarOverlay").classList.toggle("active");
+            document.body.classList.toggle("sidebar-open");
+        }
+    </script>
+
 
     <script>
         // --- NEW: Dynamic Expense Tips Logic ---

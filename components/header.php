@@ -1,7 +1,12 @@
 <div class="header">
-    <h5 class="mb-0 fw-bold">Dashboard</h5>
+    <div class="d-flex align-items-center gap-2">
+        <button class="btn d-lg-none border-0 p-0 me-2" onclick="toggleMenu()">
+            <i class="bi bi-list fs-2"></i>
+        </button>
+        <h5 class="mb-0 fw-bold">Dashboard</h5>
+    </div>
+    
     <div class="d-flex align-items-center gap-3">
-        
         <div class="relative inline-block text-left">
             <div id="notificationBtn" class="notification p-2 rounded-full cursor-pointer hover:bg-gray-200 transition-colors relative">
                 <i class="bi bi-bell"></i>
@@ -9,7 +14,6 @@
                     3
                 </span>
             </div>
-
             <div id="notificationDropdown" class="hidden absolute right-0 mt-3 w-80 bg-white border border-gray-200 rounded-xl shadow-xl z-[1000] overflow-hidden">
                 <div class="p-3 border-b border-gray-100 flex justify-between items-center bg-white">
                     <span class="font-semibold text-gray-700">Notifications</span>
@@ -19,14 +23,6 @@
                     <div class="p-3 border-b border-gray-50 hover:bg-gray-50 cursor-pointer">
                         <p class="text-sm text-gray-800 mb-0"><strong>Budget Alert:</strong> You've spent 80% of your Food budget.</p>
                         <span class="text-[11px] text-gray-400">5 mins ago</span>
-                    </div>
-                    <div class="p-3 border-b border-gray-50 hover:bg-gray-50 cursor-pointer">
-                        <p class="text-sm text-gray-800 mb-0"><strong>New Insight:</strong> You saved ₹500 more than last week!</p>
-                        <span class="text-[11px] text-gray-400">2 hours ago</span>
-                    </div>
-                    <div class="p-3 hover:bg-gray-50 cursor-pointer">
-                        <p class="text-sm text-gray-800 mb-0"><strong>System:</strong> Welcome back to Bachat-Buddy!</p>
-                        <span class="text-[11px] text-gray-400">Yesterday</span>
                     </div>
                 </div>
             </div>
