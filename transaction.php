@@ -276,7 +276,7 @@
 
 <body>
     <div class="layout">
-        <div class="sidebar">
+        <div class="sidebar d-none d-lg-block">
             <div>
                 <div class="brand d-flex align-items-center mb-4">
                     <i class="bi bi-piggy-bank me-2 text-success"></i> Bachat-Buddy
@@ -290,6 +290,25 @@
                 </ul>
             </div>
         </div>
+
+        <div id="mobileSidebar" class="mobile-sidebar d-lg-none">
+            <div class="p-4">
+                <div class="brand d-flex align-items-center justify-content-between mb-4">
+                    <span><i class="bi bi-piggy-bank me-2 text-success"></i> Bachat-Buddy</span>
+                    <button onclick="toggleMenu()" class="btn-close border-0 bg-transparent text-muted fs-4">
+                        <i class="bi bi-x-lg"></i>
+                    </button>
+                </div>
+                <ul class="nav flex-column gap-2">
+                    <li><a class="nav-link" href="index.php"><i class="bi bi-speedometer2"></i> Dashboard</a></li>
+                    <li><a class="nav-link" href="profile.php"><i class="bi bi-person-circle"></i> Profile</a></li>
+                    <li><a class="nav-link" href="transaction.php" style="background: #3b82f6; color: #fff;"><i class="bi bi-arrow-left-right"></i> Transactions</a></li>
+                    <li><a class="nav-link" href="add-entry.php"><i class="bi bi-journal-plus"></i> Add Entry</a></li>
+                    <li><a class="nav-link" href="goals.php"><i class="bi bi-bullseye"></i> Goals</a></li>
+                </ul>
+            </div>
+        </div>
+        <div id="sidebarOverlay" class="sidebar-overlay d-lg-none" onclick="toggleMenu()"></div>
 
         <div class="main-content">
             <?php include 'components/header.php'; ?>
@@ -356,6 +375,14 @@
             </div>
         </div>
     </div>
+
+    <script>
+        function toggleMenu() {
+            document.getElementById("mobileSidebar").classList.toggle("active");
+            document.getElementById("sidebarOverlay").classList.toggle("active");
+            document.body.classList.toggle("sidebar-open");
+        }
+    </script>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
     <script>
@@ -561,7 +588,7 @@
             }
         }
 
-         // --- Logout Confirmation Logic ---
+        // --- Logout Confirmation Logic ---
         document.getElementById("logout-btn").addEventListener("click", function() {
             // Asks for user permission
             const confirmLogout = confirm("Are you sure you want to logout?");
