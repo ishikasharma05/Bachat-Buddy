@@ -1,5 +1,44 @@
+<?php
+session_start();
+require_once "../config/db.php";
+
+if ($_SERVER["REQUEST_METHOD"] === "POST") {
+
+  $email    = trim($_POST['email']);
+  $password = trim($_POST['password']);
+
+  // Check if email exists
+  $query = "SELECT id, full_name, password FROM users WHERE email = ?";
+  $stmt = mysqli_prepare($conn, $query);
+  mysqli_stmt_bind_param($stmt, "s", $email);
+  mysqli_stmt_execute($stmt);
+  $result = mysqli_stmt_get_result($stmt);
+
+  if ($user = mysqli_fetch_assoc($result)) {
+
+    // Verify password
+    if (password_verify($password, $user['password'])) {
+
+      // Store session
+      $_SESSION['user_id']   = $user['id'];
+      $_SESSION['user_name'] = $user['full_name'];
+
+      echo "SUCCESS";
+      exit;
+    } else {
+      echo "INVALID_PASSWORD";
+      exit;
+    }
+  } else {
+    echo "NO_USER";
+    exit;
+  }
+}
+?>
+
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -8,59 +47,71 @@
   <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
   <style>
     body {
-      background: #f9fafb; /* plain light background */
+      background: #f9fafb;
+      /* plain light background */
       font-family: "Segoe UI", sans-serif;
       color: #111827;
     }
+
     .login-box {
       max-width: 420px;
       margin: 70px auto;
       background: #ffffff;
       padding: 35px;
       border-radius: 16px;
-      box-shadow: 0 6px 15px rgba(0,0,0,0.08);
+      box-shadow: 0 6px 15px rgba(0, 0, 0, 0.08);
     }
+
     .login-box h2 {
       text-align: center;
       margin-bottom: 20px;
       color: #2563eb;
       font-weight: bold;
     }
+
     .form-control {
       background: #f3f4f6;
       border: 1px solid #e5e7eb;
     }
+
     .form-control:focus {
       background: #fff;
       border-color: #2563eb;
-      box-shadow: 0 0 0 0.2rem rgba(37,99,235,0.2);
+      box-shadow: 0 0 0 0.2rem rgba(37, 99, 235, 0.2);
     }
+
     .btn-primary {
       background: #2563eb;
       border: none;
       font-weight: 600;
     }
+
     .btn-primary:hover {
       background: #1d4ed8;
     }
+
     .error {
       color: #dc2626;
       font-size: 0.9rem;
       display: none;
     }
+
     .extra-links {
       display: flex;
       justify-content: space-between;
       margin-top: 15px;
     }
+
     .extra-links a {
       font-size: 0.9rem;
       color: #2563eb;
       text-decoration: none;
     }
+
     .extra-links a:hover {
       text-decoration: underline;
     }
+
     .brand-icon {
       font-size: 2.5rem;
       color: #2563eb;
@@ -70,6 +121,7 @@
     }
   </style>
 </head>
+
 <body>
   <div class="login-box">
     <i class="bi bi-wallet2 brand-icon"></i>
@@ -78,13 +130,13 @@
     <form id="loginForm" novalidate>
       <div class="mb-3">
         <label class="form-label">Email Address</label>
-        <input type="email" class="form-control" id="email" required>
+        <input type="email" class="form-control" id="email" name="email" required>
         <div class="error" id="emailError">Please enter a valid email</div>
       </div>
       <div class="mb-3">
         <label class="form-label">Password</label>
         <div class="input-group">
-          <input type="password" class="form-control" id="password" required minlength="6">
+          <input type="password" class="form-control" id="password" name="password" required minlength="6">
           <span class="input-group-text" id="togglePassword" style="cursor: pointer;">
             <i class="bi bi-eye"></i>
           </span>
@@ -101,43 +153,32 @@
   </div>
 
   <script>
-    // Toggle password visibility
-    document.getElementById("togglePassword").addEventListener("click", function () {
-      const passwordField = document.getElementById("password");
-      const type = passwordField.getAttribute("type") === "password" ? "text" : "password";
-      passwordField.setAttribute("type", type);
-
-      this.querySelector("i").classList.toggle("bi-eye");
-      this.querySelector("i").classList.toggle("bi-eye-slash");
-    });
-
-    // Form validation
     document.getElementById("loginForm").addEventListener("submit", function(e) {
       e.preventDefault();
-      let valid = true;
 
-      const email = document.getElementById("email").value.trim();
-      const emailPattern = /^[^ ]+@[^ ]+\.[a-z]{2,3}$/;
-      if (!email.match(emailPattern)) {
-        document.getElementById("emailError").style.display = "block";
-        valid = false;
-      } else {
-        document.getElementById("emailError").style.display = "none";
-      }
+      let formData = new FormData(this);
 
-      const password = document.getElementById("password").value;
-      if (password.length < 6) {
-        document.getElementById("passwordError").style.display = "block";
-        valid = false;
-      } else {
-        document.getElementById("passwordError").style.display = "none";
-      }
+      fetch("login.php", {
+          method: "POST",
+          body: formData
+        })
+        .then(res => res.text())
+        .then(data => {
 
-      if (valid) {
-        // Use ../ to move out of 'login-pages' folder and find index.php
-        window.location.href = "../index.php";
-      }
+          if (data === "SUCCESS") {
+            window.location.href = "../index.php";
+          } else if (data === "INVALID_PASSWORD") {
+            alert("Incorrect password");
+          } else if (data === "NO_USER") {
+            alert("No account found with this email");
+          } else {
+            alert("Login failed");
+          }
+
+        });
     });
   </script>
+
 </body>
+
 </html>
