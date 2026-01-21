@@ -1,3 +1,43 @@
+<?php
+session_start();
+require_once "../config/db.php";
+
+/* 🔐 LOGIN CHECK */
+if (!isset($_SESSION['user_id'])) {
+    header("Location: login.php");
+    exit;
+}
+
+$userId = $_SESSION['user_id'];
+
+/* 💰 TOTAL INCOME */
+$incomeStmt = $conn->prepare(
+    "SELECT COALESCE(SUM(amount),0) 
+     FROM transactions 
+     WHERE user_id = ? AND category = 'income'"
+);
+$incomeStmt->bind_param("i", $userId);
+$incomeStmt->execute();
+$incomeStmt->bind_result($totalIncome);
+$incomeStmt->fetch();
+$incomeStmt->close();
+
+/* 💸 TOTAL EXPENSE */
+$expenseStmt = $conn->prepare(
+    "SELECT COALESCE(SUM(amount),0) 
+     FROM transactions 
+     WHERE user_id = ? AND category = 'expense'"
+);
+$expenseStmt->bind_param("i", $userId);
+$expenseStmt->execute();
+$expenseStmt->bind_result($totalExpense);
+$expenseStmt->fetch();
+$expenseStmt->close();
+
+/* 💾 SAVINGS / BALANCE */
+$totalSavings = $totalIncome - $totalExpense;
+?>
+
 <!DOCTYPE html>
 <html lang="en">
 
@@ -170,25 +210,37 @@
                     <div class="summary-card">
                         <div class="summary-card-accent" style="background:#c6f8d5;"></div>
                         <p class="mb-1 text-muted">Income</p>
-                        <h4 class="mb-0" style="color:#16a34a;">₹0</h4>
+                        <h4 style="color:#16a34a;">
+                            ₹<?= number_format($totalIncome, 2) ?>
+                        </h4>
+
                     </div>
 
                     <div class="summary-card">
                         <div class="summary-card-accent" style="background:#f8d7da;"></div>
                         <p class="mb-1 text-muted">Expenses</p>
-                        <h4 class="mb-0" style="color:#dc2626;">₹0</h4>
+                        <h4 style="color:#dc2626;">
+                            ₹<?= number_format($totalExpense, 2) ?>
+                        </h4>
+
                     </div>
 
                     <div class="summary-card">
                         <div class="summary-card-accent" style="background:#a8c6ff;"></div>
                         <p class="mb-1 text-muted">Savings</p>
-                        <h4 class="mb-0" style="color:#2563eb;">₹0</h4>
+                        <h4 style="color:#2563eb;">
+                            ₹<?= number_format($totalSavings, 2) ?>
+                        </h4>
+
                     </div>
 
                     <div class="summary-card">
                         <div class="summary-card-accent" style="background:#f4ab6a;"></div>
                         <p class="mb-1 text-muted">Balance</p>
-                        <h4 class="mb-0" style="color:#e77d22;">₹0</h4>
+                        <h4 style="color:#2563eb;">
+                            ₹<?= number_format($totalSavings, 2) ?>
+                        </h4>
+
                     </div>
                 </div>
 
@@ -574,6 +626,90 @@
             }
             // If they click 'Cancel', nothing happens and they stay on the page
         });
+
+
+        const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+
+        const fetchDashboardData = (monthNum = new Date().getMonth() + 1) => {
+            return fetch(`get-dashboard-data.php?month=${monthNum}`)
+                .then(res => res.json());
+        };
+
+        const initChartsAjax = async () => {
+            const currentMonth = document.getElementById('monthSelect').selectedIndex + 1;
+            const data = await fetchDashboardData(currentMonth);
+
+            // Update summary cards
+            document.querySelector('.summary-row .summary-card:nth-child(1) h4').innerText = `₹${data.totalIncome.toLocaleString('en-IN', {minimumFractionDigits:2})}`;
+            document.querySelector('.summary-row .summary-card:nth-child(2) h4').innerText = `₹${data.totalExpense.toLocaleString('en-IN', {minimumFractionDigits:2})}`;
+            document.querySelector('.summary-row .summary-card:nth-child(3) h4').innerText = `₹${data.totalSavings.toLocaleString('en-IN', {minimumFractionDigits:2})}`;
+            document.querySelector('.summary-row .summary-card:nth-child(4) h4').innerText = `₹${data.totalSavings.toLocaleString('en-IN', {minimumFractionDigits:2})}`;
+
+            // Destroy previous charts if they exist
+            if (window.mChart) window.mChart.destroy();
+            if (window.eDonut) window.eDonut.destroy();
+
+            // Monthly Bar Chart
+            const ctxMonthly = document.getElementById('monthlyChart').getContext('2d');
+            window.mChart = new Chart(ctxMonthly, {
+                type: 'bar',
+                data: {
+                    labels: months.slice(0, 7), // show Jan-Jul
+                    datasets: [{
+                        label: 'Income',
+                        data: data.incomeData.slice(0, 7),
+                        backgroundColor: '#a8c6ff',
+                        borderRadius: 10,
+                        borderSkipped: false
+                    }]
+                },
+                options: {
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        },
+                        x: {}
+                    }
+                }
+            });
+
+            // Donut chart
+            const ctxDonut = document.getElementById('expenseDonut').getContext('2d');
+            window.eDonut = new Chart(ctxDonut, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Shopping', 'Entertainment', 'Education', 'Vehicle', 'Household', 'Insurance'],
+                    datasets: [{
+                        data: data.donutData,
+                        backgroundColor: ['#A7C7FF', '#C6E2FF', '#F9D5E5', '#EAC8F2', '#FDD9C1', '#C6F8D5'],
+                        cutout: '70%'
+                    }]
+                },
+                options: {
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    }
+                }
+            });
+
+            document.getElementById('donutTotalAmount').innerText = `₹${data.donutData.reduce((a,b)=>a+b,0).toLocaleString('en-IN')}`;
+
+            // Generate expense tips dynamically
+            generateTips(data.donutData);
+        };
+
+        // Month change event
+        document.getElementById('monthSelect').addEventListener('change', initChartsAjax);
+
+        // Initial load
+        initChartsAjax();
     </script>
 </body>
 
