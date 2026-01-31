@@ -588,6 +588,38 @@
             // If they click 'Cancel', nothing happens and they stay on the page
         });
     </script>
+
+    <script>
+        document.getElementById('transactionForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+
+            const formData = new FormData();
+            formData.append("type", transactionType.value);
+            formData.append("amount", document.getElementById('amount').value);
+            formData.append("category", document.getElementById('category').value);
+            formData.append("date", document.getElementById('date').value);
+            formData.append("description", document.getElementById('description').value);
+            formData.append("tags", document.getElementById('tags').value);
+
+            fetch("api/add-transaction.php", {
+                    method: "POST",
+                    body: formData
+                })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success) {
+                        alert("Transaction added successfully!");
+                        this.reset();
+                        incomeBtn.click();
+                        document.getElementById('date').valueAsDate = new Date();
+                    } else {
+                        alert(data.message || "Something went wrong");
+                    }
+                })
+                .catch(() => alert("Server error"));
+        });
+    </script>
+
 </body>
 
 </html>
