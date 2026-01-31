@@ -548,56 +548,18 @@
 
         setTheme(localStorage.getItem('theme') || 'light');
 
-        const transactions = [{
-                date: '2025-08-07',
-                description: 'Dinner Out',
-                category: 'Food',
-                type: 'Expense',
-                amount: -80
-            },
-            {
-                date: '2025-08-06',
-                description: 'Investment Return',
-                category: 'Income',
-                type: 'Income',
-                amount: 200
-            },
-            {
-                date: '2025-08-05',
-                description: 'Rent',
-                category: 'Housing',
-                type: 'Expense',
-                amount: -1000
-            },
-            {
-                date: '2025-08-04',
-                description: 'Transport',
-                category: 'Travel',
-                type: 'Expense',
-                amount: -60
-            },
-            {
-                date: '2025-08-03',
-                description: 'Freelance',
-                category: 'Income',
-                type: 'Income',
-                amount: 800
-            },
-            {
-                date: '2025-08-02',
-                description: 'Groceries',
-                category: 'Food',
-                type: 'Expense',
-                amount: -150
-            },
-            {
-                date: '2025-08-01',
-                description: 'Salary',
-                category: 'Income',
-                type: 'Income',
-                amount: 3000
-            }
-        ];
+        let transactions = [];
+
+        fetch("api/get-transactions.php")
+            .then(res => res.json())
+            .then(data => {
+                transactions = data;
+                renderTransactions();
+            })
+            .catch(() => {
+                alert("Failed to load transactions");
+            });
+
 
         const itemsPerPage = 5;
         let currentPage = 1;
