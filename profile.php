@@ -1,3 +1,26 @@
+<?php
+require_once __DIR__ . "/config/db.php";
+require_once __DIR__ . "/auth/session.php";
+
+if (!isset($_SESSION['user_id'])) {
+    header("Location: login-pages/login.php");
+    exit;
+}
+
+$user_id = $_SESSION['user_id'];
+
+$stmt = $conn->prepare("SELECT * FROM users WHERE id = ?");
+$stmt->bind_param("i", $user_id);
+$stmt->execute();
+
+$user = $stmt->get_result()->fetch_assoc();
+
+if (!$user) {
+    die("User not found");
+}
+?>
+
+
 <!DOCTYPE html>
 <html lang="en">
 
@@ -463,15 +486,28 @@
 
                 <div class="profile-card text-center">
                     <div class="mb-3">
-                        <img id="profileImg" src="https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?q=80&w=200&auto=format&fit=crop" alt="Profile Picture" class="profile-pic mb-3 mx-auto">
-                        <input type="file" id="uploadImg" accept="image/*" style="display: none;" onchange="previewImage(event)">
-                        <br>
-                        <button class="btn btn-sm btn-outline-primary rounded-pill px-3 transition" onclick="document.getElementById('uploadImg').click();">
+
+                        <img
+                            id="profileImg"
+                            src="<?= !empty($user['profile_image']) ? $user['profile_image'] : 'uploads/default.png' ?>"
+                            class="profile-pic">
+
+                        <input
+                            type="file"
+                            id="uploadImg"
+                            accept="image/*"
+                            style="display:none"
+                            onchange="uploadProfileImage()">
+
+                        <button
+                            class="btn btn-sm btn-outline-primary rounded-pill px-3"
+                            onclick="document.getElementById('uploadImg').click()">
                             <i class="bi bi-camera me-1"></i> Update Photo
                         </button>
+
                     </div>
 
-                    <h4 id="userName" class="fw-bold mb-1">Ian Somerhalder</h4>
+                    <h4><?= $user['full_name'] ?></h4>
                     <div class="d-flex justify-content-center gap-2 mb-4">
                         <span class="badge bg-success-subtle text-success border border-success rounded-pill px-3">Elite Member</span>
                         <span class="badge bg-primary-subtle text-primary border border-primary rounded-pill px-3">Active Saver</span>
@@ -504,28 +540,21 @@
                             <i class="bi bi-envelope-fill me-3 fs-5 text-primary"></i>
                             <div>
                                 <small class="text-muted d-block">Email Address</small>
-                                <span id="userEmail" class="fw-semibold">iansomerhalder@example.com</span>
+                                <span id="userEmail"><?= $user['email'] ?></span>
                             </div>
                         </div>
                         <div class="info-box">
                             <i class="bi bi-telephone-fill me-3 fs-5 text-primary"></i>
                             <div>
                                 <small class="text-muted d-block">Phone Number</small>
-                                <span id="userPhone" class="fw-semibold">+91 9876543210</span>
+                                <span id="userPhone"><?= $user['mobile'] ?></span>
                             </div>
                         </div>
                         <div class="info-box">
                             <i class="bi bi-wallet2 me-3 fs-5 text-primary"></i>
                             <div>
                                 <small class="text-muted d-block">Financial Settings</small>
-                                <span id="userBudget" class="fw-semibold">Monthly Budget: ₹25,000</span>
-                            </div>
-                        </div>
-                        <div class="info-box">
-                            <i class="bi bi-translate me-3 fs-5 text-primary"></i>
-                            <div>
-                                <small class="text-muted d-block">App Preference</small>
-                                <span id="userLang" class="fw-semibold">Language: English</span>
+                                <span id="userBudget">Monthly Budget: ₹<?= $user['monthly_budget'] ?></span>
                             </div>
                         </div>
                     </div>
@@ -540,49 +569,31 @@
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content shadow-lg border-0">
                 <div class="modal-header border-0">
-                    <h5 class="modal-title fw-bold">Update Profile</h5>
+                    <h5 class="modal-title fw-bold">Update Monthly Budget</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
+
                 <div class="modal-body px-4">
-                    <form id="editForm">
-                        <div class="mb-3">
-                            <label class="form-label small fw-bold">Display Name</label>
-                            <input type="text" id="editName" class="form-control rounded-3 p-2">
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label small fw-bold">Email Address</label>
-                            <input type="email" id="editEmail" class="form-control rounded-3 p-2">
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label small fw-bold">Mobile Number</label>
-                            <input type="text" id="editPhone" class="form-control rounded-3 p-2">
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label small fw-bold">Monthly Limit (₹)</label>
-                            <input type="text" id="editBudget" class="form-control rounded-3 p-2">
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label small fw-bold">Preferred Language</label>
-                            <select id="editLang" class="form-select rounded-3 p-2">
-                                <option>English</option>
-                                <option>Hindi</option>
-                                <option>Bengali</option>
-                                <option>Spanish</option>
-                            </select>
-                        </div>
-                    </form>
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold">Monthly Budget (₹)</label>
+                        <input
+                            type="number"
+                            id="editBudget"
+                            class="form-control rounded-3 p-2"
+                            value="<?= $user['monthly_budget'] ?>">
+                    </div>
                 </div>
 
                 <div class="modal-footer border-0">
-                    <button type="button" class="btn btn-secondary rounded-pill px-4" data-bs-dismiss="modal">Cancel</button>
-                    <button type="button" class="btn btn-primary rounded-pill px-4" onclick="saveProfile()">
-                        <i class="bi bi-check-lg me-2"></i>Apply Changes
+                    <button class="btn btn-secondary rounded-pill px-4" data-bs-dismiss="modal">Cancel</button>
+                    <button class="btn btn-primary rounded-pill px-4" onclick="updateBudget()">
+                        <i class="bi bi-check-lg me-2"></i>Update
                     </button>
                 </div>
-
             </div>
         </div>
     </div>
+
 
     <script>
         function toggleMenu() {
@@ -595,14 +606,6 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
     <script>
         // Profile Data Object
-        let profile = {
-            name: "Ian Somerhalder",
-            email: "iansomerhalder@example.com",
-            phone: "+91 9876543210",
-            budget: "₹25,000",
-            language: "English"
-        };
-
         // Theme Toggle Logic with smooth transition
         const themeToggleBtn = document.getElementById('theme-toggle');
         const setTheme = (isDark) => {
@@ -720,6 +723,79 @@
             // If they click 'Cancel', nothing happens and they stay on the page
         });
     </script>
+    <script>
+        function saveProfile() {
+            const formData = new FormData();
+            formData.append("name", document.getElementById("editName").value);
+            formData.append("email", document.getElementById("editEmail").value);
+            formData.append("phone", document.getElementById("editPhone").value);
+            formData.append("budget", document.getElementById("editBudget").value);
+            formData.append("language", document.getElementById("editLang").value);
+
+            const img = document.getElementById("uploadImg").files[0];
+            if (img) formData.append("profile_image", img);
+
+            fetch("api/profile.php", {
+                    method: "POST",
+                    body: formData
+                })
+                .then(res => res.json())
+                .then(() => location.reload());
+        }
+    </script>
+    <script>
+        function updateBudget() {
+            const budget = document.getElementById("editBudget").value;
+
+            if (!budget || budget <= 0) {
+                alert("Please enter a valid budget amount");
+                return;
+            }
+
+            fetch("api/update-budget.php", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/x-www-form-urlencoded"
+                    },
+                    body: "monthly_budget=" + budget
+                })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success) {
+                        location.reload();
+                    } else {
+                        alert("Failed to update budget");
+                    }
+                })
+                .catch(() => alert("Server error"));
+        }
+    </script>
+    <script>
+        function uploadProfileImage() {
+            const fileInput = document.getElementById("uploadImg");
+            const file = fileInput.files[0];
+
+            if (!file) return;
+
+            const formData = new FormData();
+            formData.append("profile_image", file);
+
+            fetch("api/update-profile-image.php", {
+                    method: "POST",
+                    body: formData
+                })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success) {
+                        document.getElementById("profileImg").src = data.image + "?t=" + new Date().getTime();
+                    } else {
+                        alert("Image upload failed");
+                    }
+                })
+                .catch(() => alert("Server error"));
+        }
+    </script>
+
 </body>
 
 </html>
