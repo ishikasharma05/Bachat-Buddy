@@ -1,45 +1,38 @@
 <?php
-session_start();
+ini_set('display_errors', 1);
+error_reporting(E_ALL);
 header("Content-Type: application/json");
-require_once "../config/db.php";
 
-// Check login
-if (!isset($_SESSION['user_id'])) {
-    echo json_encode([]);
-    exit;
-}
+require_once __DIR__ . "/../config/db.php";
 
-$user_id = $_SESSION['user_id'];
-
-$query = "
+$sql = "
     SELECT 
         id,
-        DATE_FORMAT(transaction_date, '%Y-%m-%d') as date,
-        description,
-        category,
         type,
+        category,
+        description,
+        transaction_date AS date,
         amount
     FROM transactions
-    WHERE user_id = ?
     ORDER BY transaction_date DESC
 ";
 
-$stmt = $conn->prepare($query);
-$stmt->bind_param("i", $user_id);
-$stmt->execute();
+$result = mysqli_query($conn, $sql);
 
-$result = $stmt->get_result();
 $transactions = [];
 
-while ($row = $result->fetch_assoc()) {
-    // Make expense negative for frontend logic
-    if ($row['type'] === 'Expense') {
+while ($row = mysqli_fetch_assoc($result)) {
+
+    // Make amount negative for expense & withdraw (for frontend logic)
+    if ($row['type'] === 'expense' || $row['type'] === 'withdraw-savings') {
         $row['amount'] = -abs($row['amount']);
     }
+
+    // Capitalize type for filter match
+    $row['type'] = ucfirst($row['type']);
+
     $transactions[] = $row;
 }
 
 echo json_encode($transactions);
-$stmt->close();
-$conn->close();     
 ?>

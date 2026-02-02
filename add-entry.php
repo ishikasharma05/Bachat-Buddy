@@ -515,22 +515,6 @@
         });
 
         // Form Handling
-        document.getElementById('transactionForm').addEventListener('submit', function(e) {
-            e.preventDefault();
-            const data = {
-                type: transactionType.value,
-                amount: document.getElementById('amount').value,
-                category: document.getElementById('category').value,
-                date: document.getElementById('date').value,
-                description: document.getElementById('description').value,
-                tags: document.getElementById('tags').value
-            };
-            console.log("Transaction recorded:", data);
-            alert("Transaction added successfully!");
-            this.reset();
-            incomeBtn.click(); // Default back to Income
-            document.getElementById('date').valueAsDate = new Date(); // Reset date to today
-        });
 
         // Set default date to today on load
         document.getElementById('date').valueAsDate = new Date();

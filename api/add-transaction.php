@@ -1,72 +1,44 @@
 <?php
-require_once __DIR__ . "/../config/db.php";
-require_once __DIR__ . "/../auth/session.php";
-
+ini_set('display_errors', 1);
+error_reporting(E_ALL);
 header("Content-Type: application/json");
 
-if (!isset($_SESSION['user_id'])) {
-    echo json_encode(["success" => false, "message" => "Unauthorized"]);
-    exit;
-}
+require_once __DIR__ . "/../config/db.php";
 
-$user_id = $_SESSION['user_id'];
-
-// Validate inputs
-$type = $_POST['type'] ?? '';
-$amount = $_POST['amount'] ?? '';
-$category = $_POST['category'] ?? '';
-$date = $_POST['date'] ?? '';
+$type        = $_POST['type'] ?? '';
+$amount      = $_POST['amount'] ?? '';
+$category    = $_POST['category'] ?? '';
+$date        = $_POST['date'] ?? '';
 $description = $_POST['description'] ?? '';
-$tags = $_POST['tags'] ?? '';
+$tags        = $_POST['tags'] ?? '';
 
 if (!$type || !$amount || !$category || !$date) {
     echo json_encode(["success" => false, "message" => "Missing fields"]);
     exit;
 }
 
-// Insert transaction
-$stmt = $conn->prepare("
-    INSERT INTO transactions
-    (user_id, type, amount, category, description, tags, transaction_date)
-    VALUES (?, ?, ?, ?, ?, ?, ?)
-");
+$sql = "INSERT INTO transactions 
+        (type, amount, category, description, tags, transaction_date)
+        VALUES (?, ?, ?, ?, ?, ?)";
 
-$stmt->bind_param(
-    "isdssss",
-    $user_id,
-    $type,
-    $amount,
-    $category,
-    $description,
-    $tags,
-    $date
-);
+$stmt = $conn->prepare($sql);
 
-$stmt->execute();
-
-/* ===============================
-   OPTIONAL BUSINESS LOGIC
-================================ */
-
-// Savings logic
-if ($type === "savings") {
-    $conn->query("
-        UPDATE users
-        SET savings_balance = savings_balance + $amount
-        WHERE id = $user_id
-    ");
+if (!$stmt) {
+    echo json_encode([
+        "success" => false,
+        "message" => $conn->error   // 🔥 SHOWS REAL SQL ERROR
+    ]);
+    exit;
 }
 
-if ($type === "withdraw-savings") {
-    $conn->query("
-        UPDATE users
-        SET savings_balance = savings_balance - $amount
-        WHERE id = $user_id
-    ");
-}
+$stmt->bind_param("sdssss", $type, $amount, $category, $description, $tags, $date);
 
-echo json_encode(["success" => true]);
+if ($stmt->execute()) {
+    echo json_encode(["success" => true]);
+} else {
+    echo json_encode(["success" => false, "message" => $stmt->error]);
+}
 
 $stmt->close();
-$conn->close();     
+$conn->close();
 ?>
