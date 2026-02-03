@@ -1,17 +1,7 @@
 <?php
-$host = "localhost";
-$user = "root";
-$password = "";
-$database = "bachat_buddy";
+$conn = new mysqli("localhost", "root", "", "bachat_buddy");
 
-$conn = mysqli_connect($host, $user, $password, $database);
-
-if (!$conn) {
-    http_response_code(500);
-    echo json_encode([
-        "success" => false,
-        "message" => "Database connection failed"
-    ]);
-    exit;
+if ($conn->connect_error) {
+    die("Database connection failed: " . $conn->connect_error);
 }
 ?>
