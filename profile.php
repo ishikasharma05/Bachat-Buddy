@@ -1,25 +1,3 @@
-<?php
-require_once __DIR__ . "/config/db.php";
-require_once __DIR__ . "/auth/session.php";
-
-if (!isset($_SESSION['user_id'])) {
-    header("Location: login-pages/login.php");
-    exit;
-}
-
-$user_id = $_SESSION['user_id'];
-
-$stmt = $conn->prepare("SELECT * FROM users WHERE id = ?");
-$stmt->bind_param("i", $user_id);
-$stmt->execute();
-
-$user = $stmt->get_result()->fetch_assoc();
-
-if (!$user) {
-    die("User not found");
-}
-?>
-
 
 <!DOCTYPE html>
 <html lang="en">
