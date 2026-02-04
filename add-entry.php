@@ -501,6 +501,33 @@
         }
     </script>
     <script>
+        // Set today's date as default
+        document.getElementById('date').valueAsDate = new Date();
+
+        // Handle transaction type button clicks
+        const typeInput = document.getElementById('transactionType');
+        const typeButtons = {
+            incomeBtn: 'income',
+            expenseBtn: 'expense',
+            savingsBtn: 'savings',
+            withdrawBtn: 'withdraw_savings'
+        };
+
+        Object.keys(typeButtons).forEach(btnId => {
+            document.getElementById(btnId).onclick = function() {
+                // Remove active class from all buttons
+                Object.keys(typeButtons).forEach(id => {
+                    document.getElementById(id).classList.remove('active');
+                });
+                // Add active class to clicked button
+                this.classList.add('active');
+                // Set transaction type
+                typeInput.value = typeButtons[btnId];
+
+                console.log('Transaction type changed to:', typeButtons[btnId]);
+            };
+        });
+
         // Handle form submission
         const transactionForm = document.getElementById('transactionForm');
 
@@ -531,11 +558,10 @@
 
             console.log('=== DEBUG INFO ===');
             console.log('Payload:', payload);
-            console.log('Fetch URL:', window.location.origin + '/bachat-buddy/backend/transactions/add_transaction.php');
 
             try {
-                // Use absolute path - CHANGE '/bachat-buddy/' to your actual folder name!
-                const res = await fetch('/BACHAT-BUDDY/backend/transactions/add_transaction.php', {
+              const res = await fetch('/Bachat-Buddy/Bachat-Buddy/Bachat-Buddy/backend/transactions/add_transaction.php', {
+
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
@@ -546,7 +572,6 @@
                 console.log('Response status:', res.status);
                 console.log('Response ok:', res.ok);
 
-                // Check if response is actually JSON
                 const contentType = res.headers.get('content-type');
                 console.log('Content-Type:', contentType);
 
@@ -577,7 +602,6 @@
                 console.error('Error message:', err.message);
                 console.error('Full error:', err);
 
-                // More specific error messages
                 if (err.name === 'TypeError' && err.message.includes('fetch')) {
                     alert('❌ Cannot reach server. Please check:\n1. Is XAMPP/WAMP running?\n2. Is the file path correct?\n3. Check browser console for details.');
                 } else if (err.name === 'SyntaxError') {
@@ -588,6 +612,7 @@
             }
         });
     </script>
+
 </body>
 
 </html>

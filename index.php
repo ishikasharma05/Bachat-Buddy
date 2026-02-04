@@ -1,29 +1,119 @@
 <?php
-// index.php
-require_once 'components/auth_check.php'; // This will check if user is logged in
+// index.php - FULLY FIXED VERSION
+require_once 'components/auth_check.php';
 require_once 'config/db.php';
 
-// Fetch user's total savings for the balance card
-$totalSavings = 0;
-try {
-    $stmt = $conn->prepare("SELECT COALESCE(SUM(amount), 0) as total FROM transactions WHERE user_id = ? AND type = 'savings'");
-    $stmt->bind_param("i", $user_id);
-    $stmt->execute();
-    $result = $stmt->get_result();
-    $totalSavings = $result->fetch_assoc()['total'];
-    $stmt->close();
-} catch (Exception $e) {
-    $totalSavings = 0;
-}
-
-// Fetch current month expenses by category for the overview section
-$currentMonth = date('m');
+// Get current year and month
 $currentYear = date('Y');
+$currentMonth = date('m');
+
+// Get selected month from query parameter (for AJAX updates)
+$selectedMonth = isset($_GET['month']) ? $_GET['month'] : $currentMonth;
+
+// Initialize all data arrays
+$totalIncome = 0;
+$totalExpense = 0;
+$totalSavings = 0;
+$incomeData = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+$expenseData = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+$donutData = [0, 0, 0, 0, 0, 0];
+$categoryLabels = ['Shopping', 'Fun', 'Kids', 'Vehicle', 'House', 'Insure'];
 $categoryExpenses = [];
 $recentTransactions = [];
 
 try {
-    // Get category-wise expenses for current month
+    // 1. Total Income
+    $stmt = $conn->prepare("SELECT COALESCE(SUM(amount), 0) as total FROM transactions WHERE user_id = ? AND type = 'income'");
+    $stmt->bind_param("i", $user_id);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    $totalIncome = floatval($result->fetch_assoc()['total']);
+    $stmt->close();
+
+    // 2. Total Expense
+    $stmt = $conn->prepare("SELECT COALESCE(SUM(amount), 0) as total FROM transactions WHERE user_id = ? AND type = 'expense'");
+    $stmt->bind_param("i", $user_id);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    $totalExpense = floatval($result->fetch_assoc()['total']);
+    $stmt->close();
+
+    // 3. Total Savings
+    $stmt = $conn->prepare("SELECT COALESCE(SUM(amount), 0) as total FROM transactions WHERE user_id = ? AND type = 'savings'");
+    $stmt->bind_param("i", $user_id);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    $totalSavings = floatval($result->fetch_assoc()['total']);
+    $stmt->close();
+
+    // 4. Monthly Income Data
+    $stmt = $conn->prepare("
+        SELECT MONTH(date) as month, SUM(amount) as total 
+        FROM transactions 
+        WHERE user_id = ? AND type = 'income' AND YEAR(date) = ?
+        GROUP BY MONTH(date)
+    ");
+    $stmt->bind_param("ii", $user_id, $currentYear);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    while ($row = $result->fetch_assoc()) {
+        $incomeData[$row['month'] - 1] = floatval($row['total']);
+    }
+    $stmt->close();
+
+    // 5. Monthly Expense Data
+    $stmt = $conn->prepare("
+        SELECT MONTH(date) as month, SUM(amount) as total 
+        FROM transactions 
+        WHERE user_id = ? AND type = 'expense' AND YEAR(date) = ?
+        GROUP BY MONTH(date)
+    ");
+    $stmt->bind_param("ii", $user_id, $currentYear);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    while ($row = $result->fetch_assoc()) {
+        $expenseData[$row['month'] - 1] = floatval($row['total']);
+    }
+    $stmt->close();
+
+    // 6. Category Breakdown for Donut (Selected Month)
+    // Map ALL possible categories to the 6 main categories
+    $categoryMapping = [
+        'Shopping' => 0,
+        'Groceries' => 0,  // Map Groceries to Shopping
+        'Clothing' => 0,   // Map Clothing to Shopping
+        'Fun' => 1,
+        'Entertainment' => 1,  // Map Entertainment to Fun
+        'Kids' => 2,
+        'Education' => 2,  // Map Education to Kids
+        'Vehicle' => 3,
+        'Transport' => 3,  // Map Transport to Vehicle
+        'House' => 4,
+        'Rent' => 4,       // Map Rent to House
+        'Utilities' => 4,  // Map Utilities to House
+        'Insure' => 5,
+        'Insurance' => 5   // Map Insurance to Insure
+    ];
+
+    $stmt = $conn->prepare("
+        SELECT category, SUM(amount) as total 
+        FROM transactions 
+        WHERE user_id = ? AND type = 'expense' AND YEAR(date) = ? AND MONTH(date) = ?
+        GROUP BY category
+    ");
+    $stmt->bind_param("iii", $user_id, $currentYear, $selectedMonth);
+    $stmt->execute();
+    $result = $stmt->get_result();
+
+    while ($row = $result->fetch_assoc()) {
+        $category = $row['category'];
+        if (isset($categoryMapping[$category])) {
+            $donutData[$categoryMapping[$category]] += floatval($row['total']);
+        }
+    }
+    $stmt->close();
+
+    // 7. Category Breakdown with Percentages (Selected Month)
     $stmt = $conn->prepare("
         SELECT category, SUM(amount) as total 
         FROM transactions 
@@ -31,34 +121,29 @@ try {
         GROUP BY category
         ORDER BY total DESC
     ");
-    $stmt->bind_param("iii", $user_id, $currentYear, $currentMonth);
+    $stmt->bind_param("iii", $user_id, $currentYear, $selectedMonth);
     $stmt->execute();
     $result = $stmt->get_result();
-    
-    $totalMonthExpense = 0;
+
+    $totalExpenseThisMonth = array_sum($donutData);
     while ($row = $result->fetch_assoc()) {
-        $totalMonthExpense += $row['total'];
-    }
-    
-    // Reset pointer to calculate percentages
-    $result->data_seek(0);
-    while ($row = $result->fetch_assoc()) {
-        $percentage = $totalMonthExpense > 0 ? ($row['total'] / $totalMonthExpense) * 100 : 0;
+        $amount = floatval($row['total']);
+        $percentage = $totalExpenseThisMonth > 0 ? ($amount / $totalExpenseThisMonth) * 100 : 0;
         $categoryExpenses[] = [
             'category' => $row['category'],
-            'amount' => $row['total'],
+            'amount' => $amount,
             'percentage' => round($percentage, 1)
         ];
     }
     $stmt->close();
-    
-    // Get recent transactions (last 2 for the overview)
+
+    // 8. Recent Transactions (Last 5)
     $stmt = $conn->prepare("
         SELECT type, category, description, amount, date 
         FROM transactions 
         WHERE user_id = ? 
         ORDER BY date DESC, created_at DESC 
-        LIMIT 2
+        LIMIT 5
     ");
     $stmt->bind_param("i", $user_id);
     $stmt->execute();
@@ -67,12 +152,20 @@ try {
         $recentTransactions[] = $row;
     }
     $stmt->close();
-    
 } catch (Exception $e) {
-    // Handle error silently or log it
+    error_log("Dashboard Error: " . $e->getMessage());
 }
 
 $conn->close();
+
+$balance = $totalIncome - $totalExpense;
+$donutTotal = array_sum($donutData);
+
+// Calculate average monthly expense (only for months with expenses)
+$monthsWithExpenses = count(array_filter($expenseData, function ($val) {
+    return $val > 0;
+}));
+$monthlyAvg = $monthsWithExpenses > 0 ? $totalExpense / $monthsWithExpenses : 0;
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -80,129 +173,123 @@ $conn->close();
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Bachat-Buddy</title>
+    <title>Bachat-Buddy - Dashboard</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="components/style.css">
-    <script src="components/java.js" defer></script>
+    <style>
+        .main-body {
+            padding: 2rem;
+            overflow-y: auto;
+            background-color: #f2f6f9;
+        }
+
+        .summary-row {
+            display: grid;
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .summary-card {
+            position: relative;
+            border-radius: 16px;
+            background: #fff;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.04);
+            padding: 1.25rem 1.5rem;
+            transition: transform 0.2s;
+        }
+
+        .summary-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+        }
+
+        .summary-card-accent {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 6px;
+            height: 100%;
+            border-radius: 16px 0 0 16px;
+        }
+
+        .dashboard-two-cols {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 2rem;
+        }
+
+        .card-custom {
+            border-radius: 16px;
+            padding: 1.5rem;
+            background: #fff;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.04);
+        }
+
+        .tab-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .tabs span {
+            margin-left: 1rem;
+            font-weight: 500;
+            cursor: pointer;
+            color: #999;
+            transition: color 0.3s;
+        }
+
+        .tabs .active {
+            color: #000;
+        }
+
+        .donut-container {
+            position: relative;
+            width: 200px;
+            height: 200px;
+            margin: 0 auto 1rem;
+        }
+
+        .donut-center-text {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+        }
+
+        .legend-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            display: inline-block;
+            margin-right: 8px;
+        }
+
+        .insight-pill {
+            background: #fff3cd;
+            border-left: 4px solid #ffc107;
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            font-size: 0.9rem;
+        }
+
+        @media (max-width: 768px) {
+            .summary-row {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+
+            .dashboard-two-cols {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
 </head>
-<style>
-    .main-body {
-        padding: 2rem;
-        overflow-y: auto;
-        background-color: #f2f6f9;
-        transition: background-color 0.3s ease;
-    }
-
-    /* 4 summary boxes row */
-    .summary-row {
-        display: grid;
-        grid-template-columns: repeat(4, minmax(0, 1fr));
-        gap: 1.5rem;
-        margin-bottom: 2rem;
-    }
-
-    .summary-card {
-        position: relative;
-        border-radius: 16px;
-        background: #fff;
-        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.04);
-        padding: 1.25rem 1.5rem;
-        transition: background-color 0.3s ease, transform 0.2s;
-    }
-
-    .summary-card-accent {
-        position: absolute;
-        top: 0;
-        left: 0;
-        width: 6px;
-        height: 100%;
-        border-radius: 16px 0 0 16px;
-    }
-
-    .dashboard-two-cols {
-        display: grid;
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-        gap: 2rem;
-    }
-
-    .card-custom {
-        border-radius: 16px;
-        padding: 1.5rem;
-        background: #fff;
-        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.04);
-        transition: background-color 0.3s ease;
-    }
-
-    .tab-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: 1rem;
-    }
-
-    .tabs span {
-        margin-left: 1rem;
-        font-weight: 500;
-        cursor: pointer;
-        color: #999;
-    }
-
-    .tabs .active {
-        color: #000;
-    }
-
-    .donut-container {
-        position: relative;
-        width: 160px;
-        height: 160px;
-        margin-right: 2rem;
-    }
-
-    .donut-center-text {
-        position: absolute;
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -50%);
-        text-align: center;
-    }
-
-    .legend-dot {
-        width: 10px;
-        height: 10px;
-        border-radius: 50%;
-        display: inline-block;
-        margin-right: 8px;
-    }
-
-    .legend-label {
-        font-size: 0.9rem;
-        color: #555;
-    }
-
-    .legend-value {
-        font-weight: bold;
-    }
-
-    /* Styles for the Expense Tips Section */
-    .insight-pill {
-        background: #fff3cd;
-        border-left: 4px solid #ffc107;
-        padding: 12px;
-        border-radius: 8px;
-        margin-bottom: 10px;
-        font-size: 0.9rem;
-    }
-
-    .dark .insight-pill {
-        background: #2d2d1a;
-        color: #ffe08a;
-        border-left-color: #ffc107;
-    }
-</style>
 
 <body>
     <div class="layout">
@@ -225,9 +312,7 @@ $conn->close();
             <div class="p-4">
                 <div class="brand d-flex align-items-center justify-content-between mb-4">
                     <span><i class="bi bi-piggy-bank me-2 text-success"></i> Bachat-Buddy</span>
-                    <button onclick="toggleMenu()" class="btn-close border-0 bg-transparent text-muted fs-4">
-                        <i class="bi bi-x-lg"></i>
-                    </button>
+                    <button onclick="toggleMenu()" class="btn-close"></button>
                 </div>
                 <ul class="nav flex-column gap-2">
                     <li><a class="nav-link" href="index.php" style="background: #3b82f6; color: #fff;"><i class="bi bi-speedometer2"></i> Dashboard</a></li>
@@ -239,6 +324,7 @@ $conn->close();
             </div>
         </div>
         <div id="sidebarOverlay" class="sidebar-overlay d-lg-none" onclick="toggleMenu()"></div>
+
         <div class="main-content">
             <?php include 'components/header.php'; ?>
             <div class="main-body">
@@ -246,27 +332,22 @@ $conn->close();
                     <div class="summary-card">
                         <div class="summary-card-accent" style="background:#c6f8d5;"></div>
                         <p class="mb-1 text-muted">Income</p>
-                        <h4 style="color:#16a34a;">₹0.00</h4>
+                        <h4 style="color:#16a34a;">₹<?= number_format($totalIncome, 2) ?></h4>
                     </div>
-
                     <div class="summary-card">
                         <div class="summary-card-accent" style="background:#f8d7da;"></div>
                         <p class="mb-1 text-muted">Expenses</p>
-                        <h4 style="color:#16a34a;">₹0.00</h4>
+                        <h4 style="color:#dc2626;">₹<?= number_format($totalExpense, 2) ?></h4>
                     </div>
-
                     <div class="summary-card">
                         <div class="summary-card-accent" style="background:#a8c6ff;"></div>
                         <p class="mb-1 text-muted">Savings</p>
-                        <h4 style="color:#16a34a;">₹0.00</h4>
+                        <h4 style="color:#2563eb;">₹<?= number_format($totalSavings, 2) ?></h4>
                     </div>
-
                     <div class="summary-card">
                         <div class="summary-card-accent" style="background:#f4ab6a;"></div>
                         <p class="mb-1 text-muted">Balance</p>
-                        <h4 style="color:#2563eb;">
-                            ₹<?= number_format($totalSavings, 2) ?>
-                        </h4>
+                        <h4 style="color:#2563eb;">₹<?= number_format($balance, 2) ?></h4>
                     </div>
                 </div>
 
@@ -275,50 +356,46 @@ $conn->close();
                         <div class="tab-header">
                             <h6 class="fw-bold">Monthly Details</h6>
                             <div class="tabs">
-                                <span class="active">Income</span>
-                                <span>Expenses</span>
+                                <span class="active" onclick="switchToIncome()">Income</span>
+                                <span onclick="switchToExpense()">Expenses</span>
                             </div>
                         </div>
-                        <canvas id="monthlyChart"></canvas>
+                        <div style="height: 300px;">
+                            <canvas id="monthlyChart"></canvas>
+                        </div>
                     </div>
 
                     <div class="card-custom">
-                        <div class="d-flex justify-content-between align-items-start mb-4">
+                        <div class="d-flex justify-content-between align-items-start mb-3">
                             <h6 class="fw-bold">Expense Summary</h6>
-                            <select id="monthSelect" class="form-select form-select-sm w-auto">
-                                <option value="Jan">January</option>
-                                <option value="Feb">February</option>
-                                <option value="Mar">March</option>
-                                <option value="Apr" selected>April</option>
-                                <option value="May">May</option>
-                                <option value="Jun">June</option>
-                                <option value="Jul">July</option>
-                                <option value="Aug">August</option>
-                                <option value="Sep">September</option>
-                                <option value="Oct">October</option>
-                                <option value="Nov">November</option>
-                                <option value="Dec">December</option>
+                            <select id="monthSelect" class="form-select form-select-sm w-auto" onchange="updateDonutChart()">
+                                <?php
+                                $months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+                                for ($i = 1; $i <= 12; $i++) {
+                                    $monthVal = str_pad($i, 2, '0', STR_PAD_LEFT);
+                                    $selected = ($monthVal == $selectedMonth) ? 'selected' : '';
+                                    echo "<option value='$monthVal' $selected>{$months[$i - 1]}</option>";
+                                }
+                                ?>
                             </select>
                         </div>
-                        <div class="d-flex">
-                            <div class="donut-container">
-                                <canvas id="expenseDonut"></canvas>
-                                <div class="donut-center-text">
-                                    <small class="text-muted">Total</small>
-                                    <div id="donutTotalAmount" class="fw-bold">₹0</div>
-                                </div>
+                        <div class="donut-container">
+                            <canvas id="expenseDonut"></canvas>
+                            <div class="donut-center-text">
+                                <small class="text-muted">Total</small>
+                                <div class="fw-bold">₹<span id="donutTotal"><?= number_format($donutTotal, 0) ?></span></div>
                             </div>
-                            <div class="d-flex flex-wrap gap-3">
-                                <div class="d-flex flex-column gap-2">
-                                    <div><span class="legend-dot" style="background:#A7C7FF"></span> Shopping<br><span class="legend-value small">₹0</span></div>
-                                    <div><span class="legend-dot" style="background:#C6E2FF"></span> Fun<br><span class="legend-value small">₹0</span></div>
-                                    <div><span class="legend-dot" style="background:#F9D5E5"></span> Kids<br><span class="legend-value small">₹0</span></div>
-                                </div>
-                                <div class="d-flex flex-column gap-2">
-                                    <div><span class="legend-dot" style="background:#EAC8F2"></span> Vehicle<br><span class="legend-value small">₹0</span></div>
-                                    <div><span class="legend-dot" style="background:#FDD9C1"></span> House<br><span class="legend-value small">₹0</span></div>
-                                    <div><span class="legend-dot" style="background:#C6F8D5"></span> Insure<br><span class="legend-value small">₹0</span></div>
-                                </div>
+                        </div>
+                        <div class="row mt-3" id="legendContainer">
+                            <div class="col-6">
+                                <div class="mb-2"><span class="legend-dot" style="background:#A7C7FF"></span>Shopping: <strong>₹<span class="legend-value"><?= number_format($donutData[0], 0) ?></span></strong></div>
+                                <div class="mb-2"><span class="legend-dot" style="background:#C6E2FF"></span>Fun: <strong>₹<span class="legend-value"><?= number_format($donutData[1], 0) ?></span></strong></div>
+                                <div class="mb-2"><span class="legend-dot" style="background:#F9D5E5"></span>Kids: <strong>₹<span class="legend-value"><?= number_format($donutData[2], 0) ?></span></strong></div>
+                            </div>
+                            <div class="col-6">
+                                <div class="mb-2"><span class="legend-dot" style="background:#EAC8F2"></span>Vehicle: <strong>₹<span class="legend-value"><?= number_format($donutData[3], 0) ?></span></strong></div>
+                                <div class="mb-2"><span class="legend-dot" style="background:#FDD9C1"></span>House: <strong>₹<span class="legend-value"><?= number_format($donutData[4], 0) ?></span></strong></div>
+                                <div class="mb-2"><span class="legend-dot" style="background:#C6F8D5"></span>Insure: <strong>₹<span class="legend-value"><?= number_format($donutData[5], 0) ?></span></strong></div>
                             </div>
                         </div>
                     </div>
@@ -331,29 +408,26 @@ $conn->close();
                                 <div class="col-md-7 border-end">
                                     <h5 class="fw-semibold mb-4">Monthly Overview</h5>
                                     <div class="row">
-                                        <div class="col-md-6 mb-3 mb-md-0">
+                                        <div class="col-md-6 mb-3">
                                             <p class="text-muted mb-2">Expense Categories</p>
-                                            <?php if (count($categoryExpenses) > 0): ?>
-                                                <?php foreach ($categoryExpenses as $cat): ?>
-                                                    <div class="d-flex justify-content-between align-items-center mb-2">
-                                                        <div>
-                                                            <p class="mb-1"><?= htmlspecialchars($cat['category']) ?></p>
+                                            <div id="categoryBreakdown">
+                                                <?php if (count($categoryExpenses) > 0): ?>
+                                                    <?php foreach ($categoryExpenses as $cat): ?>
+                                                        <div class="d-flex justify-content-between mb-2">
+                                                            <span><?= htmlspecialchars($cat['category']) ?></span>
+                                                            <span><strong>₹<?= number_format($cat['amount'], 0) ?></strong> <small class="text-muted">(<?= $cat['percentage'] ?>%)</small></span>
                                                         </div>
-                                                        <div class="text-end">
-                                                            <span class="fw-semibold">₹<?= number_format($cat['amount'], 2) ?></span>
-                                                            <span class="text-muted ms-1">(<?= $cat['percentage'] ?>%)</span>
-                                                        </div>
-                                                    </div>
-                                                <?php endforeach; ?>
-                                            <?php else: ?>
-                                                <p class="text-muted">No expenses this month</p>
-                                            <?php endif; ?>
+                                                    <?php endforeach; ?>
+                                                <?php else: ?>
+                                                    <p class="text-muted">No expenses this month</p>
+                                                <?php endif; ?>
+                                            </div>
                                         </div>
                                         <div class="col-md-6">
                                             <p class="text-muted mb-2">Recent Transactions</p>
                                             <?php if (count($recentTransactions) > 0): ?>
                                                 <?php foreach ($recentTransactions as $txn): ?>
-                                                    <div class="d-flex justify-content-between align-items-center mb-2 px-3 py-2 rounded-3" style="background:#f8fafc;">
+                                                    <div class="d-flex justify-content-between mb-2 px-3 py-2 rounded-3" style="background:#f8fafc;">
                                                         <span><?= htmlspecialchars($txn['category'] ?: $txn['description']) ?></span>
                                                         <span class="<?= $txn['type'] == 'income' ? 'text-success' : 'text-danger' ?> fw-semibold">
                                                             <?= $txn['type'] == 'income' ? '+' : '-' ?>₹<?= number_format($txn['amount'], 2) ?>
@@ -369,11 +443,40 @@ $conn->close();
 
                                 <div class="col-md-5 ps-md-4">
                                     <h5 class="fw-semibold mb-3"><i class="fa-solid fa-lightbulb text-warning me-2"></i>Bachat Insights</h5>
-                                    <div id="expenseTipsContainer">
-                                        <div class="insight-pill">
-                                            Calculating your personalized tips...
-                                        </div>
-                                    </div>
+                                    <?php
+                                    $insights = [];
+                                    if ($totalExpense === 0 && $totalIncome === 0) {
+                                        $insights[] = '📊 Start tracking your expenses to see personalized insights!';
+                                    } else {
+                                        if ($totalIncome > 0) {
+                                            $savingsRate = (($totalIncome - $totalExpense) / $totalIncome * 100);
+                                            if ($savingsRate > 20) {
+                                                $insights[] = sprintf('🎉 Great job! You\'re saving %.1f%% of your income.', $savingsRate);
+                                            } elseif ($savingsRate > 0) {
+                                                $insights[] = sprintf('💡 You\'re saving %.1f%% - try to increase it to 20%%+.', $savingsRate);
+                                            } else {
+                                                $insights[] = '⚠️ Your expenses exceed your income. Review your spending.';
+                                            }
+                                        }
+                                        $maxExpense = max($donutData);
+                                        if ($maxExpense > 0 && $totalExpense > 0) {
+                                            $maxIndex = array_search($maxExpense, $donutData);
+                                            $categoryName = $categoryLabels[$maxIndex];
+                                            $percentage = ($maxExpense / $totalExpense * 100);
+                                            $insights[] = sprintf(
+                                                '📈 %s is your highest expense category at %.1f%%.',
+                                                $categoryName,
+                                                $percentage
+                                            );
+                                        }
+                                        if ($monthlyAvg > 0) {
+                                            $insights[] = sprintf('📅 Your average monthly expense is ₹%s.', number_format($monthlyAvg, 0));
+                                        }
+                                    }
+                                    foreach ($insights as $insight) {
+                                        echo '<div class="insight-pill">' . $insight . '</div>';
+                                    }
+                                    ?>
                                 </div>
                             </div>
                         </div>
@@ -384,114 +487,232 @@ $conn->close();
         </div>
     </div>
 
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <script src="components/notifications.js"></script>
+
     <script>
-        const sidebar = document.querySelector('.sidebar');
-        const hamburgerBtn = document.getElementById('hamburgerBtn');
-        const overlay = document.getElementById('sidebarOverlay');
+        console.log('🔄 Initializing dashboard...');
 
-        if (hamburgerBtn) {
-            hamburgerBtn.addEventListener('click', () => {
-                sidebar.classList.toggle('active');
-                overlay.classList.toggle('show');
-            });
-        }
+        const incomeData = <?= json_encode($incomeData) ?>;
+        const expenseData = <?= json_encode($expenseData) ?>;
+        let donutData = <?= json_encode($donutData) ?>;
+        const categoryLabels = <?= json_encode($categoryLabels) ?>;
 
-        if (overlay) {
-            overlay.addEventListener('click', () => {
-                sidebar.classList.remove('active');
-                overlay.classList.remove('show');
-            });
-        }
-
-        window.addEventListener('resize', () => {
-            if (window.innerWidth > 991) {
-                sidebar.classList.remove('active');
-                overlay.classList.remove('show');
-            }
+        console.log('📊 Data loaded:', {
+            incomeData,
+            expenseData,
+            donutData,
+            categoryLabels
         });
-    </script>
-    <script>
+
+        let monthlyChart = null;
+        let expenseDonut = null;
+        let currentChartType = 'income';
+
         function toggleMenu() {
             document.getElementById("mobileSidebar").classList.toggle("active");
             document.getElementById("sidebarOverlay").classList.toggle("active");
             document.body.classList.toggle("sidebar-open");
         }
-    </script>
 
-    <script>
-        const fetchDashboardData = async () => {
-            const res = await fetch('backend/transactions/fetch_dashboard.php');
-            const data = await res.json();
-
-            if (data.error) {
-                console.error(data.error);
-                return;
+        function switchToIncome() {
+            if (currentChartType === 'income') return;
+            currentChartType = 'income';
+            document.querySelectorAll('.tabs span').forEach(span => span.classList.remove('active'));
+            document.querySelectorAll('.tabs span')[0].classList.add('active');
+            if (monthlyChart) {
+                monthlyChart.data.datasets[0].data = incomeData;
+                monthlyChart.data.datasets[0].label = 'Income';
+                monthlyChart.data.datasets[0].backgroundColor = '#a8c6ff';
+                monthlyChart.update();
             }
+        }
 
-            // Update summary boxes
-            document.querySelector('.summary-row .summary-card:nth-child(1) h4').innerText = `₹${Number(data.totalIncome).toLocaleString('en-IN', {minimumFractionDigits:2})}`;
-            document.querySelector('.summary-row .summary-card:nth-child(2) h4').innerText = `₹${Number(data.totalExpense).toLocaleString('en-IN', {minimumFractionDigits:2})}`;
-            document.querySelector('.summary-row .summary-card:nth-child(3) h4').innerText = `₹${Number(data.totalSavings).toLocaleString('en-IN', {minimumFractionDigits:2})}`;
-            document.querySelector('.summary-row .summary-card:nth-child(4) h4').innerText = `₹${Number(data.totalSavings).toLocaleString('en-IN', {minimumFractionDigits:2})}`;
+        function switchToExpense() {
+            if (currentChartType === 'expense') return;
+            currentChartType = 'expense';
+            document.querySelectorAll('.tabs span').forEach(span => span.classList.remove('active'));
+            document.querySelectorAll('.tabs span')[1].classList.add('active');
+            if (monthlyChart) {
+                monthlyChart.data.datasets[0].data = expenseData;
+                monthlyChart.data.datasets[0].label = 'Expenses';
+                monthlyChart.data.datasets[0].backgroundColor = '#f8d7da';
+                monthlyChart.update();
+            }
+        }
 
-            // Update charts
-            if (window.mChart) window.mChart.destroy();
-            if (window.eDonut) window.eDonut.destroy();
+        function updateDonutChart() {
+            const selectedMonth = document.getElementById('monthSelect').value;
 
-            // Monthly Chart
-            const ctxMonthly = document.getElementById('monthlyChart').getContext('2d');
-            window.mChart = new Chart(ctxMonthly, {
-                type: 'bar',
-                data: {
-                    labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
-                    datasets: [{
-                        label: 'Income',
-                        data: data.incomeData,
-                        backgroundColor: '#a8c6ff',
-                        borderRadius: 10
-                    }]
-                },
-                options: {
-                    plugins: {
-                        legend: {
-                            display: false
+            fetch(`backend/transactions/fetch_transactions.php?action=month_expenses&month=${selectedMonth}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.error) {
+                        console.error('Error:', data.error);
+                        return;
+                    }
+
+                    // Update donut chart
+                    donutData = data.donutData;
+                    expenseDonut.data.datasets[0].data = donutData;
+                    expenseDonut.update();
+
+                    // Update total
+                    const total = donutData.reduce((a, b) => a + b, 0);
+                    document.getElementById('donutTotal').textContent = total.toLocaleString('en-IN', {
+                        maximumFractionDigits: 0
+                    });
+
+                    // Update legend values
+                    const legendValues = document.querySelectorAll('.legend-value');
+                    donutData.forEach((val, idx) => {
+                        if (legendValues[idx]) {
+                            legendValues[idx].textContent = val.toLocaleString('en-IN', {
+                                maximumFractionDigits: 0
+                            });
                         }
+                    });
+
+                    // Update category breakdown
+                    if (data.categoryBreakdown && data.categoryBreakdown.length > 0) {
+                        let html = '';
+                        data.categoryBreakdown.forEach(cat => {
+                            html += `
+                                <div class="d-flex justify-content-between mb-2">
+                                    <span>${cat.category}</span>
+                                    <span><strong>₹${cat.amount.toLocaleString('en-IN', {maximumFractionDigits: 0})}</strong> 
+                                    <small class="text-muted">(${cat.percentage}%)</small></span>
+                                </div>
+                            `;
+                        });
+                        document.getElementById('categoryBreakdown').innerHTML = html;
+                    } else {
+                        document.getElementById('categoryBreakdown').innerHTML = '<p class="text-muted">No expenses this month</p>';
+                    }
+                })
+                .catch(error => {
+                    console.error('Fetch error:', error);
+                });
+        }
+
+        window.addEventListener('load', function() {
+            console.log('🎨 Creating charts...');
+
+            try {
+                const ctxMonthly = document.getElementById('monthlyChart').getContext('2d');
+                monthlyChart = new Chart(ctxMonthly, {
+                    type: 'bar',
+                    data: {
+                        labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
+                        datasets: [{
+                            label: 'Income',
+                            data: incomeData,
+                            backgroundColor: '#a8c6ff',
+                            borderRadius: 8,
+                            barThickness: 25
+                        }]
                     },
-                    scales: {
-                        y: {
-                            beginAtZero: true
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                display: false
+                            },
+                            tooltip: {
+                                callbacks: {
+                                    label: ctx => ctx.dataset.label + ': ₹' + ctx.parsed.y.toLocaleString('en-IN')
+                                }
+                            }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                ticks: {
+                                    callback: value => '₹' + value.toLocaleString('en-IN')
+                                }
+                            }
                         }
                     }
-                }
-            });
+                });
+                console.log('✅ Monthly chart created');
 
-            // Donut chart
-            const ctxDonut = document.getElementById('expenseDonut').getContext('2d');
-            window.eDonut = new Chart(ctxDonut, {
-                type: 'doughnut',
-                data: {
-                    labels: ['Shopping', 'Entertainment', 'Education', 'Vehicle', 'Household', 'Insurance'],
-                    datasets: [{
-                        data: data.donutData,
-                        backgroundColor: ['#A7C7FF', '#C6E2FF', '#F9D5E5', '#EAC8F2', '#FDD9C1', '#C6F8D5'],
-                        cutout: '70%'
-                    }]
-                },
-                options: {
-                    plugins: {
-                        legend: {
-                            display: false
+                const ctxDonut = document.getElementById('expenseDonut').getContext('2d');
+                expenseDonut = new Chart(ctxDonut, {
+                    type: 'doughnut',
+                    data: {
+                        labels: categoryLabels,
+                        datasets: [{
+                            data: donutData,
+                            backgroundColor: ['#A7C7FF', '#C6E2FF', '#F9D5E5', '#EAC8F2', '#FDD9C1', '#C6F8D5'],
+                            borderWidth: 0,
+                            cutout: '70%'
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: true,
+                        plugins: {
+                            legend: {
+                                display: false
+                            },
+                            tooltip: {
+                                callbacks: {
+                                    label: ctx => ctx.label + ': ₹' + ctx.parsed.toLocaleString('en-IN')
+                                }
+                            }
                         }
                     }
-                }
+                });
+                console.log('✅ Donut chart created');
+                console.log('🎉 Dashboard fully loaded!');
+            } catch (error) {
+                console.error('❌ Chart error:', error);
+            }
+        });
+
+
+        console.log("Notification JS Loaded");
+
+        // Elements
+        const notificationBtn = document.getElementById("notificationBtn");
+        const notificationDropdown = document.getElementById("notificationDropdown");
+        const notificationBadge = document.getElementById("notificationBadge");
+        const notificationList = document.getElementById("notificationList");
+
+        // Toggle dropdown
+        if (notificationBtn) {
+            notificationBtn.addEventListener("click", function(e) {
+                e.stopPropagation();
+                notificationDropdown.classList.toggle("hidden");
             });
+        }
 
-            document.getElementById('donutTotalAmount').innerText = `₹${data.donutData.reduce((a,b)=>a+b,0).toLocaleString('en-IN')}`;
-        };
+        // Close dropdown when clicking outside
+        document.addEventListener("click", function() {
+            if (!notificationDropdown.classList.contains("hidden")) {
+                notificationDropdown.classList.add("hidden");
+            }
+        });
 
-        fetchDashboardData();
+        // Prevent dropdown from closing when clicking inside
+        if (notificationDropdown) {
+            notificationDropdown.addEventListener("click", function(e) {
+                e.stopPropagation();
+            });
+        }
+
+        // Clear notifications
+        function clearNotifications() {
+            notificationList.innerHTML = `
+        <div class="p-3 text-center text-muted">
+            No notifications
+        </div>
+    `;
+
+            notificationBadge.style.display = "none";
+        }
     </script>
-
 </body>
 
 </html>
