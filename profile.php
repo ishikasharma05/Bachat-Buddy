@@ -1,4 +1,72 @@
+<?php 
+require_once 'components/auth_check.php'; 
+require_once 'config/db.php';
 
+// First, check and add missing columns if needed
+try {
+    $checkProfileImage = $conn->query("SHOW COLUMNS FROM users LIKE 'profile_image'");
+    if ($checkProfileImage->num_rows == 0) {
+        $conn->query("ALTER TABLE users ADD COLUMN profile_image VARCHAR(255) DEFAULT 'uploads/default.png' AFTER password");
+    }
+    
+    $checkBudget = $conn->query("SHOW COLUMNS FROM users LIKE 'monthly_budget'");
+    if ($checkBudget->num_rows == 0) {
+        $conn->query("ALTER TABLE users ADD COLUMN monthly_budget DECIMAL(10,2) DEFAULT 0.00 AFTER mobile");
+    }
+} catch (Exception $e) {
+    // Silently handle if columns already exist
+}
+
+// Fetch user data from database
+$stmt = $conn->prepare("SELECT id, full_name, email, mobile, profile_image, monthly_budget, created_at FROM users WHERE id = ?");
+if (!$stmt) {
+    die("Database error: " . $conn->error);
+}
+$stmt->bind_param("i", $user_id);
+$stmt->execute();
+$result = $stmt->get_result();
+$user = $result->fetch_assoc();
+$stmt->close();
+
+// Set defaults if fields are null
+$user['mobile'] = $user['mobile'] ?? 'Not set';
+$user['monthly_budget'] = $user['monthly_budget'] ?? '0';
+$user['profile_image'] = $user['profile_image'] ?? 'uploads/default.png';
+
+// Calculate total expenses and savings progress
+$totalExpenses = 0;
+$totalSavings = 0;
+$savingsGoal = 0;
+
+// Get total expenses
+$stmt = $conn->prepare("SELECT COALESCE(SUM(amount), 0) as total FROM transactions WHERE user_id = ? AND type = 'expense'");
+$stmt->bind_param("i", $user_id);
+$stmt->execute();
+$result = $stmt->get_result();
+$totalExpenses = $result->fetch_assoc()['total'];
+$stmt->close();
+
+// Get total savings
+$stmt = $conn->prepare("SELECT COALESCE(SUM(amount), 0) as total FROM transactions WHERE user_id = ? AND type = 'savings'");
+$stmt->bind_param("i", $user_id);
+$stmt->execute();
+$result = $stmt->get_result();
+$totalSavings = $result->fetch_assoc()['total'];
+$stmt->close();
+
+// Get savings goal (sum of all active goals)
+$stmt = $conn->prepare("SELECT COALESCE(SUM(target_amount), 0) as total FROM goals WHERE user_id = ? AND status = 'active'");
+$stmt->bind_param("i", $user_id);
+$stmt->execute();
+$result = $stmt->get_result();
+$savingsGoal = $result->fetch_assoc()['total'];
+$stmt->close();
+
+// Calculate savings percentage
+$savingsProgress = $savingsGoal > 0 ? min(100, ($totalSavings / $savingsGoal) * 100) : 0;
+
+$conn->close();
+?>
 <!DOCTYPE html>
 <html lang="en">
 
@@ -464,11 +532,11 @@
 
                 <div class="profile-card text-center">
                     <div class="mb-3">
-
                         <img
                             id="profileImg"
-                            src="<?= !empty($user['profile_image']) ? $user['profile_image'] : 'uploads/default.png' ?>"
-                            class="profile-pic">
+                            src="<?= htmlspecialchars($user['profile_image']) ?>"
+                            class="profile-pic"
+                            alt="Profile Picture">
 
                         <input
                             type="file"
@@ -478,14 +546,13 @@
                             onchange="uploadProfileImage()">
 
                         <button
-                            class="btn btn-sm btn-outline-primary rounded-pill px-3"
+                            class="btn btn-sm btn-outline-primary rounded-pill px-3 mt-2"
                             onclick="document.getElementById('uploadImg').click()">
                             <i class="bi bi-camera me-1"></i> Update Photo
                         </button>
-
                     </div>
 
-                    <h4><?= $user['full_name'] ?></h4>
+                    <h4><?= htmlspecialchars($user['full_name']) ?></h4>
                     <div class="d-flex justify-content-center gap-2 mb-4">
                         <span class="badge bg-success-subtle text-success border border-success rounded-pill px-3">Elite Member</span>
                         <span class="badge bg-primary-subtle text-primary border border-primary rounded-pill px-3">Active Saver</span>
@@ -497,17 +564,17 @@
 
                     <div class="d-flex justify-content-between gap-3 mb-5">
                         <div class="stat-box">
-                            <h4 class="fw-bold text-danger mb-0">₹12,500</h4>
+                            <h4 class="fw-bold text-danger mb-0">₹<?= number_format($totalExpenses, 2) ?></h4>
                             <p class="text-muted small mb-0">Total Expenses</p>
                             <div class="progress-custom">
                                 <div class="bg-danger h-100" style="width: 70%"></div>
                             </div>
                         </div>
                         <div class="stat-box">
-                            <h4 class="fw-bold text-success mb-0">50%</h4>
+                            <h4 class="fw-bold text-success mb-0"><?= round($savingsProgress) ?>%</h4>
                             <p class="text-muted small mb-0">Savings Reached</p>
                             <div class="progress-custom">
-                                <div class="bg-success h-100" style="width: 50%"></div>
+                                <div class="bg-success h-100" style="width: <?= round($savingsProgress) ?>%"></div>
                             </div>
                         </div>
                     </div>
@@ -518,21 +585,21 @@
                             <i class="bi bi-envelope-fill me-3 fs-5 text-primary"></i>
                             <div>
                                 <small class="text-muted d-block">Email Address</small>
-                                <span id="userEmail"><?= $user['email'] ?></span>
+                                <span id="userEmail"><?= htmlspecialchars($user['email']) ?></span>
                             </div>
                         </div>
                         <div class="info-box">
                             <i class="bi bi-telephone-fill me-3 fs-5 text-primary"></i>
                             <div>
                                 <small class="text-muted d-block">Phone Number</small>
-                                <span id="userPhone"><?= $user['mobile'] ?></span>
+                                <span id="userPhone"><?= htmlspecialchars($user['mobile']) ?></span>
                             </div>
                         </div>
                         <div class="info-box">
                             <i class="bi bi-wallet2 me-3 fs-5 text-primary"></i>
                             <div>
                                 <small class="text-muted d-block">Financial Settings</small>
-                                <span id="userBudget">Monthly Budget: ₹<?= $user['monthly_budget'] ?></span>
+                                <span id="userBudget">Monthly Budget: ₹<?= number_format($user['monthly_budget'], 2) ?></span>
                             </div>
                         </div>
                     </div>
@@ -556,6 +623,7 @@
                         <label class="form-label small fw-bold">Monthly Budget (₹)</label>
                         <input
                             type="number"
+                            step="0.01"
                             id="editBudget"
                             class="form-control rounded-3 p-2"
                             value="<?= $user['monthly_budget'] ?>">
@@ -583,166 +651,55 @@
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
     <script>
-        // Profile Data Object
         // Theme Toggle Logic with smooth transition
         const themeToggleBtn = document.getElementById('theme-toggle');
-        const setTheme = (isDark) => {
-            if (isDark) {
-                document.documentElement.classList.add('dark');
-                themeToggleBtn.innerHTML = '<i class="fas fa-sun text-warning"></i>';
-            } else {
-                document.documentElement.classList.remove('dark');
-                themeToggleBtn.innerHTML = '<i class="fas fa-moon text-dark"></i>';
-            }
-        };
-
-        const savedTheme = localStorage.getItem('theme') || 'light';
-        setTheme(savedTheme === 'dark');
-
-        themeToggleBtn.addEventListener('click', () => {
-            const isNowDark = !document.documentElement.classList.contains('dark');
-            localStorage.setItem('theme', isNowDark ? 'dark' : 'light');
-            setTheme(isNowDark);
-        });
-
-        // Modal pre-fill
-        const editModalEl = document.getElementById("editModal");
-        editModalEl.addEventListener("show.bs.modal", () => {
-            document.getElementById("editName").value = profile.name;
-            document.getElementById("editEmail").value = profile.email;
-            document.getElementById("editPhone").value = profile.phone;
-            document.getElementById("editBudget").value = profile.budget.replace('₹', '');
-            document.getElementById("editLang").value = profile.language;
-        });
-
-        // Save Profile Function
-        function saveProfile() {
-            profile.name = document.getElementById("editName").value;
-            profile.email = document.getElementById("editEmail").value;
-            profile.phone = document.getElementById("editPhone").value;
-            profile.budget = '₹' + document.getElementById("editBudget").value;
-            profile.language = document.getElementById("editLang").value;
-
-            document.getElementById("userName").innerText = profile.name;
-            document.getElementById("userEmail").innerText = profile.email;
-            document.getElementById("userPhone").innerText = profile.phone;
-            document.getElementById("userBudget").innerText = "Monthly Budget: " + profile.budget;
-            document.getElementById("userLang").innerText = "Language: " + profile.language;
-
-            // Simple Success Feedback
-            const btn = document.querySelector('.modal-footer .btn-primary');
-            btn.innerHTML = '<i class="bi bi-check-lg"></i> Saved!';
-            setTimeout(() => {
-                btn.innerText = 'Apply Changes';
-                bootstrap.Modal.getInstance(editModalEl).hide();
-            }, 800);
-        }
-
-        // Image Preview with quality preservation
-        function previewImage(event) {
-            const reader = new FileReader();
-            reader.onload = function() {
-                const output = document.getElementById('profileImg');
-                output.src = reader.result;
+        if (themeToggleBtn) {
+            const setTheme = (isDark) => {
+                if (isDark) {
+                    document.documentElement.classList.add('dark');
+                    themeToggleBtn.innerHTML = '<i class="fas fa-sun text-warning"></i>';
+                } else {
+                    document.documentElement.classList.remove('dark');
+                    themeToggleBtn.innerHTML = '<i class="fas fa-moon text-dark"></i>';
+                }
             };
-            reader.readAsDataURL(event.target.files[0]);
-        }
 
-        // --- Notification Applet Logic ---
-        const notificationBtn = document.getElementById('notificationBtn');
-        const notificationDropdown = document.getElementById('notificationDropdown');
-        const notificationBadge = document.getElementById('notificationBadge');
+            const savedTheme = localStorage.getItem('theme') || 'light';
+            setTheme(savedTheme === 'dark');
 
-        // 1. Toggle visibility when clicking the bell
-        notificationBtn.addEventListener('click', (e) => {
-            e.stopPropagation(); // Prevents immediate closing
-            notificationDropdown.classList.toggle('hidden');
-        });
-
-        // 2. Close the applet if the user clicks anywhere else on the page
-        window.addEventListener('click', (e) => {
-            if (!notificationBtn.contains(e.target) && !notificationDropdown.contains(e.target)) {
-                notificationDropdown.classList.add('hidden');
-            }
-        });
-
-        // 3. Clear Notifications Function
-        function clearNotifications() {
-            const list = document.getElementById('notificationList');
-            list.innerHTML = `
-        <div class="p-4 text-center text-sm text-gray-500">
-            <i class="bi bi-check2-all text-success d-block fs-4 mb-2"></i>
-            All caught up!
-        </div>
-    `;
-            // Hide the badge count
-            notificationBadge.style.display = 'none';
-        }
-
-        // 4. (Optional) Function to update the number dynamically from other parts of your app
-        function updateNotificationCount(count) {
-            if (count > 0) {
-                notificationBadge.innerText = count;
-                notificationBadge.style.display = 'inline-flex';
-            } else {
-                notificationBadge.style.display = 'none';
-            }
-        }
-
-        // --- Logout Confirmation Logic ---
-        document.getElementById("logout-btn").addEventListener("click", function() {
-            // Asks for user permission
-            const confirmLogout = confirm("Are you sure you want to logout?");
-
-            // If the user clicks 'OK', it redirects
-            if (confirmLogout) {
-                window.location.href = "login-pages/login.php";
-            }
-            // If they click 'Cancel', nothing happens and they stay on the page
-        });
-    </script>
-    <script>
-        function saveProfile() {
-            const formData = new FormData();
-            formData.append("name", document.getElementById("editName").value);
-            formData.append("email", document.getElementById("editEmail").value);
-            formData.append("phone", document.getElementById("editPhone").value);
-            formData.append("budget", document.getElementById("editBudget").value);
-            formData.append("language", document.getElementById("editLang").value);
-
-            const img = document.getElementById("uploadImg").files[0];
-            if (img) formData.append("profile_image", img);
-
-            fetch("api/profile.php", {
-                    method: "POST",
-                    body: formData
-                })
-                .then(res => res.json())
-                .then(() => location.reload());
+            themeToggleBtn.addEventListener('click', () => {
+                const isNowDark = !document.documentElement.classList.contains('dark');
+                localStorage.setItem('theme', isNowDark ? 'dark' : 'light');
+                setTheme(isNowDark);
+            });
         }
     </script>
+
     <script>
         function updateBudget() {
             const budget = document.getElementById("editBudget").value;
 
-            if (!budget || budget <= 0) {
+            if (!budget || budget < 0) {
                 alert("Please enter a valid budget amount");
                 return;
             }
 
-            fetch("api/update-budget.php", {
+            fetch("backend/user/update_profile.php", {
                     method: "POST",
                     headers: {
-                        "Content-Type": "application/x-www-form-urlencoded"
+                        "Content-Type": "application/json"
                     },
-                    body: "monthly_budget=" + budget
+                    body: JSON.stringify({
+                        monthly_budget: budget
+                    })
                 })
                 .then(res => res.json())
                 .then(data => {
-                    if (data.success) {
+                    if (data.status === 'success') {
+                        alert(data.message);
                         location.reload();
                     } else {
-                        alert("Failed to update budget");
+                        alert(data.message || "Failed to update budget");
                     }
                 })
                 .catch(() => alert("Server error"));
@@ -755,19 +712,32 @@
 
             if (!file) return;
 
+            // Validate file type
+            if (!file.type.startsWith('image/')) {
+                alert("Please upload an image file");
+                return;
+            }
+
+            // Validate file size (max 5MB)
+            if (file.size > 5 * 1024 * 1024) {
+                alert("File size must be less than 5MB");
+                return;
+            }
+
             const formData = new FormData();
             formData.append("profile_image", file);
 
-            fetch("api/update-profile-image.php", {
+            fetch("backend/user/update_profile.php", {
                     method: "POST",
                     body: formData
                 })
                 .then(res => res.json())
                 .then(data => {
-                    if (data.success) {
-                        document.getElementById("profileImg").src = data.image + "?t=" + new Date().getTime();
+                    if (data.status === 'success') {
+                        document.getElementById("profileImg").src = data.image_url + "?t=" + new Date().getTime();
+                        alert(data.message);
                     } else {
-                        alert("Image upload failed");
+                        alert(data.message || "Image upload failed");
                     }
                 })
                 .catch(() => alert("Server error"));

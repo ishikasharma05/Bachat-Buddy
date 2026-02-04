@@ -544,7 +544,7 @@ $monthlyAvg = $monthsWithExpenses > 0 ? $totalExpense / $monthsWithExpenses : 0;
         function updateDonutChart() {
             const selectedMonth = document.getElementById('monthSelect').value;
 
-            fetch(`backend/transactions/fetch_transactions.php?action=month_expenses&month=${selectedMonth}`)
+            fetch(`Bachat-Buddy/Bachat-Buddy/Bachat-Buddy/backend/transactions/fetch_transactions.php?action=month_expenses&month=${selectedMonth}`)
                 .then(response => response.json())
                 .then(data => {
                     if (data.error) {
