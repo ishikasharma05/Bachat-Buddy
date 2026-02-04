@@ -471,136 +471,51 @@
             localStorage.setItem('theme', isNowDark ? 'dark' : 'light');
             setTheme(isNowDark);
         });
-
-        // Transaction Type Selection Logic
-        const incomeBtn = document.getElementById('incomeBtn');
-        const expenseBtn = document.getElementById('expenseBtn');
-        const savingsBtn = document.getElementById('savingsBtn');
-        const withdrawBtn = document.getElementById('withdrawBtn');
-        const transactionType = document.getElementById('transactionType');
-        const allBtns = [incomeBtn, expenseBtn, savingsBtn, withdrawBtn];
-
-        function resetButtons() {
-            allBtns.forEach(btn => {
-                btn.classList.remove('active', 'btn-success', 'btn-danger', 'btn-primary', 'btn-warning');
-                if (btn === incomeBtn) btn.classList.add('btn-outline-success');
-                if (btn === expenseBtn) btn.classList.add('btn-outline-danger');
-                if (btn === savingsBtn) btn.classList.add('btn-outline-primary');
-                if (btn === withdrawBtn) btn.classList.add('btn-outline-warning');
-            });
-        }
-
-        incomeBtn.addEventListener('click', () => {
-            resetButtons();
-            incomeBtn.classList.add('active', 'btn-success');
-            transactionType.value = 'income';
-        });
-
-        expenseBtn.addEventListener('click', () => {
-            resetButtons();
-            expenseBtn.classList.add('active', 'btn-danger');
-            transactionType.value = 'expense';
-        });
-
-        savingsBtn.addEventListener('click', () => {
-            resetButtons();
-            savingsBtn.classList.add('active', 'btn-primary');
-            transactionType.value = 'savings';
-        });
-
-        withdrawBtn.addEventListener('click', () => {
-            resetButtons();
-            withdrawBtn.classList.add('active', 'btn-warning');
-            transactionType.value = 'withdraw-savings';
-        });
-
-        // Form Handling
-
-        // Set default date to today on load
-        document.getElementById('date').valueAsDate = new Date();
-
-        // --- Notification Applet Logic ---
-        const notificationBtn = document.getElementById('notificationBtn');
-        const notificationDropdown = document.getElementById('notificationDropdown');
-        const notificationBadge = document.getElementById('notificationBadge');
-
-        // 1. Toggle visibility when clicking the bell
-        notificationBtn.addEventListener('click', (e) => {
-            e.stopPropagation(); // Prevents immediate closing
-            notificationDropdown.classList.toggle('hidden');
-        });
-
-        // 2. Close the applet if the user clicks anywhere else on the page
-        window.addEventListener('click', (e) => {
-            if (!notificationBtn.contains(e.target) && !notificationDropdown.contains(e.target)) {
-                notificationDropdown.classList.add('hidden');
-            }
-        });
-
-        // 3. Clear Notifications Function
-        function clearNotifications() {
-            const list = document.getElementById('notificationList');
-            list.innerHTML = `
-        <div class="p-4 text-center text-sm text-gray-500">
-            <i class="bi bi-check2-all text-success d-block fs-4 mb-2"></i>
-            All caught up!
-        </div>
-    `;
-            // Hide the badge count
-            notificationBadge.style.display = 'none';
-        }
-
-        // 4. (Optional) Function to update the number dynamically from other parts of your app
-        function updateNotificationCount(count) {
-            if (count > 0) {
-                notificationBadge.innerText = count;
-                notificationBadge.style.display = 'inline-flex';
-            } else {
-                notificationBadge.style.display = 'none';
-            }
-        }
-
-        // --- Logout Confirmation Logic ---
-        document.getElementById("logout-btn").addEventListener("click", function() {
-            // Asks for user permission
-            const confirmLogout = confirm("Are you sure you want to logout?");
-
-            // If the user clicks 'OK', it redirects
-            if (confirmLogout) {
-                window.location.href = "login-pages/login.php";
-            }
-            // If they click 'Cancel', nothing happens and they stay on the page
-        });
     </script>
 
     <script>
-        document.getElementById('transactionForm').addEventListener('submit', function(e) {
+        const transactionForm = document.getElementById('transactionForm');
+
+        transactionForm.addEventListener('submit', async (e) => {
             e.preventDefault();
 
-            const formData = new FormData();
-            formData.append("type", transactionType.value);
-            formData.append("amount", document.getElementById('amount').value);
-            formData.append("category", document.getElementById('category').value);
-            formData.append("date", document.getElementById('date').value);
-            formData.append("description", document.getElementById('description').value);
-            formData.append("tags", document.getElementById('tags').value);
+            const type = document.getElementById('transactionType').value;
+            const amount = parseFloat(document.getElementById('amount').value);
+            const date = document.getElementById('date').value;
+            const category = document.getElementById('category').value;
+            const description = document.getElementById('description').value;
+            const tags = document.getElementById('tags').value;
 
-            fetch("api/add-transaction.php", {
-                    method: "POST",
-                    body: formData
-                })
-                .then(res => res.json())
-                .then(data => {
-                    if (data.success) {
-                        alert("Transaction added successfully!");
-                        this.reset();
-                        incomeBtn.click();
-                        document.getElementById('date').valueAsDate = new Date();
-                    } else {
-                        alert(data.message || "Something went wrong");
-                    }
-                })
-                .catch(() => alert("Server error"));
+            const payload = {
+                type,
+                amount,
+                date,
+                category,
+                description,
+                tags
+            };
+
+            try {
+                const res = await fetch('backend/transactions/add_transaction.php', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(payload)
+                });
+
+                const data = await res.json();
+
+                alert(data.message);
+
+                if (data.status === 'success') {
+                    transactionForm.reset();
+                    document.getElementById('date').valueAsDate = new Date();
+                }
+            } catch (err) {
+                console.error(err);
+                alert('Error adding transaction.');
+            }
         });
     </script>
 
