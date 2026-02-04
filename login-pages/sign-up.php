@@ -141,12 +141,14 @@
 
       let formData = new FormData(this);
 
-      fetch("sign-up.php", {
+      fetch("../backend/auth/signup_handler.php", {
           method: "POST",
           body: formData
         })
         .then(res => res.text())
         .then(data => {
+          data = data.trim(); // 🔥 THIS FIXES IT
+
           if (data === "SUCCESS") {
             document.getElementById("successMessage").style.display = "block";
             setTimeout(() => {
@@ -160,6 +162,7 @@
         });
     });
   </script>
+
 
 </body>
 

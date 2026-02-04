@@ -120,12 +120,13 @@
 
       let formData = new FormData(this);
 
-      fetch("login.php", {
+      fetch("../backend/auth/login_handler.php", {
           method: "POST",
           body: formData
         })
         .then(res => res.text())
         .then(data => {
+          data = data.trim(); // 🔥 IMPORTANT
 
           if (data === "SUCCESS") {
             window.location.href = "../index.php";
@@ -136,10 +137,10 @@
           } else {
             alert("Login failed");
           }
-
         });
     });
   </script>
+
 
 </body>
 
