@@ -1,10 +1,86 @@
+<?php
+// index.php
+require_once 'components/auth_check.php'; // This will check if user is logged in
+require_once 'config/db.php';
+
+// Fetch user's total savings for the balance card
+$totalSavings = 0;
+try {
+    $stmt = $conn->prepare("SELECT COALESCE(SUM(amount), 0) as total FROM transactions WHERE user_id = ? AND type = 'savings'");
+    $stmt->bind_param("i", $user_id);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    $totalSavings = $result->fetch_assoc()['total'];
+    $stmt->close();
+} catch (Exception $e) {
+    $totalSavings = 0;
+}
+
+// Fetch current month expenses by category for the overview section
+$currentMonth = date('m');
+$currentYear = date('Y');
+$categoryExpenses = [];
+$recentTransactions = [];
+
+try {
+    // Get category-wise expenses for current month
+    $stmt = $conn->prepare("
+        SELECT category, SUM(amount) as total 
+        FROM transactions 
+        WHERE user_id = ? AND type = 'expense' AND YEAR(date) = ? AND MONTH(date) = ?
+        GROUP BY category
+        ORDER BY total DESC
+    ");
+    $stmt->bind_param("iii", $user_id, $currentYear, $currentMonth);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    
+    $totalMonthExpense = 0;
+    while ($row = $result->fetch_assoc()) {
+        $totalMonthExpense += $row['total'];
+    }
+    
+    // Reset pointer to calculate percentages
+    $result->data_seek(0);
+    while ($row = $result->fetch_assoc()) {
+        $percentage = $totalMonthExpense > 0 ? ($row['total'] / $totalMonthExpense) * 100 : 0;
+        $categoryExpenses[] = [
+            'category' => $row['category'],
+            'amount' => $row['total'],
+            'percentage' => round($percentage, 1)
+        ];
+    }
+    $stmt->close();
+    
+    // Get recent transactions (last 2 for the overview)
+    $stmt = $conn->prepare("
+        SELECT type, category, description, amount, date 
+        FROM transactions 
+        WHERE user_id = ? 
+        ORDER BY date DESC, created_at DESC 
+        LIMIT 2
+    ");
+    $stmt->bind_param("i", $user_id);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    while ($row = $result->fetch_assoc()) {
+        $recentTransactions[] = $row;
+    }
+    $stmt->close();
+    
+} catch (Exception $e) {
+    // Handle error silently or log it
+}
+
+$conn->close();
+?>
 <!DOCTYPE html>
 <html lang="en">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Bachat-Buddy </title>
+    <title>Bachat-Buddy</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -171,23 +247,18 @@
                         <div class="summary-card-accent" style="background:#c6f8d5;"></div>
                         <p class="mb-1 text-muted">Income</p>
                         <h4 style="color:#16a34a;">₹0.00</h4>
-
                     </div>
 
                     <div class="summary-card">
                         <div class="summary-card-accent" style="background:#f8d7da;"></div>
                         <p class="mb-1 text-muted">Expenses</p>
                         <h4 style="color:#16a34a;">₹0.00</h4>
-
-
                     </div>
 
                     <div class="summary-card">
                         <div class="summary-card-accent" style="background:#a8c6ff;"></div>
                         <p class="mb-1 text-muted">Savings</p>
                         <h4 style="color:#16a34a;">₹0.00</h4>
-
-
                     </div>
 
                     <div class="summary-card">
@@ -196,7 +267,6 @@
                         <h4 style="color:#2563eb;">
                             ₹<?= number_format($totalSavings, 2) ?>
                         </h4>
-
                     </div>
                 </div>
 
@@ -235,25 +305,19 @@
                                 <canvas id="expenseDonut"></canvas>
                                 <div class="donut-center-text">
                                     <small class="text-muted">Total</small>
-                                    <div id="donutTotalAmount" class="fw-bold">₹8,900</div>
+                                    <div id="donutTotalAmount" class="fw-bold">₹0</div>
                                 </div>
                             </div>
                             <div class="d-flex flex-wrap gap-3">
                                 <div class="d-flex flex-column gap-2">
-                                    <div><span class="legend-dot" style="background:#A7C7FF"></span> Shopping<br><span
-                                            class="legend-value small">₹2,650</span></div>
-                                    <div><span class="legend-dot" style="background:#C6E2FF"></span> Fun<br><span
-                                            class="legend-value small">₹1,350</span></div>
-                                    <div><span class="legend-dot" style="background:#F9D5E5"></span> Kids<br><span
-                                            class="legend-value small">₹1,950</span></div>
+                                    <div><span class="legend-dot" style="background:#A7C7FF"></span> Shopping<br><span class="legend-value small">₹0</span></div>
+                                    <div><span class="legend-dot" style="background:#C6E2FF"></span> Fun<br><span class="legend-value small">₹0</span></div>
+                                    <div><span class="legend-dot" style="background:#F9D5E5"></span> Kids<br><span class="legend-value small">₹0</span></div>
                                 </div>
                                 <div class="d-flex flex-column gap-2">
-                                    <div><span class="legend-dot" style="background:#EAC8F2"></span> Vehicle<br><span
-                                            class="legend-value small">₹1,850</span></div>
-                                    <div><span class="legend-dot" style="background:#FDD9C1"></span> House<br><span
-                                            class="legend-value small">₹850</span></div>
-                                    <div><span class="legend-dot" style="background:#C6F8D5"></span> Insure<br><span
-                                            class="legend-value small">₹250</span></div>
+                                    <div><span class="legend-dot" style="background:#EAC8F2"></span> Vehicle<br><span class="legend-value small">₹0</span></div>
+                                    <div><span class="legend-dot" style="background:#FDD9C1"></span> House<br><span class="legend-value small">₹0</span></div>
+                                    <div><span class="legend-dot" style="background:#C6F8D5"></span> Insure<br><span class="legend-value small">₹0</span></div>
                                 </div>
                             </div>
                         </div>
@@ -269,26 +333,36 @@
                                     <div class="row">
                                         <div class="col-md-6 mb-3 mb-md-0">
                                             <p class="text-muted mb-2">Expense Categories</p>
-                                            <div class="d-flex justify-content-between align-items-center">
-                                                <div>
-                                                    <p class="mb-1">Food</p>
-                                                </div>
-                                                <div class="text-end">
-                                                    <span class="fw-semibold">₹2,000</span>
-                                                    <span class="text-muted ms-1">(100.0%)</span>
-                                                </div>
-                                            </div>
+                                            <?php if (count($categoryExpenses) > 0): ?>
+                                                <?php foreach ($categoryExpenses as $cat): ?>
+                                                    <div class="d-flex justify-content-between align-items-center mb-2">
+                                                        <div>
+                                                            <p class="mb-1"><?= htmlspecialchars($cat['category']) ?></p>
+                                                        </div>
+                                                        <div class="text-end">
+                                                            <span class="fw-semibold">₹<?= number_format($cat['amount'], 2) ?></span>
+                                                            <span class="text-muted ms-1">(<?= $cat['percentage'] ?>%)</span>
+                                                        </div>
+                                                    </div>
+                                                <?php endforeach; ?>
+                                            <?php else: ?>
+                                                <p class="text-muted">No expenses this month</p>
+                                            <?php endif; ?>
                                         </div>
                                         <div class="col-md-6">
                                             <p class="text-muted mb-2">Recent Transactions</p>
-                                            <div class="d-flex justify-content-between align-items-center mb-2 px-3 py-2 rounded-3" style="background:#f8fafc;">
-                                                <span>food</span>
-                                                <span class="text-danger fw-semibold">-₹2,000</span>
-                                            </div>
-                                            <div class="d-flex justify-content-between align-items-center px-3 py-2 rounded-3" style="background:#f8fafc;">
-                                                <span>salary</span>
-                                                <span class="text-success fw-semibold">+₹20,000</span>
-                                            </div>
+                                            <?php if (count($recentTransactions) > 0): ?>
+                                                <?php foreach ($recentTransactions as $txn): ?>
+                                                    <div class="d-flex justify-content-between align-items-center mb-2 px-3 py-2 rounded-3" style="background:#f8fafc;">
+                                                        <span><?= htmlspecialchars($txn['category'] ?: $txn['description']) ?></span>
+                                                        <span class="<?= $txn['type'] == 'income' ? 'text-success' : 'text-danger' ?> fw-semibold">
+                                                            <?= $txn['type'] == 'income' ? '+' : '-' ?>₹<?= number_format($txn['amount'], 2) ?>
+                                                        </span>
+                                                    </div>
+                                                <?php endforeach; ?>
+                                            <?php else: ?>
+                                                <p class="text-muted">No recent transactions</p>
+                                            <?php endif; ?>
                                         </div>
                                     </div>
                                 </div>
@@ -310,7 +384,6 @@
         </div>
     </div>
 
-
     <script>
         const sidebar = document.querySelector('.sidebar');
         const hamburgerBtn = document.getElementById('hamburgerBtn');
@@ -330,7 +403,6 @@
             });
         }
 
-        /* Auto close sidebar on resize to desktop */
         window.addEventListener('resize', () => {
             if (window.innerWidth > 991) {
                 sidebar.classList.remove('active');
@@ -346,12 +418,15 @@
         }
     </script>
 
-
-    <script
-        const fetchDashboardData=async ()=>
-        {
+    <script>
+        const fetchDashboardData = async () => {
             const res = await fetch('backend/transactions/fetch_dashboard.php');
             const data = await res.json();
+
+            if (data.error) {
+                console.error(data.error);
+                return;
+            }
 
             // Update summary boxes
             document.querySelector('.summary-row .summary-card:nth-child(1) h4').innerText = `₹${Number(data.totalIncome).toLocaleString('en-IN', {minimumFractionDigits:2})}`;
@@ -368,10 +443,10 @@
             window.mChart = new Chart(ctxMonthly, {
                 type: 'bar',
                 data: {
-                    labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul'],
+                    labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
                     datasets: [{
                         label: 'Income',
-                        data: data.incomeData.slice(0, 7),
+                        data: data.incomeData,
                         backgroundColor: '#a8c6ff',
                         borderRadius: 10
                     }]
@@ -412,8 +487,6 @@
             });
 
             document.getElementById('donutTotalAmount').innerText = `₹${data.donutData.reduce((a,b)=>a+b,0).toLocaleString('en-IN')}`;
-
-            generateTips(data.donutData);
         };
 
         fetchDashboardData();

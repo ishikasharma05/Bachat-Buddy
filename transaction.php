@@ -710,6 +710,8 @@
             // If they click 'Cancel', nothing happens and they stay on the page
         });
     </script>
+
+    
 </body>
 
 </html>

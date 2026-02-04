@@ -1,3 +1,4 @@
+<?php session_start(); ?>
 <!DOCTYPE html>
 <html lang="en">
 
@@ -9,7 +10,7 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.tailwindcss.com"></script>
-    <link src="components/styles.css" rel="stylesheet">
+    <link href="components/styles.css" rel="stylesheet">
     <style>
         body {
             margin: 0;
@@ -127,6 +128,31 @@
             padding: 8px 20px;
             font-weight: 500;
             transition: 0.3s;
+        }
+
+        .toggle-btns .btn.active {
+            color: #fff !important;
+        }
+
+        .toggle-btns .btn-outline-success.active {
+            background-color: #198754;
+            border-color: #198754;
+        }
+
+        .toggle-btns .btn-outline-danger.active {
+            background-color: #dc3545;
+            border-color: #dc3545;
+        }
+
+        .toggle-btns .btn-outline-primary.active {
+            background-color: #0d6efd;
+            border-color: #0d6efd;
+        }
+
+        .toggle-btns .btn-outline-warning.active {
+            background-color: #ffc107;
+            border-color: #ffc107;
+            color: #000 !important;
         }
 
         .footer {
@@ -395,7 +421,7 @@
                                 <div class="row">
                                     <div class="col-md-6 mb-4">
                                         <label class="form-label form-section-title"><i class="bi bi-cash-coin me-2"></i>Amount</label>
-                                        <input type="number" class="form-control form-control-lg rounded-3" placeholder="0.00" id="amount" required>
+                                        <input type="number" step="0.01" class="form-control form-control-lg rounded-3" placeholder="0.00" id="amount" required>
                                     </div>
                                     <div class="col-md-6 mb-4">
                                         <label class="form-label form-section-title"><i class="bi bi-calendar-date me-2"></i>Date</label>
@@ -406,7 +432,7 @@
                                 <div class="mb-4">
                                     <label class="form-label form-section-title"><i class="bi bi-tags me-2"></i>Category</label>
                                     <select class="form-select form-select-lg rounded-3" id="category" required>
-                                        <option disabled selected>Select category</option>
+                                        <option value="" disabled selected>Select category</option>
                                         <option value="Salary">Salary</option>
                                         <option value="Groceries">Groceries</option>
                                         <option value="Rent">Rent</option>
@@ -452,28 +478,30 @@
     <script>
         // Theme Toggle Logic
         const themeToggleBtn = document.getElementById('theme-toggle');
-        const setTheme = (isDark) => {
-            if (isDark) {
-                document.documentElement.classList.add('dark');
-                themeToggleBtn.innerHTML = '<i class="fas fa-sun"></i>';
-            } else {
-                document.documentElement.classList.remove('dark');
-                themeToggleBtn.innerHTML = '<i class="fas fa-moon"></i>';
-            }
-        };
+        if (themeToggleBtn) {
+            const setTheme = (isDark) => {
+                if (isDark) {
+                    document.documentElement.classList.add('dark');
+                    themeToggleBtn.innerHTML = '<i class="fas fa-sun"></i>';
+                } else {
+                    document.documentElement.classList.remove('dark');
+                    themeToggleBtn.innerHTML = '<i class="fas fa-moon"></i>';
+                }
+            };
 
-        // Load saved preference
-        const savedTheme = localStorage.getItem('theme') || 'light';
-        setTheme(savedTheme === 'dark');
+            // Load saved preference
+            const savedTheme = localStorage.getItem('theme') || 'light';
+            setTheme(savedTheme === 'dark');
 
-        themeToggleBtn.addEventListener('click', () => {
-            const isNowDark = !document.documentElement.classList.contains('dark');
-            localStorage.setItem('theme', isNowDark ? 'dark' : 'light');
-            setTheme(isNowDark);
-        });
+            themeToggleBtn.addEventListener('click', () => {
+                const isNowDark = !document.documentElement.classList.contains('dark');
+                localStorage.setItem('theme', isNowDark ? 'dark' : 'light');
+                setTheme(isNowDark);
+            });
+        }
     </script>
-
     <script>
+        // Handle form submission
         const transactionForm = document.getElementById('transactionForm');
 
         transactionForm.addEventListener('submit', async (e) => {
@@ -486,6 +514,12 @@
             const description = document.getElementById('description').value;
             const tags = document.getElementById('tags').value;
 
+            // Validate on client side
+            if (!type || !amount || !date || !category) {
+                alert('Please fill in all required fields!');
+                return;
+            }
+
             const payload = {
                 type,
                 amount,
@@ -495,8 +529,13 @@
                 tags
             };
 
+            console.log('=== DEBUG INFO ===');
+            console.log('Payload:', payload);
+            console.log('Fetch URL:', window.location.origin + '/bachat-buddy/backend/transactions/add_transaction.php');
+
             try {
-                const res = await fetch('backend/transactions/add_transaction.php', {
+                // Use absolute path - CHANGE '/bachat-buddy/' to your actual folder name!
+                const res = await fetch('/BACHAT-BUDDY/backend/transactions/add_transaction.php', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
@@ -504,21 +543,51 @@
                     body: JSON.stringify(payload)
                 });
 
-                const data = await res.json();
+                console.log('Response status:', res.status);
+                console.log('Response ok:', res.ok);
 
-                alert(data.message);
+                // Check if response is actually JSON
+                const contentType = res.headers.get('content-type');
+                console.log('Content-Type:', contentType);
+
+                if (!contentType || !contentType.includes('application/json')) {
+                    const text = await res.text();
+                    console.error('Response is not JSON:', text);
+                    alert('Server error: Response is not JSON. Check console.');
+                    return;
+                }
+
+                const data = await res.json();
+                console.log('Response data:', data);
 
                 if (data.status === 'success') {
+                    alert(data.message);
                     transactionForm.reset();
                     document.getElementById('date').valueAsDate = new Date();
+                    // Reset to income button
+                    document.querySelectorAll('.toggle-btns .btn').forEach(btn => btn.classList.remove('active'));
+                    document.getElementById('incomeBtn').classList.add('active');
+                    document.getElementById('transactionType').value = 'income';
+                } else {
+                    alert('Error: ' + data.message);
                 }
             } catch (err) {
-                console.error(err);
-                alert('Error adding transaction.');
+                console.error('=== FETCH ERROR ===');
+                console.error('Error type:', err.name);
+                console.error('Error message:', err.message);
+                console.error('Full error:', err);
+
+                // More specific error messages
+                if (err.name === 'TypeError' && err.message.includes('fetch')) {
+                    alert('❌ Cannot reach server. Please check:\n1. Is XAMPP/WAMP running?\n2. Is the file path correct?\n3. Check browser console for details.');
+                } else if (err.name === 'SyntaxError') {
+                    alert('❌ Server returned invalid JSON. Check PHP file for errors.');
+                } else {
+                    alert('❌ Network error: ' + err.message);
+                }
             }
         });
     </script>
-
 </body>
 
 </html>
