@@ -1,5 +1,9 @@
 <?php
-// backend/transactions/fetch_transactions.php - UNIFIED VERSION
+/**
+ * Backend: Fetch Transactions - UNIFIED VERSION
+ * Handles both dashboard data AND transaction list
+ */
+
 session_start();
 require_once '../../config/db.php';
 
@@ -16,7 +20,7 @@ $currentYear = date('Y');
 $currentMonth = date('m');
 
 // Get parameters
-$action = isset($_GET['action']) ? $_GET['action'] : 'dashboard';
+$action = isset($_GET['action']) ? $_GET['action'] : 'list'; // Default to 'list' for transaction page
 $selectedMonth = isset($_GET['month']) ? $_GET['month'] : $currentMonth;
 
 // Validate month if provided
@@ -30,9 +34,51 @@ $response = [];
 
 try {
     // ============================================
+    // ACTION: Get Transaction List (NEW - for transaction.php page)
+    // ============================================
+    if ($action === 'list') {
+        // Fetch all transactions for the user
+        $stmt = $conn->prepare("
+            SELECT id, type, amount, category, description, tags, date, created_at
+            FROM transactions 
+            WHERE user_id = ? 
+            ORDER BY date DESC, created_at DESC
+        ");
+        
+        if (!$stmt) {
+            echo json_encode(['error' => 'Query preparation failed: ' . $conn->error]);
+            exit();
+        }
+        
+        $stmt->bind_param("i", $user_id);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        
+        $transactions = [];
+        
+        while ($row = $result->fetch_assoc()) {
+            $transactions[] = [
+                'id' => intval($row['id']),
+                'type' => $row['type'],
+                'amount' => floatval($row['amount']),
+                'category' => $row['category'] ?? 'Uncategorized',
+                'description' => $row['description'] ?? '',
+                'tags' => $row['tags'] ?? '',
+                'date' => $row['date'],
+                'created_at' => $row['created_at']
+            ];
+        }
+        
+        $stmt->close();
+        
+        // Return the transactions array directly
+        echo json_encode($transactions);
+    }
+    
+    // ============================================
     // ACTION: Get Month Expenses (for dropdown)
     // ============================================
-    if ($action === 'month_expenses') {
+    else if ($action === 'month_expenses') {
         $response = [
             'donutData' => [0, 0, 0, 0, 0, 0],
             'categoryLabels' => ['Shopping', 'Fun', 'Kids', 'Vehicle', 'House', 'Insure'],
@@ -99,12 +145,14 @@ try {
             ];
         }
         $stmt->close();
+        
+        echo json_encode($response);
     }
     
     // ============================================
-    // ACTION: Get Full Dashboard Data (default)
+    // ACTION: Get Full Dashboard Data (for dashboard/index.php)
     // ============================================
-    else {
+    else if ($action === 'dashboard') {
         $response = [
             'totalIncome' => 0,
             'totalExpense' => 0,
@@ -287,9 +335,16 @@ try {
                 $response['insights'][] = sprintf('📅 Your average monthly expense is ₹%s.', number_format($monthlyAvg, 0));
             }
         }
+        
+        echo json_encode($response);
     }
-
-    echo json_encode($response);
+    
+    // ============================================
+    // DEFAULT: If no action specified or invalid action
+    // ============================================
+    else {
+        echo json_encode(['error' => 'Invalid action parameter. Use: list, dashboard, or month_expenses']);
+    }
 
 } catch (Exception $e) {
     echo json_encode(['error' => 'Database error: ' . $e->getMessage()]);

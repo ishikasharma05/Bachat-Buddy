@@ -1,15 +1,51 @@
+<?php
+// Start session and check authentication
+require_once 'components/auth_check.php';
+require_once 'config/db.php';
+
+// Fetch all transactions directly in PHP
+$user_id = $_SESSION['user_id'];
+$transactions = [];
+$error = null;
+
+try {
+    $stmt = $conn->prepare("
+        SELECT id, type, amount, category, description, tags, date, created_at
+        FROM transactions 
+        WHERE user_id = ? 
+        ORDER BY date DESC, created_at DESC
+    ");
+    
+    if ($stmt) {
+        $stmt->bind_param("i", $user_id);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        
+        while ($row = $result->fetch_assoc()) {
+            $transactions[] = $row;
+        }
+        
+        $stmt->close();
+    } else {
+        $error = "Failed to prepare query";
+    }
+} catch (Exception $e) {
+    $error = "Database error: " . $e->getMessage();
+}
+
+$conn->close();
+?>
 <!DOCTYPE html>
 <html lang="en">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BayChat Buddy | Transactions</title>
+    <title>Bachat Buddy | Transactions</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <link rel="stylesheet" href="components/styles.css">
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         :root {
@@ -82,10 +118,6 @@
         .sidebar .nav-link i {
             margin-right: 12px;
             font-size: 1.1rem;
-        }
-
-        .sidebar .logout {
-            padding-left: 15px;
         }
 
         .brand {
@@ -272,7 +304,6 @@
             cursor: not-allowed;
         }
 
-        /* ================== MOBILE SIDEBAR & HEADER ================== */
         .mobile-sidebar {
             position: fixed;
             top: 0;
@@ -308,25 +339,6 @@
             visibility: visible;
         }
 
-        .header .btn.d-lg-none {
-            background: transparent;
-            border: none;
-            padding: 0;
-        }
-
-        .header .btn.d-lg-none i {
-            font-size: 1.8rem;
-            color: var(--text-main);
-            transition: color 0.3s ease;
-        }
-
-        /* Close button in mobile sidebar */
-        .mobile-sidebar .btn-close i {
-            color: var(--text-main);
-            font-size: 1.3rem;
-        }
-
-        /* ================== RESPONSIVE SIDEBAR & CONTENT ================== */
         @media (max-width: 991px) {
             .sidebar.d-lg-block {
                 display: none;
@@ -341,39 +353,18 @@
             .main-body {
                 padding: 1rem;
             }
-
-            .transaction-card {
-                margin: 10px 0;
-            }
         }
 
-        /* ================== FORM & TABLES ON SMALL SCREENS ================== */
         @media (max-width: 767px) {
-
-            .input-group input,
-            .input-group select {
-                font-size: 0.9rem;
-            }
-
             .transaction-card .input-group {
                 flex-direction: column;
             }
 
             .transaction-card .input-group .form-control,
-            .transaction-card .input-group .form-select,
-            .transaction-card .input-group .input-group-text {
+            .transaction-card .input-group .form-select {
                 width: 100%;
                 margin-bottom: 0.5rem;
             }
-
-            .transaction-card .input-group .input-group-text {
-                justify-content: flex-start;
-            }
-        }
-
-        /* ================== TABLE RESPONSIVENESS ================== */
-        .table-responsive {
-            overflow-x: auto;
         }
 
         @media (max-width: 575px) {
@@ -402,21 +393,6 @@
                 font-weight: 500;
                 color: var(--text-muted);
                 flex-basis: 50%;
-            }
-
-            .table tbody td:last-child {
-                justify-content: flex-end;
-            }
-        }
-
-        /* ================== PAGINATION RESPONSIVENESS ================== */
-        @media (max-width: 575px) {
-            .pagination {
-                flex-wrap: wrap;
-            }
-
-            .page-item {
-                margin-bottom: 5px;
             }
         }
     </style>
@@ -463,6 +439,7 @@
             <div class="main-body">
                 <div class="container py-2">
                     <div class="mb-4">
+                        <h3>Transactions</h3>
                         <p class="text-muted ms-1">Manage and track your income and expenses easily</p>
                     </div>
 
@@ -479,8 +456,10 @@
                                     <span class="input-group-text"><i class="bi bi-filter"></i></span>
                                     <select class="form-select" id="typeFilter">
                                         <option value="all">All Types</option>
-                                        <option value="Income">Income</option>
-                                        <option value="Expense">Expense</option>
+                                        <option value="income">Income</option>
+                                        <option value="expense">Expense</option>
+                                        <option value="savings">Savings</option>
+                                        <option value="withdraw_savings">Withdraw Savings</option>
                                     </select>
                                 </div>
                             </div>
@@ -510,7 +489,21 @@
                                     <th style="width: 80px;" class="text-end">Action</th>
                                 </tr>
                             </thead>
-                            <tbody id="transactionTableBody"></tbody>
+                            <tbody id="transactionTableBody">
+                                <?php if ($error): ?>
+                                    <tr>
+                                        <td colspan="6" class="text-center text-danger">
+                                            <i class="bi bi-exclamation-triangle me-2"></i><?php echo htmlspecialchars($error); ?>
+                                        </td>
+                                    </tr>
+                                <?php elseif (empty($transactions)): ?>
+                                    <tr>
+                                        <td colspan="6" class="text-center text-muted">
+                                            <i class="bi bi-inbox me-2"></i>No transactions yet. Add your first transaction!
+                                        </td>
+                                    </tr>
+                                <?php endif; ?>
+                            </tbody>
                         </table>
                     </div>
 
@@ -524,11 +517,17 @@
         </div>
     </div>
 
+    <!-- Embed transactions data directly in JavaScript -->
+    <script>
+        // Data loaded directly from PHP - NO API CALLS!
+        const transactions = <?php echo json_encode($transactions); ?>;
+        console.log('Loaded transactions:', transactions.length);
+    </script>
+
     <script>
         function toggleMenu() {
             document.getElementById("mobileSidebar").classList.toggle("active");
             document.getElementById("sidebarOverlay").classList.toggle("active");
-            document.body.classList.toggle("sidebar-open");
         }
     </script>
 
@@ -548,21 +547,12 @@
 
         setTheme(localStorage.getItem('theme') || 'light');
 
-        let transactions = [];
-
-        fetch("api/get-transactions.php")
-            .then(res => res.json())
-            .then(data => {
-                transactions = data;
-                renderTransactions();
-            })
-            .catch(() => {
-                alert("Failed to load transactions");
-            });
-
-
-        const itemsPerPage = 5;
+        // Pagination and filtering settings
+        const itemsPerPage = 10;
         let currentPage = 1;
+
+        // Initial render
+        renderTransactions();
 
         function renderTransactions() {
             const tbody = document.getElementById('transactionTableBody');
@@ -572,43 +562,92 @@
             const typeFilter = document.getElementById('typeFilter').value;
             const sortFilter = document.getElementById('sortFilter').value;
 
-            let filtered = transactions.filter(tx =>
-                (typeFilter === 'all' || tx.type === typeFilter) &&
-                (tx.description.toLowerCase().includes(searchTerm) || tx.category.toLowerCase().includes(searchTerm))
-            );
+            // Filter transactions
+            let filtered = transactions.filter(tx => {
+                const matchesType = typeFilter === 'all' || tx.type.toLowerCase().replace(' ', '_') === typeFilter;
+                const matchesSearch = 
+                    (tx.description && tx.description.toLowerCase().includes(searchTerm)) || 
+                    (tx.category && tx.category.toLowerCase().includes(searchTerm)) ||
+                    (tx.tags && tx.tags.toLowerCase().includes(searchTerm));
+                return matchesType && matchesSearch;
+            });
 
+            // Sort transactions
             filtered.sort((a, b) => {
                 if (sortFilter === 'date-desc') return new Date(b.date) - new Date(a.date);
                 if (sortFilter === 'date-asc') return new Date(a.date) - new Date(b.date);
-                if (sortFilter === 'amount-desc') return b.amount - a.amount;
-                if (sortFilter === 'amount-asc') return a.amount - b.amount;
+                if (sortFilter === 'amount-desc') return Math.abs(b.amount) - Math.abs(a.amount);
+                if (sortFilter === 'amount-asc') return Math.abs(a.amount) - Math.abs(b.amount);
+                return 0;
             });
 
+            // Paginate
             const start = (currentPage - 1) * itemsPerPage;
             const paginated = filtered.slice(start, start + itemsPerPage);
 
+            if (paginated.length === 0 && filtered.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="6" class="text-center text-muted">
+                    <i class="bi bi-search me-2"></i>No transactions match your filters
+                </td></tr>`;
+                document.getElementById('pagination').innerHTML = '';
+                return;
+            }
+
+            // Render transaction rows
             for (const tx of paginated) {
                 const tr = document.createElement('tr');
+                
+                // Format date
+                const dateObj = new Date(tx.date);
+                const formattedDate = dateObj.toLocaleDateString('en-US', { 
+                    year: 'numeric', 
+                    month: 'short', 
+                    day: 'numeric' 
+                });
+                
+                // Badge colors
+                let badgeClass = 'bg-secondary';
+                if (tx.type === 'income') badgeClass = 'bg-success';
+                else if (tx.type === 'expense') badgeClass = 'bg-danger';
+                else if (tx.type === 'savings') badgeClass = 'bg-primary';
+                else if (tx.type === 'withdraw_savings') badgeClass = 'bg-warning';
+                
+                const typeDisplay = tx.type.replace('_', ' ').split(' ').map(word => 
+                    word.charAt(0).toUpperCase() + word.slice(1)
+                ).join(' ');
+                
                 tr.innerHTML = `
-                  <td>${tx.date}</td>
-                  <td>${tx.description}</td>
-                  <td>${tx.category}</td>
-                  <td>${tx.type}</td>
-                  <td class="${tx.amount < 0 ? 'text-danger' : 'text-success'} fw-bold">${tx.amount < 0 ? '-' : '+'}$${Math.abs(tx.amount)}</td>
+                  <td data-label="Date">${formattedDate}</td>
+                  <td data-label="Description">${tx.description || '<em class="text-muted">No description</em>'}</td>
+                  <td data-label="Category">
+                    <span class="badge bg-light text-dark">${tx.category || 'Uncategorized'}</span>
+                  </td>
+                  <td data-label="Type">
+                    <span class="badge ${badgeClass}">${typeDisplay}</span>
+                  </td>
+                  <td data-label="Amount" class="${tx.type === 'expense' ? 'text-danger' : 'text-success'} fw-bold">
+                    ${tx.type === 'expense' ? '-' : '+'}$${Math.abs(parseFloat(tx.amount)).toFixed(2)}
+                  </td>
                   <td class="text-end">
                     <div class="dropdown">
-                        <button class="btn btn-sm btn-link text-decoration-none" type="button" data-bs-toggle="dropdown" aria-expanded="false" style="color: var(--text-main);">
-                            <i class="bi bi-three-dots fs-5"></i>
+                        <button class="btn btn-sm btn-link text-decoration-none" type="button" data-bs-toggle="dropdown" style="color: var(--text-main);">
+                            <i class="bi bi-three-dots-vertical fs-5"></i>
                         </button>
                         <ul class="dropdown-menu dropdown-menu-end shadow">
-                            <li><button class="dropdown-item" onclick="alert('Edit ${tx.description}')"><i class="bi bi-pencil-square me-2"></i>Edit</button></li>
-                            <li><button class="dropdown-item text-danger" onclick="alert('Delete ${tx.description}')"><i class="bi bi-trash me-2"></i>Delete</button></li>
+                            <li><a class="dropdown-item" href="edit-entry.php?id=${tx.id}">
+                                <i class="bi bi-pencil-square me-2"></i>Edit
+                            </a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><button class="dropdown-item text-danger" onclick="deleteTransaction(${tx.id}, '${(tx.description || 'this transaction').replace(/'/g, "\\'")}')">
+                                <i class="bi bi-trash me-2"></i>Delete
+                            </button></li>
                         </ul>
                     </div>
                   </td>
                 `;
                 tbody.appendChild(tr);
             }
+            
             renderPagination(filtered.length);
         }
 
@@ -617,12 +656,23 @@
             const pagination = document.getElementById('pagination');
             pagination.innerHTML = '';
 
+            if (pageCount <= 1) return;
+
             const prevLi = document.createElement('li');
             prevLi.className = 'page-item ' + (currentPage === 1 ? 'disabled' : '');
-            prevLi.innerHTML = `<button class="page-link" onclick="goToPage(${currentPage - 1})">Previous</button>`;
+            prevLi.innerHTML = `<button class="page-link" onclick="goToPage(${currentPage - 1})">
+                <i class="bi bi-chevron-left"></i>
+            </button>`;
             pagination.appendChild(prevLi);
 
-            for (let i = 1; i <= pageCount; i++) {
+            let startPage = Math.max(1, currentPage - 2);
+            let endPage = Math.min(pageCount, startPage + 4);
+            
+            if (endPage - startPage < 4) {
+                startPage = Math.max(1, endPage - 4);
+            }
+
+            for (let i = startPage; i <= endPage; i++) {
                 const li = document.createElement('li');
                 li.className = 'page-item ' + (i === currentPage ? 'active' : '');
                 li.innerHTML = `<button class="page-link" onclick="goToPage(${i})">${i}</button>`;
@@ -631,87 +681,75 @@
 
             const nextLi = document.createElement('li');
             nextLi.className = 'page-item ' + (currentPage === pageCount ? 'disabled' : '');
-            nextLi.innerHTML = `<button class="page-link" onclick="goToPage(${currentPage + 1})">Next</button>`;
+            nextLi.innerHTML = `<button class="page-link" onclick="goToPage(${currentPage + 1})">
+                <i class="bi bi-chevron-right"></i>
+            </button>`;
             pagination.appendChild(nextLi);
         }
 
         function goToPage(page) {
-            const totalPages = Math.ceil(transactions.length / itemsPerPage);
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+            const typeFilter = document.getElementById('typeFilter').value;
+            
+            let filtered = transactions.filter(tx => {
+                const matchesType = typeFilter === 'all' || tx.type.toLowerCase().replace(' ', '_') === typeFilter;
+                const matchesSearch = 
+                    (tx.description && tx.description.toLowerCase().includes(searchTerm)) || 
+                    (tx.category && tx.category.toLowerCase().includes(searchTerm)) ||
+                    (tx.tags && tx.tags.toLowerCase().includes(searchTerm));
+                return matchesType && matchesSearch;
+            });
+            
+            const totalPages = Math.ceil(filtered.length / itemsPerPage);
             if (page < 1 || page > totalPages) return;
+            
             currentPage = page;
             renderTransactions();
+            
+            document.querySelector('.table-responsive').scrollIntoView({ behavior: 'smooth', block: 'start' });
         }
 
+        function deleteTransaction(id, description) {
+            if (!confirm(`Are you sure you want to delete "${description}"?`)) return;
+            
+            fetch('backend/transactions/delete_transaction.php', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ id: id })
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    // Reload page to refresh data
+                    location.reload();
+                } else {
+                    alert('Error: ' + data.message);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Failed to delete transaction. Please try again.');
+            });
+        }
+
+        // Event listeners for filters
         document.getElementById('searchInput').addEventListener('input', () => {
             currentPage = 1;
             renderTransactions();
         });
+        
         document.getElementById('typeFilter').addEventListener('change', () => {
             currentPage = 1;
             renderTransactions();
         });
+        
         document.getElementById('sortFilter').addEventListener('change', () => {
             currentPage = 1;
             renderTransactions();
         });
-
-        renderTransactions();
-
-        // --- Notification Applet Logic ---
-        const notificationBtn = document.getElementById('notificationBtn');
-        const notificationDropdown = document.getElementById('notificationDropdown');
-        const notificationBadge = document.getElementById('notificationBadge');
-
-        // 1. Toggle visibility when clicking the bell
-        notificationBtn.addEventListener('click', (e) => {
-            e.stopPropagation(); // Prevents immediate closing
-            notificationDropdown.classList.toggle('hidden');
-        });
-
-        // 2. Close the applet if the user clicks anywhere else on the page
-        window.addEventListener('click', (e) => {
-            if (!notificationBtn.contains(e.target) && !notificationDropdown.contains(e.target)) {
-                notificationDropdown.classList.add('hidden');
-            }
-        });
-
-        // 3. Clear Notifications Function
-        function clearNotifications() {
-            const list = document.getElementById('notificationList');
-            list.innerHTML = `
-        <div class="p-4 text-center text-sm text-gray-500">
-            <i class="bi bi-check2-all text-success d-block fs-4 mb-2"></i>
-            All caught up!
-        </div>
-    `;
-            // Hide the badge count
-            notificationBadge.style.display = 'none';
-        }
-
-        // 4. (Optional) Function to update the number dynamically from other parts of your app
-        function updateNotificationCount(count) {
-            if (count > 0) {
-                notificationBadge.innerText = count;
-                notificationBadge.style.display = 'inline-flex';
-            } else {
-                notificationBadge.style.display = 'none';
-            }
-        }
-
-        // --- Logout Confirmation Logic ---
-        document.getElementById("logout-btn").addEventListener("click", function() {
-            // Asks for user permission
-            const confirmLogout = confirm("Are you sure you want to logout?");
-
-            // If the user clicks 'OK', it redirects
-            if (confirmLogout) {
-                window.location.href = "login-pages/login.php";
-            }
-            // If they click 'Cancel', nothing happens and they stay on the page
-        });
     </script>
-
-    
 </body>
 
 </html>

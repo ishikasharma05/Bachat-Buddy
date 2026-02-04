@@ -1,4 +1,9 @@
 <?php
+/**
+ * Backend: Add Transaction
+ * Handles adding new transactions (income, expense, savings, withdraw)
+ */
+
 ob_start();
 session_start();
 header('Content-Type: application/json');
