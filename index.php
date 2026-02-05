@@ -179,6 +179,259 @@ $monthlyAvg = $monthsWithExpenses > 0 ? $totalExpense / $monthsWithExpenses : 0;
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="components/style.css">
     <style>
+        /* Remove custom scrollbar - use default */
+        * {
+            scrollbar-width: auto;
+            scrollbar-color: auto;
+        }
+
+        ::-webkit-scrollbar {
+            width: auto;
+            height: auto;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: auto;
+        }
+
+        /* Hide hamburger menu button on desktop */
+        @media (min-width: 992px) {
+            .header .menu-btn,
+            .header button.btn.d-lg-none {
+                display: none !important;
+            }
+        }
+
+        /* Make all header buttons circular and consistent */
+        .header button,
+        .header .notification,
+        #theme-toggle {
+            width: 40px !important;
+            height: 40px !important;
+            border-radius: 50% !important;
+            display: inline-flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            border: none !important;
+            background-color: #f3f4f6 !important;
+            color: #374151 !important;
+            cursor: pointer !important;
+            transition: background-color 0.2s ease !important;
+            padding: 0 !important;
+            position: relative !important;
+        }
+
+        .header button:hover,
+        .header .notification:hover,
+        #theme-toggle:hover {
+            background-color: #e5e7eb !important;
+        }
+
+        .header button i,
+        .header .notification i,
+        #theme-toggle i {
+            font-size: 18px !important;
+        }
+
+        /* Fix notification badge position - MUST be on the bell icon button */
+        #notificationBtn {
+            position: relative !important;
+        }
+
+        .notification-badge,
+        #notificationBadge,
+        #notificationBtn .notification-badge,
+        #notificationBtn span {
+            position: absolute !important;
+            top: -2px !important;
+            right: -2px !important;
+            background: #ef4444 !important;
+            color: white !important;
+            border-radius: 50% !important;
+            width: 18px !important;
+            height: 18px !important;
+            font-size: 11px !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            font-weight: 600 !important;
+            z-index: 10 !important;
+            line-height: 1 !important;
+        }
+
+        /* Force notification dropdown to be hidden by default */
+        #notificationDropdown.hidden {
+            display: none !important;
+        }
+
+        #notificationDropdown:not(.hidden) {
+            display: block !important;
+        }
+
+        /* Dark Theme Styles - Match Profile Page */
+        [data-theme="dark"] {
+            background-color: #0f172a;
+            color: #e2e8f0;
+        }
+
+        [data-theme="dark"] body {
+            background-color: #0f172a;
+            color: #e2e8f0;
+        }
+
+        [data-theme="dark"] .layout {
+            background-color: #0f172a;
+        }
+
+        [data-theme="dark"] .main-body {
+            background-color: #0f172a !important;
+        }
+
+        /* Sidebar - Always visible in dark mode */
+        [data-theme="dark"] .sidebar {
+            background-color: #1e293b !important;
+            color: #e2e8f0 !important;
+        }
+
+        [data-theme="dark"] .sidebar .brand {
+            color: #e2e8f0 !important;
+        }
+
+        [data-theme="dark"] .sidebar .nav-link {
+            color: #94a3b8 !important;
+        }
+
+        [data-theme="dark"] .sidebar .nav-link:hover {
+            background-color: #334155 !important;
+            color: #e2e8f0 !important;
+        }
+
+        [data-theme="dark"] .sidebar .nav-link[style*="background"] {
+            background: #3b82f6 !important;
+            color: #fff !important;
+        }
+
+        /* Header in dark mode */
+        [data-theme="dark"] .header {
+            background-color: #1e293b !important;
+            border-bottom-color: #334155 !important;
+        }
+
+        [data-theme="dark"] .header h5 {
+            color: #e2e8f0 !important;
+        }
+
+        [data-theme="dark"] .header button,
+        [data-theme="dark"] .header .notification,
+        [data-theme="dark"] #theme-toggle {
+            background-color: #334155 !important;
+            color: #e2e8f0 !important;
+        }
+
+        [data-theme="dark"] .header button:hover,
+        [data-theme="dark"] .header .notification:hover,
+        [data-theme="dark"] #theme-toggle:hover {
+            background-color: #475569 !important;
+        }
+
+        /* Cards in dark mode */
+        [data-theme="dark"] .summary-card {
+            background-color: #1e293b !important;
+            color: #e2e8f0 !important;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3) !important;
+        }
+
+        [data-theme="dark"] .card-custom {
+            background-color: #1e293b !important;
+            color: #e2e8f0 !important;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3) !important;
+        }
+
+        [data-theme="dark"] .card {
+            background-color: #1e293b !important;
+            color: #e2e8f0 !important;
+        }
+
+        [data-theme="dark"] .card-body {
+            background-color: #1e293b !important;
+        }
+
+        /* Text colors in dark mode */
+        [data-theme="dark"] .text-muted {
+            color: #94a3b8 !important;
+        }
+
+        [data-theme="dark"] h4,
+        [data-theme="dark"] h5,
+        [data-theme="dark"] h6 {
+            color: #e2e8f0 !important;
+        }
+
+        /* Notification dropdown in dark mode */
+        [data-theme="dark"] #notificationDropdown {
+            background-color: #1e293b !important;
+            border-color: #334155 !important;
+            color: #e2e8f0 !important;
+        }
+
+        [data-theme="dark"] #notificationDropdown .p-3 {
+            background-color: #1e293b !important;
+            border-bottom-color: #334155 !important;
+        }
+
+        [data-theme="dark"] .notification-item,
+        [data-theme="dark"] #notificationDropdown .p-3.border-b {
+            border-bottom-color: #334155 !important;
+            background-color: #1e293b !important;
+        }
+
+        [data-theme="dark"] #notificationDropdown .hover\:bg-gray-50:hover {
+            background-color: #334155 !important;
+        }
+
+        /* Insight pills - YELLOW background like profile page */
+        .insight-pill {
+            background: #fef3c7 !important;
+            border-left: 4px solid #fbbf24 !important;
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            font-size: 0.9rem;
+            color: #92400e !important;
+        }
+
+        [data-theme="dark"] .insight-pill {
+            background-color: #451a03 !important;
+            border-left-color: #fbbf24 !important;
+            color: #fde68a !important;
+        }
+
+        /* Form elements in dark mode */
+        [data-theme="dark"] input,
+        [data-theme="dark"] select,
+        [data-theme="dark"] .form-select {
+            background-color: #334155 !important;
+            border-color: #475569 !important;
+            color: #e2e8f0 !important;
+        }
+
+        [data-theme="dark"] .form-select option {
+            background-color: #1e293b !important;
+        }
+
+        /* Tab styling in dark mode */
+        [data-theme="dark"] .tabs span {
+            color: #64748b !important;
+        }
+
+        [data-theme="dark"] .tabs span.active {
+            color: #e2e8f0 !important;
+        }
+
         .main-body {
             padding: 2rem;
             overflow-y: auto;
@@ -488,7 +741,6 @@ $monthlyAvg = $monthsWithExpenses > 0 ? $totalExpense / $monthsWithExpenses : 0;
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
-    <script src="components/notifications.js"></script>
 
     <script>
         console.log('🔄 Initializing dashboard...');
@@ -513,6 +765,177 @@ $monthlyAvg = $monthsWithExpenses > 0 ? $totalExpense / $monthsWithExpenses : 0;
             document.getElementById("mobileSidebar").classList.toggle("active");
             document.getElementById("sidebarOverlay").classList.toggle("active");
             document.body.classList.toggle("sidebar-open");
+        }
+
+        // Theme Toggle Functionality - WORKS WITH ANY BUTTON STRUCTURE
+        function initThemeToggle() {
+            console.log('🎨 Initializing theme toggle...');
+            
+            // Try multiple selectors to find the theme button
+            let themeToggle = document.getElementById('theme-toggle') 
+                           || document.querySelector('[id*="theme"]')
+                           || document.querySelector('button .fa-moon')?.parentElement
+                           || document.querySelector('button .bi-moon')?.parentElement
+                           || document.querySelector('button .bi-moon-fill')?.parentElement;
+            
+            console.log('Theme toggle element:', themeToggle);
+            
+            const htmlElement = document.documentElement;
+            const bodyElement = document.body;
+            
+            if (!themeToggle) {
+                console.error('❌ Theme toggle button not found! Trying all buttons...');
+                const allButtons = document.querySelectorAll('button');
+                console.log('All buttons found:', allButtons.length);
+                allButtons.forEach((btn, idx) => {
+                    console.log(`Button ${idx}:`, btn, 'ID:', btn.id, 'Classes:', btn.className);
+                });
+                return;
+            }
+            
+            const themeIcon = themeToggle.querySelector('i');
+            console.log('Theme icon:', themeIcon);
+            
+            // Load saved theme from localStorage
+            const savedTheme = localStorage.getItem('theme') || 'light';
+            console.log('Saved theme:', savedTheme);
+            htmlElement.setAttribute('data-theme', savedTheme);
+            if (bodyElement) {
+                bodyElement.setAttribute('data-theme', savedTheme);
+            }
+            
+            // Update icon based on current theme
+            if (themeIcon) {
+                if (savedTheme === 'dark') {
+                    themeIcon.className = themeIcon.className.includes('fa-') ? 'fas fa-sun' : 'bi bi-sun-fill';
+                } else {
+                    themeIcon.className = themeIcon.className.includes('fa-') ? 'fas fa-moon' : 'bi bi-moon-fill';
+                }
+            }
+            
+            // Add click event
+            themeToggle.addEventListener('click', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                
+                console.log('🖱️ Theme toggle clicked!');
+                
+                const currentTheme = htmlElement.getAttribute('data-theme') || 'light';
+                const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+                
+                console.log('Current theme:', currentTheme, '→ New theme:', newTheme);
+                
+                htmlElement.setAttribute('data-theme', newTheme);
+                if (bodyElement) {
+                    bodyElement.setAttribute('data-theme', newTheme);
+                }
+                localStorage.setItem('theme', newTheme);
+                
+                // Toggle icon
+                if (themeIcon) {
+                    if (newTheme === 'dark') {
+                        themeIcon.className = themeIcon.className.includes('fa-') ? 'fas fa-sun' : 'bi bi-sun-fill';
+                    } else {
+                        themeIcon.className = themeIcon.className.includes('fa-') ? 'fas fa-moon' : 'bi bi-moon-fill';
+                    }
+                }
+                
+                console.log('✅ Theme toggled to:', newTheme);
+            });
+            
+            console.log('✅ Theme toggle initialized successfully');
+        }
+
+        // Notification Functionality - FIXED FOR HEADER.PHP
+        function initNotifications() {
+            console.log('🔔 Initializing notifications...');
+            
+            const notificationBtn = document.getElementById("notificationBtn");
+            const notificationDropdown = document.getElementById("notificationDropdown");
+            const notificationBadge = document.getElementById("notificationBadge");
+
+            console.log('Notification button:', notificationBtn);
+            console.log('Notification dropdown:', notificationDropdown);
+            console.log('Notification badge:', notificationBadge);
+
+            if (!notificationBtn || !notificationDropdown) {
+                console.error('❌ Notification elements not found!');
+                console.log('Looking for: #notificationBtn and #notificationDropdown');
+                return;
+            }
+
+            // Force hide dropdown on page load
+            notificationDropdown.classList.add("hidden");
+            notificationDropdown.style.display = "none";
+
+            // Toggle dropdown
+            notificationBtn.addEventListener("click", function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                
+                console.log('🖱️ Notification button clicked!');
+                
+                const isHidden = notificationDropdown.classList.contains('hidden');
+                
+                if (isHidden) {
+                    notificationDropdown.classList.remove("hidden");
+                    notificationDropdown.style.display = "block";
+                    console.log('Dropdown is now: visible');
+                } else {
+                    notificationDropdown.classList.add("hidden");
+                    notificationDropdown.style.display = "none";
+                    console.log('Dropdown is now: hidden');
+                }
+            });
+
+            // Close dropdown when clicking outside
+            document.addEventListener("click", function(e) {
+                if (!notificationDropdown.classList.contains("hidden")) {
+                    if (!notificationDropdown.contains(e.target) && e.target !== notificationBtn && !notificationBtn.contains(e.target)) {
+                        notificationDropdown.classList.add("hidden");
+                        notificationDropdown.style.display = "none";
+                        console.log('🔔 Notification dropdown closed (clicked outside)');
+                    }
+                }
+            });
+
+            // Prevent dropdown from closing when clicking inside
+            notificationDropdown.addEventListener("click", function(e) {
+                e.stopPropagation();
+            });
+            
+            console.log('✅ Notifications initialized successfully');
+        }
+
+        // Clear notifications
+        function clearNotifications() {
+            const notificationList = document.getElementById("notificationList");
+            const notificationBadge = document.getElementById("notificationBadge");
+            
+            if (notificationList) {
+                notificationList.innerHTML = `
+                    <div class="p-3 text-center text-gray-500">
+                        No notifications
+                    </div>
+                `;
+            }
+            
+            if (notificationBadge) {
+                notificationBadge.style.display = "none";
+            }
+        }
+
+        // Logout button functionality
+        function initLogout() {
+            const logoutBtn = document.getElementById('logout-btn');
+            if (logoutBtn) {
+                logoutBtn.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    if (confirm('Are you sure you want to logout?')) {
+                        window.location.href = 'backend/auth/logout.php';
+                    }
+                });
+            }
         }
 
         function switchToIncome() {
@@ -544,7 +967,7 @@ $monthlyAvg = $monthsWithExpenses > 0 ? $totalExpense / $monthsWithExpenses : 0;
         function updateDonutChart() {
             const selectedMonth = document.getElementById('monthSelect').value;
 
-            fetch(`Bachat-Buddy/Bachat-Buddy/Bachat-Buddy/backend/transactions/fetch_transactions.php?action=month_expenses&month=${selectedMonth}`)
+            fetch(`backend/transactions/fetch_transactions.php?action=month_expenses&month=${selectedMonth}`)
                 .then(response => response.json())
                 .then(data => {
                     if (data.error) {
@@ -594,6 +1017,18 @@ $monthlyAvg = $monthsWithExpenses > 0 ? $totalExpense / $monthsWithExpenses : 0;
                     console.error('Fetch error:', error);
                 });
         }
+
+        // Initialize immediately when DOM is ready
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('🔍 DOM Content Loaded - Initializing...');
+            
+            // Initialize theme toggle, notifications, and logout first
+            setTimeout(function() {
+                initThemeToggle();
+                initNotifications();
+                initLogout();
+            }, 100);
+        });
 
         window.addEventListener('load', function() {
             console.log('🎨 Creating charts...');
@@ -665,53 +1100,12 @@ $monthlyAvg = $monthsWithExpenses > 0 ? $totalExpense / $monthsWithExpenses : 0;
                     }
                 });
                 console.log('✅ Donut chart created');
+                
                 console.log('🎉 Dashboard fully loaded!');
             } catch (error) {
                 console.error('❌ Chart error:', error);
             }
         });
-
-
-        console.log("Notification JS Loaded");
-
-        // Elements
-        const notificationBtn = document.getElementById("notificationBtn");
-        const notificationDropdown = document.getElementById("notificationDropdown");
-        const notificationBadge = document.getElementById("notificationBadge");
-        const notificationList = document.getElementById("notificationList");
-
-        // Toggle dropdown
-        if (notificationBtn) {
-            notificationBtn.addEventListener("click", function(e) {
-                e.stopPropagation();
-                notificationDropdown.classList.toggle("hidden");
-            });
-        }
-
-        // Close dropdown when clicking outside
-        document.addEventListener("click", function() {
-            if (!notificationDropdown.classList.contains("hidden")) {
-                notificationDropdown.classList.add("hidden");
-            }
-        });
-
-        // Prevent dropdown from closing when clicking inside
-        if (notificationDropdown) {
-            notificationDropdown.addEventListener("click", function(e) {
-                e.stopPropagation();
-            });
-        }
-
-        // Clear notifications
-        function clearNotifications() {
-            notificationList.innerHTML = `
-        <div class="p-3 text-center text-muted">
-            No notifications
-        </div>
-    `;
-
-            notificationBadge.style.display = "none";
-        }
     </script>
 </body>
 
