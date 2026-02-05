@@ -1,3 +1,12 @@
+<?php
+session_start();
+
+// Check if user is logged in
+if (!isset($_SESSION['user_id'])) {
+    header("Location: login-pages/login.php");
+    exit();
+}
+?>
 <!DOCTYPE html>
 <html lang="en">
 
@@ -34,7 +43,6 @@
             --header-bg: #1e293b;
             --input-bg: #334155;
             --label-color: #ffffff;
-            /* High contrast for labels like 'Goal Name' */
         }
 
         body {
@@ -164,7 +172,6 @@
             color: #fff;
         }
 
-        /* --- VISIBILITY FIX FOR LABELS --- */
         .form-label,
         .text-muted,
         small.d-block {
@@ -193,7 +200,6 @@
             border-radius: 20px;
         }
 
-        /* --- FIXING THE CROSS (CLOSE BUTTON) VISIBILITY --- */
         [data-theme="dark"] .btn-close {
             filter: invert(1) grayscale(100%) brightness(200%);
         }
@@ -226,15 +232,11 @@
             color: #ecfdf5;
         }
 
-        /* ---------------- RESPONSIVE LAYOUT ---------------- */
         @media (max-width: 992px) {
-
-            /* --- Sidebar for mobile --- */
             .mobile-sidebar {
                 position: fixed;
                 top: 0;
                 left: -300px;
-                /* Hidden initially */
                 width: 250px;
                 height: 100%;
                 background-color: var(--sidebar-bg);
@@ -249,7 +251,6 @@
                 left: 0;
             }
 
-            /* Overlay when sidebar is open */
             .sidebar-overlay {
                 display: none;
                 position: fixed;
@@ -266,12 +267,10 @@
                 display: block;
             }
 
-            /* Hide desktop sidebar */
             .sidebar.d-lg-block {
                 display: none;
             }
 
-            /* Header adjustments */
             .header {
                 padding: 0.75rem 1rem;
                 justify-content: space-between;
@@ -346,19 +345,14 @@
             }
         }
 
-        /* Hamburger menu for mobile */
         .header .btn i.bi-list {
             color: var(--text-main);
-            /* ensures it uses text color variable */
             transition: color 0.3s ease;
         }
 
-        /* Dark mode */
         [data-theme="dark"] .header .btn i.bi-list {
             color: var(--text-main);
-            /* ensures it's visible in dark mode */
             filter: invert(0);
-            /* no need to invert icons like close button if using var color */
         }
     </style>
 </head>
@@ -411,23 +405,7 @@
                 </div>
 
                 <div class="container" id="goalList">
-                    <div class="goal-card">
-                        <div class="d-flex justify-content-between align-items-center">
-                            <h5 class="fw-bold">car</h5>
-                            <span class="badge bg-success rounded-pill px-3">In Progress</span>
-                        </div>
-                        <p class="text-muted mb-2">Target: ₹500,000 | Saved: ₹100,000</p>
-                        <div class="progress mb-2" style="height: 10px; background-color: var(--input-bg);">
-                            <div class="progress-bar bg-info" style="width: 20%"></div>
-                        </div>
-                        <div class="d-flex justify-content-between align-items-center mt-3">
-                            <button class="btn btn-sm btn-outline-primary rounded-pill px-3" onclick="updateGoal(this)">Add Funds</button>
-                            <div>
-                                <i class="bi bi-pencil text-muted me-2" style="cursor:pointer" onclick="editGoal(this)"></i>
-                                <i class="bi bi-trash text-danger" style="cursor:pointer" onclick="deleteGoal(this)"></i>
-                            </div>
-                        </div>
-                    </div>
+                    <!-- Goals will be loaded here dynamically -->
                 </div>
 
                 <div class="modal fade" id="goalModal" tabindex="-1">
@@ -456,7 +434,7 @@
                             </div>
                             <div class="modal-footer border-0 pt-0 d-flex justify-content-center gap-3">
                                 <button class="btn btn-light rounded-pill px-4" data-bs-dismiss="modal">Cancel</button>
-                                <button class="btn btn-primary rounded-pill px-4" id="saveGoalBtn" onclick="addGoal()">Save Goal</button>
+                                <button class="btn btn-primary rounded-pill px-4" id="saveGoalBtn" onclick="saveGoal()">Save Goal</button>
                             </div>
                         </div>
                     </div>
@@ -489,133 +467,273 @@
             setTheme(currentTheme === 'dark' ? 'light' : 'dark');
         });
 
-        // Initialize Theme
         setTheme(localStorage.getItem('theme') || 'dark');
 
-        let currentEditCard = null;
+        let currentEditGoalId = null;
 
-        function prepareAddGoal() {
-            currentEditCard = null;
-            document.getElementById("modalTitle").innerText = "Add New Goal";
-            document.getElementById("goalForm").reset();
-            document.getElementById("saveGoalBtn").innerText = "Save Goal";
+        // Load goals on page load
+        window.addEventListener('DOMContentLoaded', function() {
+            loadGoals();
+        });
+
+        // Load all goals from database
+        function loadGoals() {
+            fetch('fetch_goals.php')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        displayGoals(data.goals);
+                    } else {
+                        console.error(data.message);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error loading goals:', error);
+                });
         }
 
-        function addGoal() {
-            const name = document.getElementById("goalName").value;
-            const target = document.getElementById("goalTarget").value;
-            const saved = document.getElementById("goalSaved").value || 0;
+        // Display goals in the UI
+        function displayGoals(goals) {
+            const goalList = document.getElementById('goalList');
+            goalList.innerHTML = '';
 
-            if (!name || !target) {
-                alert("Please fill in all fields");
+            if (goals.length === 0) {
+                goalList.innerHTML = '<p class="text-center text-muted mt-4">No goals yet. Create your first goal!</p>';
                 return;
             }
 
-            const progress = Math.min((saved / target) * 100, 100);
+            goals.forEach(goal => {
+                const goalCard = createGoalCard(goal);
+                goalList.innerHTML += goalCard;
+            });
+        }
 
-            const cardHTML = `
-                <div class="d-flex justify-content-between align-items-center">
-                  <h5 class="fw-bold">${name}</h5>
-                  <span class="badge rounded-pill px-3 ${progress >= 100 ? "bg-primary" : "bg-success"}">${progress >= 100 ? "Completed" : "In Progress"}</span>
-                </div>
-                <p class="text-muted mb-2">Target: ₹${target} | Saved: ₹${saved}</p>
-                <div class="progress mb-2" style="height: 10px; background-color: var(--input-bg);"><div class="progress-bar ${progress >= 100 ? "bg-primary" : "bg-info"}" style="width: ${progress}%"></div></div>
-                <div class="d-flex justify-content-between align-items-center mt-3">
-                    <button class="btn btn-sm btn-outline-primary rounded-pill px-3" onclick="updateGoal(this)">Add Funds</button>
-                    <div>
-                        <i class="bi bi-pencil text-muted me-2" style="cursor:pointer" onclick="editGoal(this)"></i>
-                        <i class="bi bi-trash text-danger" style="cursor:pointer" onclick="deleteGoal(this)"></i>
+        // Create goal card HTML
+        function createGoalCard(goal) {
+            const progress = goal.progress;
+            const status = goal.status;
+            const badgeClass = progress >= 100 ? 'bg-primary' : 'bg-success';
+            const progressBarClass = progress >= 100 ? 'bg-primary' : 'bg-info';
+
+            return `
+                <div class="goal-card" data-goal-id="${goal.id}">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h5 class="fw-bold">${goal.goalName}</h5>
+                        <span class="badge ${badgeClass} rounded-pill px-3">${status}</span>
                     </div>
-                </div>`;
+                    <p class="text-muted mb-2">Target: ₹${goal.targetAmount.toLocaleString()} | Saved: ₹${goal.savedAmount.toLocaleString()}</p>
+                    <div class="progress mb-2" style="height: 10px; background-color: var(--input-bg);">
+                        <div class="progress-bar ${progressBarClass}" style="width: ${progress}%"></div>
+                    </div>
+                    <div class="d-flex justify-content-between align-items-center mt-3">
+                        <button class="btn btn-sm btn-outline-primary rounded-pill px-3" onclick="updateGoalFunds(${goal.id})">Add Funds</button>
+                        <div>
+                            <i class="bi bi-pencil text-muted me-2" style="cursor:pointer" onclick="editGoal(${goal.id})"></i>
+                            <i class="bi bi-trash text-danger" style="cursor:pointer" onclick="deleteGoal(${goal.id})"></i>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
 
-            if (currentEditCard) {
-                // Updating existing card
-                currentEditCard.innerHTML = cardHTML;
-            } else {
-                // Adding new card
-                const goalCard = document.createElement("div");
-                goalCard.className = "goal-card";
-                goalCard.innerHTML = cardHTML;
-                document.getElementById("goalList").appendChild(goalCard);
-            }
-
+        // Prepare add goal modal
+        function prepareAddGoal() {
+            currentEditGoalId = null;
+            document.getElementById("modalTitle").innerText = "Add New Goal";
             document.getElementById("goalForm").reset();
-            bootstrap.Modal.getInstance(document.getElementById("goalModal")).hide();
+            document.getElementById("editGoalId").value = "";
+            document.getElementById("saveGoalBtn").innerText = "Save Goal";
         }
 
-        function updateGoal(button) {
-            const card = button.closest(".goal-card");
-            const details = card.querySelector("p");
-            let [target, saved] = details.innerText.match(/\d+/g).map(Number);
-            const addMore = prompt("Enter amount to add to savings:");
-            if (!addMore || isNaN(addMore)) return;
-            saved += parseInt(addMore);
-            const progress = Math.min((saved / target) * 100, 100);
-            details.innerText = `Target: ₹${target} | Saved: ₹${saved}`;
-            card.querySelector(".progress-bar").style.width = `${progress}%`;
-            card.querySelector(".progress-bar").className = `progress-bar ${progress >= 100 ? "bg-primary" : "bg-info"}`;
-            card.querySelector(".badge").className = `badge rounded-pill px-3 ${progress >= 100 ? "bg-primary" : "bg-success"}`;
-            card.querySelector(".badge").innerText = progress >= 100 ? "Completed" : "In Progress";
-        }
+        // Save goal (add or edit)
+        function saveGoal() {
+            const goalName = document.getElementById("goalName").value.trim();
+            const goalTarget = parseFloat(document.getElementById("goalTarget").value);
+            const goalSaved = parseFloat(document.getElementById("goalSaved").value) || 0;
 
-        function deleteGoal(icon) {
-            if (confirm("Are you sure you want to delete this goal?")) {
-                const card = icon.closest(".goal-card");
-                card.remove();
+            if (!goalName || !goalTarget) {
+                alert("Please fill in all required fields");
+                return;
+            }
+
+            if (goalTarget <= 0) {
+                alert("Target amount must be greater than 0");
+                return;
+            }
+
+            if (goalSaved < 0) {
+                alert("Saved amount cannot be negative");
+                return;
+            }
+
+            const formData = new FormData();
+
+            if (currentEditGoalId) {
+                // Edit existing goal
+                formData.append('action', 'edit_goal');
+                formData.append('goalId', currentEditGoalId);
+                formData.append('goalName', goalName);
+                formData.append('targetAmount', goalTarget);
+                formData.append('savedAmount', goalSaved);
+
+                fetch('update_goals.php', {
+                    method: 'POST',
+                    body: formData
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        bootstrap.Modal.getInstance(document.getElementById("goalModal")).hide();
+                        loadGoals();
+                        alert('Goal updated successfully!');
+                    } else {
+                        alert(data.message);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('An error occurred');
+                });
+
+            } else {
+                // Add new goal
+                formData.append('goalName', goalName);
+                formData.append('targetAmount', goalTarget);
+                formData.append('savedAmount', goalSaved);
+
+                fetch('add_goals.php', {
+                    method: 'POST',
+                    body: formData
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        bootstrap.Modal.getInstance(document.getElementById("goalModal")).hide();
+                        loadGoals();
+                        alert('Goal added successfully!');
+                    } else {
+                        alert(data.message);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('An error occurred');
+                });
             }
         }
 
-        function editGoal(icon) {
-            currentEditCard = icon.closest(".goal-card");
-            const name = currentEditCard.querySelector("h5").innerText;
-            const details = currentEditCard.querySelector("p").innerText;
-            const [target, saved] = details.match(/\d+/g).map(Number);
+        // Update goal funds
+        function updateGoalFunds(goalId) {
+            const addMore = prompt("Enter amount to add to savings:");
+            if (!addMore || isNaN(addMore) || parseFloat(addMore) <= 0) {
+                alert("Please enter a valid amount");
+                return;
+            }
 
-            // Populate Modal
-            document.getElementById("goalName").value = name;
-            document.getElementById("goalTarget").value = target;
-            document.getElementById("goalSaved").value = saved;
+            const formData = new FormData();
+            formData.append('action', 'add_funds');
+            formData.append('goalId', goalId);
+            formData.append('additionalAmount', parseFloat(addMore));
 
-            document.getElementById("modalTitle").innerText = "Edit Goal";
-            document.getElementById("saveGoalBtn").innerText = "Update Goal";
-
-            // Show Modal
-            const modal = new bootstrap.Modal(document.getElementById('goalModal'));
-            modal.show();
+            fetch('update_goals.php', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    loadGoals();
+                    alert('Funds added successfully!');
+                } else {
+                    alert(data.message);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('An error occurred');
+            });
         }
 
-        // --- Notification Applet Logic ---
+        // Edit goal
+        function editGoal(goalId) {
+            fetch('Bachat-Buddy/Bachat-Buddy/Bachat-Buddy/backend/goals/fetch_goals.php')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        const goal = data.goals.find(g => g.id === goalId);
+                        if (goal) {
+                            currentEditGoalId = goalId;
+                            document.getElementById("goalName").value = goal.goal_name;
+                            document.getElementById("goalTarget").value = goal.target_amount;
+                            document.getElementById("goalSaved").value = goal.saved_amount;
+                            document.getElementById("modalTitle").innerText = "Edit Goal";
+                            document.getElementById("saveGoalBtn").innerText = "Update Goal";
+                            const modal = new bootstrap.Modal(document.getElementById('goalModal'));
+                            modal.show();
+                        }
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                });
+        }
+
+        // Delete goal
+        function deleteGoal(goalId) {
+            if (!confirm("Are you sure you want to delete this goal?")) {
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append('action', 'delete_goal');
+            formData.append('goalId', goalId);
+
+            fetch('update_goals.php', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    loadGoals();
+                    alert('Goal deleted successfully!');
+                } else {
+                    alert(data.message);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('An error occurred');
+            });
+        }
+
+        // Notification logic
         const notificationBtn = document.getElementById('notificationBtn');
         const notificationDropdown = document.getElementById('notificationDropdown');
         const notificationBadge = document.getElementById('notificationBadge');
 
-        // 1. Toggle visibility when clicking the bell
         notificationBtn.addEventListener('click', (e) => {
-            e.stopPropagation(); // Prevents immediate closing
+            e.stopPropagation();
             notificationDropdown.classList.toggle('hidden');
         });
 
-        // 2. Close the applet if the user clicks anywhere else on the page
         window.addEventListener('click', (e) => {
             if (!notificationBtn.contains(e.target) && !notificationDropdown.contains(e.target)) {
                 notificationDropdown.classList.add('hidden');
             }
         });
 
-        // 3. Clear Notifications Function
         function clearNotifications() {
             const list = document.getElementById('notificationList');
             list.innerHTML = `
-        <div class="p-4 text-center text-sm text-gray-500">
-            <i class="bi bi-check2-all text-success d-block fs-4 mb-2"></i>
-            All caught up!
-        </div>
-    `;
-            // Hide the badge count
+                <div class="p-4 text-center text-sm text-gray-500">
+                    <i class="bi bi-check2-all text-success d-block fs-4 mb-2"></i>
+                    All caught up!
+                </div>
+            `;
             notificationBadge.style.display = 'none';
         }
 
-        // 4. (Optional) Function to update the number dynamically from other parts of your app
         function updateNotificationCount(count) {
             if (count > 0) {
                 notificationBadge.innerText = count;
@@ -625,16 +743,12 @@
             }
         }
 
-        // --- Logout Confirmation Logic ---
+        // Logout
         document.getElementById("logout-btn").addEventListener("click", function() {
-            // Asks for user permission
             const confirmLogout = confirm("Are you sure you want to logout?");
-
-            // If the user clicks 'OK', it redirects
             if (confirmLogout) {
                 window.location.href = "login-pages/login.php";
             }
-            // If they click 'Cancel', nothing happens and they stay on the page
         });
     </script>
 </body>
