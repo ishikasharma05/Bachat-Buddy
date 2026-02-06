@@ -178,6 +178,7 @@ $monthlyAvg = $monthsWithExpenses > 0 ? $totalExpense / $monthsWithExpenses : 0;
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="components/style.css">
+    <link rel="stylesheet" href="/assets/css/style.css">
     <style>
         /* Remove custom scrollbar - use default */
         * {
@@ -200,6 +201,7 @@ $monthlyAvg = $monthsWithExpenses > 0 ? $totalExpense / $monthsWithExpenses : 0;
 
         /* Hide hamburger menu button on desktop */
         @media (min-width: 992px) {
+
             .header .menu-btn,
             .header button.btn.d-lg-none {
                 display: none !important;
@@ -733,6 +735,7 @@ $monthlyAvg = $monthsWithExpenses > 0 ? $totalExpense / $monthsWithExpenses : 0;
                                 </div>
                             </div>
                         </div>
+                        <?php include '../Bachact-Buddy/Bachact-Buddy/Bachact-Buddy/components/chatbot_widget.php'; ?>
                     </div>
                 </div>
                 <?php include 'components/footer.php'; ?>
@@ -741,7 +744,7 @@ $monthlyAvg = $monthsWithExpenses > 0 ? $totalExpense / $monthsWithExpenses : 0;
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
-
+    <script src="/assets/js/chatbot.js"></script>
     <script>
         console.log('🔄 Initializing dashboard...');
 
@@ -770,19 +773,19 @@ $monthlyAvg = $monthsWithExpenses > 0 ? $totalExpense / $monthsWithExpenses : 0;
         // Theme Toggle Functionality - WORKS WITH ANY BUTTON STRUCTURE
         function initThemeToggle() {
             console.log('🎨 Initializing theme toggle...');
-            
+
             // Try multiple selectors to find the theme button
-            let themeToggle = document.getElementById('theme-toggle') 
-                           || document.querySelector('[id*="theme"]')
-                           || document.querySelector('button .fa-moon')?.parentElement
-                           || document.querySelector('button .bi-moon')?.parentElement
-                           || document.querySelector('button .bi-moon-fill')?.parentElement;
-            
+            let themeToggle = document.getElementById('theme-toggle') ||
+                document.querySelector('[id*="theme"]') ||
+                document.querySelector('button .fa-moon')?.parentElement ||
+                document.querySelector('button .bi-moon')?.parentElement ||
+                document.querySelector('button .bi-moon-fill')?.parentElement;
+
             console.log('Theme toggle element:', themeToggle);
-            
+
             const htmlElement = document.documentElement;
             const bodyElement = document.body;
-            
+
             if (!themeToggle) {
                 console.error('❌ Theme toggle button not found! Trying all buttons...');
                 const allButtons = document.querySelectorAll('button');
@@ -792,10 +795,10 @@ $monthlyAvg = $monthsWithExpenses > 0 ? $totalExpense / $monthsWithExpenses : 0;
                 });
                 return;
             }
-            
+
             const themeIcon = themeToggle.querySelector('i');
             console.log('Theme icon:', themeIcon);
-            
+
             // Load saved theme from localStorage
             const savedTheme = localStorage.getItem('theme') || 'light';
             console.log('Saved theme:', savedTheme);
@@ -803,7 +806,7 @@ $monthlyAvg = $monthsWithExpenses > 0 ? $totalExpense / $monthsWithExpenses : 0;
             if (bodyElement) {
                 bodyElement.setAttribute('data-theme', savedTheme);
             }
-            
+
             // Update icon based on current theme
             if (themeIcon) {
                 if (savedTheme === 'dark') {
@@ -812,25 +815,25 @@ $monthlyAvg = $monthsWithExpenses > 0 ? $totalExpense / $monthsWithExpenses : 0;
                     themeIcon.className = themeIcon.className.includes('fa-') ? 'fas fa-moon' : 'bi bi-moon-fill';
                 }
             }
-            
+
             // Add click event
             themeToggle.addEventListener('click', function(e) {
                 e.preventDefault();
                 e.stopPropagation();
-                
+
                 console.log('🖱️ Theme toggle clicked!');
-                
+
                 const currentTheme = htmlElement.getAttribute('data-theme') || 'light';
                 const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
-                
+
                 console.log('Current theme:', currentTheme, '→ New theme:', newTheme);
-                
+
                 htmlElement.setAttribute('data-theme', newTheme);
                 if (bodyElement) {
                     bodyElement.setAttribute('data-theme', newTheme);
                 }
                 localStorage.setItem('theme', newTheme);
-                
+
                 // Toggle icon
                 if (themeIcon) {
                     if (newTheme === 'dark') {
@@ -839,17 +842,17 @@ $monthlyAvg = $monthsWithExpenses > 0 ? $totalExpense / $monthsWithExpenses : 0;
                         themeIcon.className = themeIcon.className.includes('fa-') ? 'fas fa-moon' : 'bi bi-moon-fill';
                     }
                 }
-                
+
                 console.log('✅ Theme toggled to:', newTheme);
             });
-            
+
             console.log('✅ Theme toggle initialized successfully');
         }
 
         // Notification Functionality - FIXED FOR HEADER.PHP
         function initNotifications() {
             console.log('🔔 Initializing notifications...');
-            
+
             const notificationBtn = document.getElementById("notificationBtn");
             const notificationDropdown = document.getElementById("notificationDropdown");
             const notificationBadge = document.getElementById("notificationBadge");
@@ -872,11 +875,11 @@ $monthlyAvg = $monthsWithExpenses > 0 ? $totalExpense / $monthsWithExpenses : 0;
             notificationBtn.addEventListener("click", function(e) {
                 e.preventDefault();
                 e.stopPropagation();
-                
+
                 console.log('🖱️ Notification button clicked!');
-                
+
                 const isHidden = notificationDropdown.classList.contains('hidden');
-                
+
                 if (isHidden) {
                     notificationDropdown.classList.remove("hidden");
                     notificationDropdown.style.display = "block";
@@ -903,7 +906,7 @@ $monthlyAvg = $monthsWithExpenses > 0 ? $totalExpense / $monthsWithExpenses : 0;
             notificationDropdown.addEventListener("click", function(e) {
                 e.stopPropagation();
             });
-            
+
             console.log('✅ Notifications initialized successfully');
         }
 
@@ -911,7 +914,7 @@ $monthlyAvg = $monthsWithExpenses > 0 ? $totalExpense / $monthsWithExpenses : 0;
         function clearNotifications() {
             const notificationList = document.getElementById("notificationList");
             const notificationBadge = document.getElementById("notificationBadge");
-            
+
             if (notificationList) {
                 notificationList.innerHTML = `
                     <div class="p-3 text-center text-gray-500">
@@ -919,7 +922,7 @@ $monthlyAvg = $monthsWithExpenses > 0 ? $totalExpense / $monthsWithExpenses : 0;
                     </div>
                 `;
             }
-            
+
             if (notificationBadge) {
                 notificationBadge.style.display = "none";
             }
@@ -1021,7 +1024,7 @@ $monthlyAvg = $monthsWithExpenses > 0 ? $totalExpense / $monthsWithExpenses : 0;
         // Initialize immediately when DOM is ready
         document.addEventListener('DOMContentLoaded', function() {
             console.log('🔍 DOM Content Loaded - Initializing...');
-            
+
             // Initialize theme toggle, notifications, and logout first
             setTimeout(function() {
                 initThemeToggle();
@@ -1100,7 +1103,7 @@ $monthlyAvg = $monthsWithExpenses > 0 ? $totalExpense / $monthsWithExpenses : 0;
                     }
                 });
                 console.log('✅ Donut chart created');
-                
+
                 console.log('🎉 Dashboard fully loaded!');
             } catch (error) {
                 console.error('❌ Chart error:', error);

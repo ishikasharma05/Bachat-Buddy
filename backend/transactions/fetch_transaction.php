@@ -1,4 +1,5 @@
 <?php
+/** @var mysqli $conn */
 /**
  * Backend: Fetch Transactions - UNIFIED VERSION
  * Handles both dashboard data AND transaction list
