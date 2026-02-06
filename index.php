@@ -22,31 +22,31 @@ $categoryExpenses = [];
 $recentTransactions = [];
 
 try {
-    // 1. Total Income
-    $stmt = $conn->prepare("SELECT COALESCE(SUM(amount), 0) as total FROM transactions WHERE user_id = ? AND type = 'income'");
-    $stmt->bind_param("i", $user_id);
+    // 1. Total Income (Current Year Only)
+    $stmt = $conn->prepare("SELECT COALESCE(SUM(amount), 0) as total FROM transactions WHERE user_id = ? AND type = 'income' AND YEAR(date) = ?");
+    $stmt->bind_param("ii", $user_id, $currentYear);
     $stmt->execute();
     $result = $stmt->get_result();
     $totalIncome = floatval($result->fetch_assoc()['total']);
     $stmt->close();
 
-    // 2. Total Expense
-    $stmt = $conn->prepare("SELECT COALESCE(SUM(amount), 0) as total FROM transactions WHERE user_id = ? AND type = 'expense'");
-    $stmt->bind_param("i", $user_id);
+    // 2. Total Expense (Current Year Only)
+    $stmt = $conn->prepare("SELECT COALESCE(SUM(amount), 0) as total FROM transactions WHERE user_id = ? AND type = 'expense' AND YEAR(date) = ?");
+    $stmt->bind_param("ii", $user_id, $currentYear);
     $stmt->execute();
     $result = $stmt->get_result();
     $totalExpense = floatval($result->fetch_assoc()['total']);
     $stmt->close();
 
-    // 3. Total Savings
-    $stmt = $conn->prepare("SELECT COALESCE(SUM(amount), 0) as total FROM transactions WHERE user_id = ? AND type = 'savings'");
-    $stmt->bind_param("i", $user_id);
+    // 3. Total Savings (Current Year Only)
+    $stmt = $conn->prepare("SELECT COALESCE(SUM(amount), 0) as total FROM transactions WHERE user_id = ? AND type = 'savings' AND YEAR(date) = ?");
+    $stmt->bind_param("ii", $user_id, $currentYear);
     $stmt->execute();
     $result = $stmt->get_result();
     $totalSavings = floatval($result->fetch_assoc()['total']);
     $stmt->close();
 
-    // 4. Monthly Income Data
+    // 4. Monthly Income Data (Current Year Only)
     $stmt = $conn->prepare("
         SELECT MONTH(date) as month, SUM(amount) as total 
         FROM transactions 
@@ -61,7 +61,7 @@ try {
     }
     $stmt->close();
 
-    // 5. Monthly Expense Data
+    // 5. Monthly Expense Data (Current Year Only)
     $stmt = $conn->prepare("
         SELECT MONTH(date) as month, SUM(amount) as total 
         FROM transactions 
@@ -76,7 +76,7 @@ try {
     }
     $stmt->close();
 
-    // 6. Category Breakdown for Donut (Selected Month)
+    // 6. Category Breakdown for Donut (Selected Month) - ALL EXPENSES
     $categoryMapping = [
         'Shopping' => 0,
         'Groceries' => 0,
@@ -94,11 +94,11 @@ try {
         'Insurance' => 5
     ];
 
+    // Get ALL expense transactions for selected month
     $stmt = $conn->prepare("
-        SELECT category, SUM(amount) as total 
+        SELECT category, description, amount 
         FROM transactions 
         WHERE user_id = ? AND type = 'expense' AND YEAR(date) = ? AND MONTH(date) = ?
-        GROUP BY category
     ");
     $stmt->bind_param("iii", $user_id, $currentYear, $selectedMonth);
     $stmt->execute();
@@ -106,13 +106,16 @@ try {
 
     while ($row = $result->fetch_assoc()) {
         $category = $row['category'];
+        $amount = floatval($row['amount']);
+        
+        // Add to donut data based on category mapping
         if (isset($categoryMapping[$category])) {
-            $donutData[$categoryMapping[$category]] += floatval($row['total']);
+            $donutData[$categoryMapping[$category]] += $amount;
         }
     }
     $stmt->close();
 
-    // 7. Category Breakdown with Percentages (Selected Month)
+    // 7. Category Breakdown with Percentages (Selected Month) - ALL EXPENSES
     $stmt = $conn->prepare("
         SELECT category, SUM(amount) as total 
         FROM transactions 
@@ -165,6 +168,14 @@ $monthsWithExpenses = count(array_filter($expenseData, function ($val) {
     return $val > 0;
 }));
 $monthlyAvg = $monthsWithExpenses > 0 ? $totalExpense / $monthsWithExpenses : 0;
+
+// Helper function to format amount (remove .00 if whole number)
+function formatAmount($amount) {
+    if (floor($amount) == $amount) {
+        return number_format($amount, 0);
+    }
+    return number_format($amount, 2);
+}
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -270,6 +281,7 @@ $monthlyAvg = $monthsWithExpenses > 0 ? $totalExpense / $monthsWithExpenses : 0;
             display: block !important;
         }
 
+        /* Dark Mode Improvements */
         [data-theme="dark"] {
             background-color: #0f172a;
             color: #e2e8f0;
@@ -288,9 +300,11 @@ $monthlyAvg = $monthsWithExpenses > 0 ? $totalExpense / $monthsWithExpenses : 0;
             background-color: #0f172a !important;
         }
 
+        /* Sidebar & Divider Dark Mode Fix */
         [data-theme="dark"] .sidebar {
             background-color: #1e293b !important;
             color: #e2e8f0 !important;
+            border-right: 1px solid #475569 !important; /* Soft grey divider */
         }
 
         [data-theme="dark"] .sidebar .brand {
@@ -314,6 +328,12 @@ $monthlyAvg = $monthsWithExpenses > 0 ? $totalExpense / $monthsWithExpenses : 0;
         [data-theme="dark"] .header {
             background-color: #1e293b !important;
             border-bottom-color: #334155 !important;
+        }
+
+        /* Header font size consistency fix */
+        .header h5 {
+            font-size: 1.1rem !important;
+            font-weight: 600 !important;
         }
 
         [data-theme="dark"] .header h5 {
@@ -364,6 +384,25 @@ $monthlyAvg = $monthsWithExpenses > 0 ? $totalExpense / $monthsWithExpenses : 0;
             color: #e2e8f0 !important;
         }
 
+        /* Monthly Details Chart - Improved Brightness in Dark Mode */
+        [data-theme="dark"] #monthlyChart {
+            filter: brightness(1.2) !important;
+        }
+
+        /* Month labels and values brightness improvement */
+        [data-theme="dark"] .tabs span {
+            color: #cbd5e1 !important; /* Brighter grey */
+        }
+
+        [data-theme="dark"] .tabs span.active {
+            color: #f1f5f9 !important; /* Even brighter when active */
+        }
+
+        /* Recent Transactions Box Dark Mode Fix */
+        [data-theme="dark"] .rounded-3[style*="background:#f8fafc"] {
+            background-color: #334155 !important;
+        }
+
         [data-theme="dark"] #notificationDropdown {
             background-color: #1e293b !important;
             border-color: #334155 !important;
@@ -411,14 +450,6 @@ $monthlyAvg = $monthsWithExpenses > 0 ? $totalExpense / $monthsWithExpenses : 0;
 
         [data-theme="dark"] .form-select option {
             background-color: #1e293b !important;
-        }
-
-        [data-theme="dark"] .tabs span {
-            color: #64748b !important;
-        }
-
-        [data-theme="dark"] .tabs span.active {
-            color: #e2e8f0 !important;
         }
 
         .main-body {
@@ -565,22 +596,22 @@ $monthlyAvg = $monthsWithExpenses > 0 ? $totalExpense / $monthsWithExpenses : 0;
                     <div class="summary-card">
                         <div class="summary-card-accent" style="background:#c6f8d5;"></div>
                         <p class="mb-1 text-muted">Income</p>
-                        <h4 style="color:#16a34a;">₹<?= number_format($totalIncome, 2) ?></h4>
+                        <h4 style="color:#16a34a;">₹<?= formatAmount($totalIncome) ?></h4>
                     </div>
                     <div class="summary-card">
                         <div class="summary-card-accent" style="background:#f8d7da;"></div>
                         <p class="mb-1 text-muted">Expenses</p>
-                        <h4 style="color:#dc2626;">₹<?= number_format($totalExpense, 2) ?></h4>
+                        <h4 style="color:#dc2626;">₹<?= formatAmount($totalExpense) ?></h4>
                     </div>
                     <div class="summary-card">
                         <div class="summary-card-accent" style="background:#a8c6ff;"></div>
                         <p class="mb-1 text-muted">Savings</p>
-                        <h4 style="color:#2563eb;">₹<?= number_format($totalSavings, 2) ?></h4>
+                        <h4 style="color:#2563eb;">₹<?= formatAmount($totalSavings) ?></h4>
                     </div>
                     <div class="summary-card">
                         <div class="summary-card-accent" style="background:#f4ab6a;"></div>
                         <p class="mb-1 text-muted">Balance</p>
-                        <h4 style="color:#2563eb;">₹<?= number_format($balance, 2) ?></h4>
+                        <h4 style="color:#2563eb;">₹<?= formatAmount($balance) ?></h4>
                     </div>
                 </div>
 
@@ -606,8 +637,10 @@ $monthlyAvg = $monthsWithExpenses > 0 ? $totalExpense / $monthsWithExpenses : 0;
                                 $months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
                                 for ($i = 1; $i <= 12; $i++) {
                                     $monthVal = str_pad($i, 2, '0', STR_PAD_LEFT);
+                                    // Disable future months
+                                    $disabled = ($i > intval($currentMonth)) ? 'disabled' : '';
                                     $selected = ($monthVal == $selectedMonth) ? 'selected' : '';
-                                    echo "<option value='$monthVal' $selected>{$months[$i - 1]}</option>";
+                                    echo "<option value='$monthVal' $selected $disabled>{$months[$i - 1]}</option>";
                                 }
                                 ?>
                             </select>
@@ -616,19 +649,19 @@ $monthlyAvg = $monthsWithExpenses > 0 ? $totalExpense / $monthsWithExpenses : 0;
                             <canvas id="expenseDonut"></canvas>
                             <div class="donut-center-text">
                                 <small class="text-muted">Total</small>
-                                <div class="fw-bold">₹<span id="donutTotal"><?= number_format($donutTotal, 0) ?></span></div>
+                                <div class="fw-bold">₹<span id="donutTotal"><?= formatAmount($donutTotal) ?></span></div>
                             </div>
                         </div>
                         <div class="row mt-3" id="legendContainer">
                             <div class="col-6">
-                                <div class="mb-2"><span class="legend-dot" style="background:#A7C7FF"></span>Shopping: <strong>₹<span class="legend-value"><?= number_format($donutData[0], 0) ?></span></strong></div>
-                                <div class="mb-2"><span class="legend-dot" style="background:#C6E2FF"></span>Fun: <strong>₹<span class="legend-value"><?= number_format($donutData[1], 0) ?></span></strong></div>
-                                <div class="mb-2"><span class="legend-dot" style="background:#F9D5E5"></span>Kids: <strong>₹<span class="legend-value"><?= number_format($donutData[2], 0) ?></span></strong></div>
+                                <div class="mb-2"><span class="legend-dot" style="background:#A7C7FF"></span>Shopping: <strong>₹<span class="legend-value"><?= formatAmount($donutData[0]) ?></span></strong></div>
+                                <div class="mb-2"><span class="legend-dot" style="background:#C6E2FF"></span>Fun: <strong>₹<span class="legend-value"><?= formatAmount($donutData[1]) ?></span></strong></div>
+                                <div class="mb-2"><span class="legend-dot" style="background:#F9D5E5"></span>Kids: <strong>₹<span class="legend-value"><?= formatAmount($donutData[2]) ?></span></strong></div>
                             </div>
                             <div class="col-6">
-                                <div class="mb-2"><span class="legend-dot" style="background:#EAC8F2"></span>Vehicle: <strong>₹<span class="legend-value"><?= number_format($donutData[3], 0) ?></span></strong></div>
-                                <div class="mb-2"><span class="legend-dot" style="background:#FDD9C1"></span>House: <strong>₹<span class="legend-value"><?= number_format($donutData[4], 0) ?></span></strong></div>
-                                <div class="mb-2"><span class="legend-dot" style="background:#C6F8D5"></span>Insure: <strong>₹<span class="legend-value"><?= number_format($donutData[5], 0) ?></span></strong></div>
+                                <div class="mb-2"><span class="legend-dot" style="background:#EAC8F2"></span>Vehicle: <strong>₹<span class="legend-value"><?= formatAmount($donutData[3]) ?></span></strong></div>
+                                <div class="mb-2"><span class="legend-dot" style="background:#FDD9C1"></span>House: <strong>₹<span class="legend-value"><?= formatAmount($donutData[4]) ?></span></strong></div>
+                                <div class="mb-2"><span class="legend-dot" style="background:#C6F8D5"></span>Insure: <strong>₹<span class="legend-value"><?= formatAmount($donutData[5]) ?></span></strong></div>
                             </div>
                         </div>
                     </div>
@@ -648,7 +681,7 @@ $monthlyAvg = $monthsWithExpenses > 0 ? $totalExpense / $monthsWithExpenses : 0;
                                                     <?php foreach ($categoryExpenses as $cat): ?>
                                                         <div class="d-flex justify-content-between mb-2">
                                                             <span><?= htmlspecialchars($cat['category']) ?></span>
-                                                            <span><strong>₹<?= number_format($cat['amount'], 0) ?></strong> <small class="text-muted">(<?= $cat['percentage'] ?>%)</small></span>
+                                                            <span><strong>₹<?= formatAmount($cat['amount']) ?></strong> <small class="text-muted">(<?= $cat['percentage'] ?>%)</small></span>
                                                         </div>
                                                     <?php endforeach; ?>
                                                 <?php else: ?>
@@ -660,10 +693,10 @@ $monthlyAvg = $monthsWithExpenses > 0 ? $totalExpense / $monthsWithExpenses : 0;
                                             <p class="text-muted mb-2">Recent Transactions</p>
                                             <?php if (count($recentTransactions) > 0): ?>
                                                 <?php foreach ($recentTransactions as $txn): ?>
-                                                    <div class="d-flex justify-content-between mb-2 px-3 py-2 rounded-3" style="background:#f8fafc;">
+                                                    <div class="d-flex justify-content-between mb-2 px-3 py-2 rounded-3 recent-txn-box" style="background:#f8fafc;">
                                                         <span><?= htmlspecialchars($txn['category'] ?: $txn['description']) ?></span>
                                                         <span class="<?= $txn['type'] == 'income' ? 'text-success' : 'text-danger' ?> fw-semibold">
-                                                            <?= $txn['type'] == 'income' ? '+' : '-' ?>₹<?= number_format($txn['amount'], 2) ?>
+                                                            <?= $txn['type'] == 'income' ? '+' : '-' ?>₹<?= formatAmount($txn['amount']) ?>
                                                         </span>
                                                     </div>
                                                 <?php endforeach; ?>
@@ -703,7 +736,7 @@ $monthlyAvg = $monthsWithExpenses > 0 ? $totalExpense / $monthsWithExpenses : 0;
                                             );
                                         }
                                         if ($monthlyAvg > 0) {
-                                            $insights[] = sprintf('📅 Your average monthly expense is ₹%s.', number_format($monthlyAvg, 0));
+                                            $insights[] = sprintf('📅 Your average monthly expense is ₹%s.', formatAmount($monthlyAvg));
                                         }
                                     }
                                     foreach ($insights as $insight) {
@@ -764,6 +797,14 @@ $monthlyAvg = $monthsWithExpenses > 0 ? $totalExpense / $monthsWithExpenses : 0;
         let monthlyChart = null;
         let expenseDonut = null;
         let currentChartType = 'income';
+
+        // Helper function to format amounts (remove .00 if whole number)
+        function formatAmount(amount) {
+            if (Math.floor(amount) === amount) {
+                return amount.toLocaleString('en-IN', { maximumFractionDigits: 0 });
+            }
+            return amount.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        }
 
         function toggleMenu() {
             document.getElementById("mobileSidebar").classList.toggle("active");
@@ -874,6 +915,7 @@ $monthlyAvg = $monthsWithExpenses > 0 ? $totalExpense / $monthsWithExpenses : 0;
                 logoutBtn.addEventListener('click', function(e) {
                     e.preventDefault();
                     if (confirm('Are you sure you want to logout?')) {
+                        // Redirect to logout script
                         window.location.href = 'backend/auth/logout.php';
                     }
                 });
@@ -922,16 +964,12 @@ $monthlyAvg = $monthsWithExpenses > 0 ? $totalExpense / $monthsWithExpenses : 0;
                     expenseDonut.update();
 
                     const total = donutData.reduce((a, b) => a + b, 0);
-                    document.getElementById('donutTotal').textContent = total.toLocaleString('en-IN', {
-                        maximumFractionDigits: 0
-                    });
+                    document.getElementById('donutTotal').textContent = formatAmount(total);
 
                     const legendValues = document.querySelectorAll('.legend-value');
                     donutData.forEach((val, idx) => {
                         if (legendValues[idx]) {
-                            legendValues[idx].textContent = val.toLocaleString('en-IN', {
-                                maximumFractionDigits: 0
-                            });
+                            legendValues[idx].textContent = formatAmount(val);
                         }
                     });
 
@@ -941,7 +979,7 @@ $monthlyAvg = $monthsWithExpenses > 0 ? $totalExpense / $monthsWithExpenses : 0;
                             html += `
                                 <div class="d-flex justify-content-between mb-2">
                                     <span>${cat.category}</span>
-                                    <span><strong>₹${cat.amount.toLocaleString('en-IN', {maximumFractionDigits: 0})}</strong> 
+                                    <span><strong>₹${formatAmount(cat.amount)}</strong> 
                                     <small class="text-muted">(${cat.percentage}%)</small></span>
                                 </div>
                             `;
@@ -988,7 +1026,7 @@ $monthlyAvg = $monthsWithExpenses > 0 ? $totalExpense / $monthsWithExpenses : 0;
                             },
                             tooltip: {
                                 callbacks: {
-                                    label: ctx => ctx.dataset.label + ': ₹' + ctx.parsed.y.toLocaleString('en-IN')
+                                    label: ctx => ctx.dataset.label + ': ₹' + formatAmount(ctx.parsed.y)
                                 }
                             }
                         },
@@ -996,7 +1034,19 @@ $monthlyAvg = $monthsWithExpenses > 0 ? $totalExpense / $monthsWithExpenses : 0;
                             y: {
                                 beginAtZero: true,
                                 ticks: {
-                                    callback: value => '₹' + value.toLocaleString('en-IN')
+                                    callback: value => '₹' + formatAmount(value),
+                                    color: document.documentElement.getAttribute('data-theme') === 'dark' ? '#e2e8f0' : '#666'
+                                },
+                                grid: {
+                                    color: document.documentElement.getAttribute('data-theme') === 'dark' ? '#334155' : '#e5e7eb'
+                                }
+                            },
+                            x: {
+                                ticks: {
+                                    color: document.documentElement.getAttribute('data-theme') === 'dark' ? '#e2e8f0' : '#666'
+                                },
+                                grid: {
+                                    color: document.documentElement.getAttribute('data-theme') === 'dark' ? '#334155' : '#e5e7eb'
                                 }
                             }
                         }
@@ -1024,7 +1074,7 @@ $monthlyAvg = $monthsWithExpenses > 0 ? $totalExpense / $monthsWithExpenses : 0;
                             },
                             tooltip: {
                                 callbacks: {
-                                    label: ctx => ctx.label + ': ₹' + ctx.parsed.toLocaleString('en-IN')
+                                    label: ctx => ctx.label + ': ₹' + formatAmount(ctx.parsed)
                                 }
                             }
                         }
