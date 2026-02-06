@@ -575,3 +575,309 @@ body.sidebar-open {
     }
 }
 
+
+
+/* Bachat Buddy Chatbot Styles - Enhanced Version */
+
+/* Chat Toggle Button */
+.bb-chat-btn {
+    position: fixed;
+    right: 20px;
+    bottom: 20px;
+    border-radius: 50% !important;
+    width: 56px !important;
+    height: 56px !important;
+    font-size: 24px !important;
+    z-index: 9999;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: none;
+}
+
+.bb-chat-btn:hover {
+    transform: scale(1.1);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
+}
+
+/* Chat Box Container */
+.bb-chat-box {
+    position: fixed;
+    right: 20px;
+    bottom: 90px;
+    width: 340px;
+    max-height: 480px;
+    display: flex;
+    flex-direction: column;
+    z-index: 9999;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+    border-radius: 16px !important;
+    overflow: hidden;
+    animation: slideUp 0.3s ease-out;
+}
+
+@keyframes slideUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Chat Header */
+.bb-chat-box .card-header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 16px;
+    font-weight: 600;
+    border-bottom: none;
+    border-radius: 16px 16px 0 0 !important;
+}
+
+.bb-chat-box .card-header button {
+    background: rgba(255, 255, 255, 0.2);
+    border: none;
+    color: white;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+}
+
+.bb-chat-box .card-header button:hover {
+    background: rgba(255, 255, 255, 0.3);
+    transform: rotate(90deg);
+}
+
+/* Chat Body */
+.bb-chat-body {
+    overflow-y: auto;
+    font-size: 14px;
+    padding: 16px;
+    background: #f8f9fa;
+    max-height: 320px;
+    min-height: 320px;
+}
+
+/* Scrollbar Styling */
+.bb-chat-body::-webkit-scrollbar {
+    width: 6px;
+}
+
+.bb-chat-body::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.bb-chat-body::-webkit-scrollbar-thumb {
+    background: #cbd5e0;
+    border-radius: 3px;
+}
+
+.bb-chat-body::-webkit-scrollbar-thumb:hover {
+    background: #a0aec0;
+}
+
+/* Message Styles */
+.bb-user-msg,
+.bb-bot-msg {
+    margin-bottom: 12px;
+    padding: 10px 14px;
+    border-radius: 12px;
+    line-height: 1.5;
+    max-width: 85%;
+    word-wrap: break-word;
+    animation: fadeIn 0.3s ease-out;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.bb-user-msg {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    margin-left: auto;
+    text-align: right;
+    border-bottom-right-radius: 4px;
+}
+
+.bb-user-msg strong {
+    display: block;
+    font-size: 11px;
+    opacity: 0.9;
+    margin-bottom: 4px;
+}
+
+.bb-bot-msg {
+    background: white;
+    color: #2d3748;
+    margin-right: auto;
+    text-align: left;
+    border-bottom-left-radius: 4px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.bb-bot-msg strong {
+    display: block;
+    font-size: 11px;
+    color: #667eea;
+    margin-bottom: 4px;
+}
+
+/* Typing Indicator */
+.bb-typing {
+    background: white !important;
+    padding: 10px 14px !important;
+}
+
+.typing-dots {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.typing-dots span {
+    width: 6px;
+    height: 6px;
+    background: #667eea;
+    border-radius: 50%;
+    display: inline-block;
+    animation: typing 1.4s infinite;
+}
+
+.typing-dots span:nth-child(2) {
+    animation-delay: 0.2s;
+}
+
+.typing-dots span:nth-child(3) {
+    animation-delay: 0.4s;
+}
+
+@keyframes typing {
+    0%, 60%, 100% {
+        transform: translateY(0);
+        opacity: 0.5;
+    }
+    30% {
+        transform: translateY(-8px);
+        opacity: 1;
+    }
+}
+
+/* Chat Footer */
+.bb-chat-box .card-footer {
+    background: white;
+    border-top: 1px solid #e2e8f0;
+    padding: 12px;
+    border-radius: 0 0 16px 16px;
+}
+
+.bb-chat-box .input-group input {
+    border: 1px solid #e2e8f0;
+    border-radius: 20px 0 0 20px;
+    padding: 10px 16px;
+    font-size: 14px;
+}
+
+.bb-chat-box .input-group input:focus {
+    border-color: #667eea;
+    box-shadow: none;
+}
+
+.bb-chat-box .input-group button {
+    border-radius: 0 20px 20px 0;
+    padding: 10px 20px;
+    font-weight: 600;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border: none;
+    transition: all 0.2s;
+}
+
+.bb-chat-box .input-group button:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(102, 126, 234, 0.3);
+}
+
+/* Soft Popup */
+.bb-soft-popup {
+    position: fixed;
+    right: 20px;
+    bottom: 580px;
+    width: 340px;
+    z-index: 9999;
+    font-size: 14px;
+    border-radius: 12px;
+    background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+    color: white;
+    border: none;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+    animation: slideDown 0.3s ease-out;
+}
+
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Dark Theme Support */
+[data-theme="dark"] .bb-chat-body {
+    background: #1e293b;
+}
+
+[data-theme="dark"] .bb-bot-msg {
+    background: #334155;
+    color: #e2e8f0;
+}
+
+[data-theme="dark"] .bb-chat-box .card-footer {
+    background: #1e293b;
+    border-top-color: #334155;
+}
+
+[data-theme="dark"] .bb-chat-box .input-group input {
+    background: #334155;
+    border-color: #475569;
+    color: #e2e8f0;
+}
+
+[data-theme="dark"] .bb-typing {
+    background: #334155 !important;
+}
+
+/* Mobile Responsiveness */
+@media (max-width: 768px) {
+    .bb-chat-box {
+        width: calc(100% - 40px);
+        right: 20px;
+        left: 20px;
+        max-width: 400px;
+    }
+    
+    .bb-soft-popup {
+        width: calc(100% - 40px);
+        right: 20px;
+        left: 20px;
+        max-width: 400px;
+    }
+}

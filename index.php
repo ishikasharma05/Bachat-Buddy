@@ -1,5 +1,5 @@
 <?php
-// index.php - FULLY FIXED VERSION
+// index.php - Dashboard with Enhanced Chatbot
 require_once 'components/auth_check.php';
 require_once 'config/db.php';
 
@@ -77,22 +77,21 @@ try {
     $stmt->close();
 
     // 6. Category Breakdown for Donut (Selected Month)
-    // Map ALL possible categories to the 6 main categories
     $categoryMapping = [
         'Shopping' => 0,
-        'Groceries' => 0,  // Map Groceries to Shopping
-        'Clothing' => 0,   // Map Clothing to Shopping
+        'Groceries' => 0,
+        'Clothing' => 0,
         'Fun' => 1,
-        'Entertainment' => 1,  // Map Entertainment to Fun
+        'Entertainment' => 1,
         'Kids' => 2,
-        'Education' => 2,  // Map Education to Kids
+        'Education' => 2,
         'Vehicle' => 3,
-        'Transport' => 3,  // Map Transport to Vehicle
+        'Transport' => 3,
         'House' => 4,
-        'Rent' => 4,       // Map Rent to House
-        'Utilities' => 4,  // Map Utilities to House
+        'Rent' => 4,
+        'Utilities' => 4,
         'Insure' => 5,
-        'Insurance' => 5   // Map Insurance to Insure
+        'Insurance' => 5
     ];
 
     $stmt = $conn->prepare("
@@ -161,7 +160,7 @@ $conn->close();
 $balance = $totalIncome - $totalExpense;
 $donutTotal = array_sum($donutData);
 
-// Calculate average monthly expense (only for months with expenses)
+// Calculate average monthly expense
 $monthsWithExpenses = count(array_filter($expenseData, function ($val) {
     return $val > 0;
 }));
@@ -178,9 +177,11 @@ $monthlyAvg = $monthsWithExpenses > 0 ? $totalExpense / $monthsWithExpenses : 0;
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="components/style.css">
-    <link rel="stylesheet" href="/assets/css/style.css">
+    <link rel="stylesheet" href="assets/css/chatbot-style.css">
     <style>
-        /* Remove custom scrollbar - use default */
+        /* Keep all your existing styles here - I'm only adding chatbot enhancement */
+        
+        /* Your existing dashboard styles... */
         * {
             scrollbar-width: auto;
             scrollbar-color: auto;
@@ -199,16 +200,13 @@ $monthlyAvg = $monthsWithExpenses > 0 ? $totalExpense / $monthsWithExpenses : 0;
             background: auto;
         }
 
-        /* Hide hamburger menu button on desktop */
         @media (min-width: 992px) {
-
             .header .menu-btn,
             .header button.btn.d-lg-none {
                 display: none !important;
             }
         }
 
-        /* Make all header buttons circular and consistent */
         .header button,
         .header .notification,
         #theme-toggle {
@@ -239,7 +237,6 @@ $monthlyAvg = $monthsWithExpenses > 0 ? $totalExpense / $monthsWithExpenses : 0;
             font-size: 18px !important;
         }
 
-        /* Fix notification badge position - MUST be on the bell icon button */
         #notificationBtn {
             position: relative !important;
         }
@@ -265,7 +262,6 @@ $monthlyAvg = $monthsWithExpenses > 0 ? $totalExpense / $monthsWithExpenses : 0;
             line-height: 1 !important;
         }
 
-        /* Force notification dropdown to be hidden by default */
         #notificationDropdown.hidden {
             display: none !important;
         }
@@ -274,7 +270,6 @@ $monthlyAvg = $monthsWithExpenses > 0 ? $totalExpense / $monthsWithExpenses : 0;
             display: block !important;
         }
 
-        /* Dark Theme Styles - Match Profile Page */
         [data-theme="dark"] {
             background-color: #0f172a;
             color: #e2e8f0;
@@ -293,7 +288,6 @@ $monthlyAvg = $monthsWithExpenses > 0 ? $totalExpense / $monthsWithExpenses : 0;
             background-color: #0f172a !important;
         }
 
-        /* Sidebar - Always visible in dark mode */
         [data-theme="dark"] .sidebar {
             background-color: #1e293b !important;
             color: #e2e8f0 !important;
@@ -317,7 +311,6 @@ $monthlyAvg = $monthsWithExpenses > 0 ? $totalExpense / $monthsWithExpenses : 0;
             color: #fff !important;
         }
 
-        /* Header in dark mode */
         [data-theme="dark"] .header {
             background-color: #1e293b !important;
             border-bottom-color: #334155 !important;
@@ -340,7 +333,6 @@ $monthlyAvg = $monthsWithExpenses > 0 ? $totalExpense / $monthsWithExpenses : 0;
             background-color: #475569 !important;
         }
 
-        /* Cards in dark mode */
         [data-theme="dark"] .summary-card {
             background-color: #1e293b !important;
             color: #e2e8f0 !important;
@@ -362,7 +354,6 @@ $monthlyAvg = $monthsWithExpenses > 0 ? $totalExpense / $monthsWithExpenses : 0;
             background-color: #1e293b !important;
         }
 
-        /* Text colors in dark mode */
         [data-theme="dark"] .text-muted {
             color: #94a3b8 !important;
         }
@@ -373,7 +364,6 @@ $monthlyAvg = $monthsWithExpenses > 0 ? $totalExpense / $monthsWithExpenses : 0;
             color: #e2e8f0 !important;
         }
 
-        /* Notification dropdown in dark mode */
         [data-theme="dark"] #notificationDropdown {
             background-color: #1e293b !important;
             border-color: #334155 !important;
@@ -395,7 +385,6 @@ $monthlyAvg = $monthsWithExpenses > 0 ? $totalExpense / $monthsWithExpenses : 0;
             background-color: #334155 !important;
         }
 
-        /* Insight pills - YELLOW background like profile page */
         .insight-pill {
             background: #fef3c7 !important;
             border-left: 4px solid #fbbf24 !important;
@@ -412,7 +401,6 @@ $monthlyAvg = $monthsWithExpenses > 0 ? $totalExpense / $monthsWithExpenses : 0;
             color: #fde68a !important;
         }
 
-        /* Form elements in dark mode */
         [data-theme="dark"] input,
         [data-theme="dark"] select,
         [data-theme="dark"] .form-select {
@@ -425,7 +413,6 @@ $monthlyAvg = $monthsWithExpenses > 0 ? $totalExpense / $monthsWithExpenses : 0;
             background-color: #1e293b !important;
         }
 
-        /* Tab styling in dark mode */
         [data-theme="dark"] .tabs span {
             color: #64748b !important;
         }
@@ -523,15 +510,6 @@ $monthlyAvg = $monthsWithExpenses > 0 ? $totalExpense / $monthsWithExpenses : 0;
             border-radius: 50%;
             display: inline-block;
             margin-right: 8px;
-        }
-
-        .insight-pill {
-            background: #fff3cd;
-            border-left: 4px solid #ffc107;
-            padding: 12px;
-            border-radius: 8px;
-            margin-bottom: 10px;
-            font-size: 0.9rem;
         }
 
         @media (max-width: 768px) {
@@ -735,7 +713,6 @@ $monthlyAvg = $monthsWithExpenses > 0 ? $totalExpense / $monthsWithExpenses : 0;
                                 </div>
                             </div>
                         </div>
-                        <?php include '../Bachact-Buddy/Bachact-Buddy/Bachact-Buddy/components/chatbot_widget.php'; ?>
                     </div>
                 </div>
                 <?php include 'components/footer.php'; ?>
@@ -743,8 +720,39 @@ $monthlyAvg = $monthsWithExpenses > 0 ? $totalExpense / $monthsWithExpenses : 0;
         </div>
     </div>
 
+    <!-- Enhanced Chatbot Button -->
+    <button id="bbChatToggle" class="btn btn-primary bb-chat-btn" aria-label="Open Bachat Buddy Chat">
+        💬
+    </button>
+
+    <!-- Enhanced Chatbot Box -->
+    <div id="bbChatBox" class="card bb-chat-box d-none">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <span>💛 Bachat Buddy</span>
+            <button class="btn btn-sm" onclick="toggleChat()" aria-label="Close chat">✖</button>
+        </div>
+
+        <div class="card-body bb-chat-body" id="bbChatBody">
+            <div class="bb-bot-msg">
+                <strong>Buddy:</strong> Hey there! 😄 I'm Bachat Buddy, your friendly money helper. Ask me about your spending, savings, or if you should make a purchase!
+            </div>
+        </div>
+
+        <div class="card-footer p-2">
+            <div class="input-group">
+                <input type="text" id="bbChatInput" class="form-control" placeholder="Type your message..." aria-label="Chat message">
+                <button class="btn btn-success" onclick="sendMessage()">Send</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Soft popup for notifications -->
+    <div id="bbSoftPopup" class="alert bb-soft-popup d-none"></div>
+
+    <!-- Scripts -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
-    <script src="/assets/js/chatbot.js"></script>
+    <script src="components/js/chatbot.js"></script>
+    
     <script>
         console.log('🔄 Initializing dashboard...');
 
@@ -752,13 +760,6 @@ $monthlyAvg = $monthsWithExpenses > 0 ? $totalExpense / $monthsWithExpenses : 0;
         const expenseData = <?= json_encode($expenseData) ?>;
         let donutData = <?= json_encode($donutData) ?>;
         const categoryLabels = <?= json_encode($categoryLabels) ?>;
-
-        console.log('📊 Data loaded:', {
-            incomeData,
-            expenseData,
-            donutData,
-            categoryLabels
-        });
 
         let monthlyChart = null;
         let expenseDonut = null;
@@ -770,44 +771,23 @@ $monthlyAvg = $monthsWithExpenses > 0 ? $totalExpense / $monthsWithExpenses : 0;
             document.body.classList.toggle("sidebar-open");
         }
 
-        // Theme Toggle Functionality - WORKS WITH ANY BUTTON STRUCTURE
         function initThemeToggle() {
-            console.log('🎨 Initializing theme toggle...');
-
-            // Try multiple selectors to find the theme button
             let themeToggle = document.getElementById('theme-toggle') ||
                 document.querySelector('[id*="theme"]') ||
                 document.querySelector('button .fa-moon')?.parentElement ||
-                document.querySelector('button .bi-moon')?.parentElement ||
-                document.querySelector('button .bi-moon-fill')?.parentElement;
-
-            console.log('Theme toggle element:', themeToggle);
+                document.querySelector('button .bi-moon')?.parentElement;
 
             const htmlElement = document.documentElement;
             const bodyElement = document.body;
 
-            if (!themeToggle) {
-                console.error('❌ Theme toggle button not found! Trying all buttons...');
-                const allButtons = document.querySelectorAll('button');
-                console.log('All buttons found:', allButtons.length);
-                allButtons.forEach((btn, idx) => {
-                    console.log(`Button ${idx}:`, btn, 'ID:', btn.id, 'Classes:', btn.className);
-                });
-                return;
-            }
+            if (!themeToggle) return;
 
             const themeIcon = themeToggle.querySelector('i');
-            console.log('Theme icon:', themeIcon);
-
-            // Load saved theme from localStorage
             const savedTheme = localStorage.getItem('theme') || 'light';
-            console.log('Saved theme:', savedTheme);
+            
             htmlElement.setAttribute('data-theme', savedTheme);
-            if (bodyElement) {
-                bodyElement.setAttribute('data-theme', savedTheme);
-            }
+            if (bodyElement) bodyElement.setAttribute('data-theme', savedTheme);
 
-            // Update icon based on current theme
             if (themeIcon) {
                 if (savedTheme === 'dark') {
                     themeIcon.className = themeIcon.className.includes('fa-') ? 'fas fa-sun' : 'bi bi-sun-fill';
@@ -816,25 +796,17 @@ $monthlyAvg = $monthsWithExpenses > 0 ? $totalExpense / $monthsWithExpenses : 0;
                 }
             }
 
-            // Add click event
             themeToggle.addEventListener('click', function(e) {
                 e.preventDefault();
                 e.stopPropagation();
 
-                console.log('🖱️ Theme toggle clicked!');
-
                 const currentTheme = htmlElement.getAttribute('data-theme') || 'light';
                 const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
 
-                console.log('Current theme:', currentTheme, '→ New theme:', newTheme);
-
                 htmlElement.setAttribute('data-theme', newTheme);
-                if (bodyElement) {
-                    bodyElement.setAttribute('data-theme', newTheme);
-                }
+                if (bodyElement) bodyElement.setAttribute('data-theme', newTheme);
                 localStorage.setItem('theme', newTheme);
 
-                // Toggle icon
                 if (themeIcon) {
                     if (newTheme === 'dark') {
                         themeIcon.className = themeIcon.className.includes('fa-') ? 'fas fa-sun' : 'bi bi-sun-fill';
@@ -842,85 +814,53 @@ $monthlyAvg = $monthsWithExpenses > 0 ? $totalExpense / $monthsWithExpenses : 0;
                         themeIcon.className = themeIcon.className.includes('fa-') ? 'fas fa-moon' : 'bi bi-moon-fill';
                     }
                 }
-
-                console.log('✅ Theme toggled to:', newTheme);
             });
-
-            console.log('✅ Theme toggle initialized successfully');
         }
 
-        // Notification Functionality - FIXED FOR HEADER.PHP
         function initNotifications() {
-            console.log('🔔 Initializing notifications...');
-
             const notificationBtn = document.getElementById("notificationBtn");
             const notificationDropdown = document.getElementById("notificationDropdown");
-            const notificationBadge = document.getElementById("notificationBadge");
 
-            console.log('Notification button:', notificationBtn);
-            console.log('Notification dropdown:', notificationDropdown);
-            console.log('Notification badge:', notificationBadge);
+            if (!notificationBtn || !notificationDropdown) return;
 
-            if (!notificationBtn || !notificationDropdown) {
-                console.error('❌ Notification elements not found!');
-                console.log('Looking for: #notificationBtn and #notificationDropdown');
-                return;
-            }
-
-            // Force hide dropdown on page load
             notificationDropdown.classList.add("hidden");
             notificationDropdown.style.display = "none";
 
-            // Toggle dropdown
             notificationBtn.addEventListener("click", function(e) {
                 e.preventDefault();
                 e.stopPropagation();
-
-                console.log('🖱️ Notification button clicked!');
 
                 const isHidden = notificationDropdown.classList.contains('hidden');
 
                 if (isHidden) {
                     notificationDropdown.classList.remove("hidden");
                     notificationDropdown.style.display = "block";
-                    console.log('Dropdown is now: visible');
                 } else {
                     notificationDropdown.classList.add("hidden");
                     notificationDropdown.style.display = "none";
-                    console.log('Dropdown is now: hidden');
                 }
             });
 
-            // Close dropdown when clicking outside
             document.addEventListener("click", function(e) {
                 if (!notificationDropdown.classList.contains("hidden")) {
                     if (!notificationDropdown.contains(e.target) && e.target !== notificationBtn && !notificationBtn.contains(e.target)) {
                         notificationDropdown.classList.add("hidden");
                         notificationDropdown.style.display = "none";
-                        console.log('🔔 Notification dropdown closed (clicked outside)');
                     }
                 }
             });
 
-            // Prevent dropdown from closing when clicking inside
             notificationDropdown.addEventListener("click", function(e) {
                 e.stopPropagation();
             });
-
-            console.log('✅ Notifications initialized successfully');
         }
 
-        // Clear notifications
         function clearNotifications() {
             const notificationList = document.getElementById("notificationList");
             const notificationBadge = document.getElementById("notificationBadge");
 
             if (notificationList) {
-                notificationList.innerHTML = `
-                    <div class="p-3 text-center text-gray-500">
-                        No notifications
-                    </div>
-                `;
+                notificationList.innerHTML = '<div class="p-3 text-center text-gray-500">No notifications</div>';
             }
 
             if (notificationBadge) {
@@ -928,7 +868,6 @@ $monthlyAvg = $monthsWithExpenses > 0 ? $totalExpense / $monthsWithExpenses : 0;
             }
         }
 
-        // Logout button functionality
         function initLogout() {
             const logoutBtn = document.getElementById('logout-btn');
             if (logoutBtn) {
@@ -978,18 +917,15 @@ $monthlyAvg = $monthsWithExpenses > 0 ? $totalExpense / $monthsWithExpenses : 0;
                         return;
                     }
 
-                    // Update donut chart
                     donutData = data.donutData;
                     expenseDonut.data.datasets[0].data = donutData;
                     expenseDonut.update();
 
-                    // Update total
                     const total = donutData.reduce((a, b) => a + b, 0);
                     document.getElementById('donutTotal').textContent = total.toLocaleString('en-IN', {
                         maximumFractionDigits: 0
                     });
 
-                    // Update legend values
                     const legendValues = document.querySelectorAll('.legend-value');
                     donutData.forEach((val, idx) => {
                         if (legendValues[idx]) {
@@ -999,7 +935,6 @@ $monthlyAvg = $monthsWithExpenses > 0 ? $totalExpense / $monthsWithExpenses : 0;
                         }
                     });
 
-                    // Update category breakdown
                     if (data.categoryBreakdown && data.categoryBreakdown.length > 0) {
                         let html = '';
                         data.categoryBreakdown.forEach(cat => {
@@ -1021,11 +956,7 @@ $monthlyAvg = $monthsWithExpenses > 0 ? $totalExpense / $monthsWithExpenses : 0;
                 });
         }
 
-        // Initialize immediately when DOM is ready
         document.addEventListener('DOMContentLoaded', function() {
-            console.log('🔍 DOM Content Loaded - Initializing...');
-
-            // Initialize theme toggle, notifications, and logout first
             setTimeout(function() {
                 initThemeToggle();
                 initNotifications();
@@ -1034,8 +965,6 @@ $monthlyAvg = $monthsWithExpenses > 0 ? $totalExpense / $monthsWithExpenses : 0;
         });
 
         window.addEventListener('load', function() {
-            console.log('🎨 Creating charts...');
-
             try {
                 const ctxMonthly = document.getElementById('monthlyChart').getContext('2d');
                 monthlyChart = new Chart(ctxMonthly, {
@@ -1073,7 +1002,6 @@ $monthlyAvg = $monthsWithExpenses > 0 ? $totalExpense / $monthsWithExpenses : 0;
                         }
                     }
                 });
-                console.log('✅ Monthly chart created');
 
                 const ctxDonut = document.getElementById('expenseDonut').getContext('2d');
                 expenseDonut = new Chart(ctxDonut, {
@@ -1102,7 +1030,6 @@ $monthlyAvg = $monthsWithExpenses > 0 ? $totalExpense / $monthsWithExpenses : 0;
                         }
                     }
                 });
-                console.log('✅ Donut chart created');
 
                 console.log('🎉 Dashboard fully loaded!');
             } catch (error) {
