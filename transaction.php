@@ -280,29 +280,63 @@ $conn->close();
             background-color: var(--table-row-hover) !important;
         }
 
-        .page-link {
-            background-color: var(--bg-card) !important;
-            border-color: var(--border-color) !important;
-            color: var(--text-main) !important;
-            transition: background-color 0.2s ease;
+        /* Enhanced Pagination Styles */
+        .pagination-container {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 1rem;
+            background-color: var(--bg-card);
+            border-radius: 8px;
+            margin-top: 1.5rem;
+            border: 1px solid var(--border-color);
         }
 
-        .page-link:hover {
-            background-color: var(--table-row-hover) !important;
-            color: var(--text-main) !important;
+        .pagination-info {
+            color: var(--text-muted);
+            font-size: 0.95rem;
         }
 
-        .page-item.active .page-link {
-            background-color: #2a9d8f !important;
-            border-color: #2a9d8f !important;
-            color: #ffffff !important;
+        .pagination-controls {
+            display: flex;
+            gap: 0.5rem;
+            align-items: center;
         }
 
-        .page-item.disabled .page-link {
-            background-color: var(--input-bg) !important;
-            border-color: var(--border-color) !important;
-            color: var(--text-muted) !important;
+        .pagination-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 1rem;
+            background-color: var(--input-bg);
+            color: var(--text-main);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 500;
+        }
+
+        .pagination-btn:hover:not(:disabled) {
+            background-color: #2a9d8f;
+            color: #ffffff;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(42, 157, 143, 0.3);
+        }
+
+        .pagination-btn:disabled {
+            opacity: 0.5;
             cursor: not-allowed;
+        }
+
+        .page-indicator {
+            padding: 0.5rem 1rem;
+            background-color: #2a9d8f;
+            color: #ffffff;
+            border-radius: 8px;
+            font-weight: 600;
+            min-width: 120px;
+            text-align: center;
         }
 
         .mobile-sidebar {
@@ -366,6 +400,20 @@ $conn->close();
                 width: 100%;
                 margin-bottom: 0.5rem;
             }
+
+            .pagination-container {
+                flex-direction: column;
+                gap: 1rem;
+            }
+
+            .pagination-controls {
+                width: 100%;
+                justify-content: center;
+            }
+
+            .pagination-btn {
+                flex: 1;
+            }
         }
 
         @media (max-width: 575px) {
@@ -412,6 +460,7 @@ $conn->close();
                     <li><a class="nav-link" href="transaction.php" style="background: #3b82f6; color: #fff;"><i class="bi bi-arrow-left-right"></i> Transactions</a></li>
                     <li><a class="nav-link" href="add-entry.php"><i class="bi bi-journal-plus"></i> Add Entry</a></li>
                     <li><a class="nav-link" href="goals.php"><i class="bi bi-bullseye"></i> Goals</a></li>
+                    <li><a class="nav-link" href="login-pages/login.php"><i class="bi bi-box-arrow-right"></i> Logout</a></li>
                 </ul>
             </div>
         </div>
@@ -430,6 +479,7 @@ $conn->close();
                     <li><a class="nav-link" href="transaction.php" style="background: #3b82f6; color: #fff;"><i class="bi bi-arrow-left-right"></i> Transactions</a></li>
                     <li><a class="nav-link" href="add-entry.php"><i class="bi bi-journal-plus"></i> Add Entry</a></li>
                     <li><a class="nav-link" href="goals.php"><i class="bi bi-bullseye"></i> Goals</a></li>
+                    <li><a class="nav-link" href="login-pages/login.php"><i class="bi bi-box-arrow-right"></i> Logout</a></li>
                 </ul>
             </div>
         </div>
@@ -475,6 +525,18 @@ $conn->close();
                                     </select>
                                 </div>
                             </div>
+                            <div class="col-md-2">
+                                <div class="input-group">
+                                    <span class="input-group-text"><i class="bi bi-list-ol"></i></span>
+                                    <select class="form-select" id="itemsPerPageSelect">
+                                        <option value="5">5 per page</option>
+                                        <option value="10" selected>10 per page</option>
+                                        <option value="15">15 per page</option>
+                                        <option value="20">20 per page</option>
+                                        <option value="50">50 per page</option>
+                                    </select>
+                                </div>
+                            </div>
                         </div>
                     </div>
 
@@ -508,9 +570,25 @@ $conn->close();
                         </table>
                     </div>
 
-                    <nav class="mt-4 d-flex justify-content-end">
-                        <ul class="pagination" id="pagination"></ul>
-                    </nav>
+                    <!-- Enhanced Pagination Controls -->
+                    <div class="pagination-container">
+                        <div class="pagination-info">
+                            Showing <strong id="showingStart">0</strong> to <strong id="showingEnd">0</strong> of <strong id="totalItems">0</strong> transactions
+                        </div>
+                        <div class="pagination-controls">
+                            <button class="pagination-btn" id="prevBtn" onclick="previousPage()">
+                                <i class="bi bi-chevron-left"></i>
+                                <span>Previous</span>
+                            </button>
+                            <div class="page-indicator">
+                                Page <span id="currentPageDisplay">1</span> of <span id="totalPagesDisplay">1</span>
+                            </div>
+                            <button class="pagination-btn" id="nextBtn" onclick="nextPage()">
+                                <span>Next</span>
+                                <i class="bi bi-chevron-right"></i>
+                            </button>
+                        </div>
+                    </div>
 
                     <?php include 'components/footer.php'; ?>
                 </div>
@@ -518,7 +596,7 @@ $conn->close();
         </div>
     </div>
 
-        <!-- Enhanced Chatbot Button -->
+    <!-- Enhanced Chatbot Button -->
     <button id="bbChatToggle" class="btn btn-primary bb-chat-btn" aria-label="Open Bachat Buddy Chat">
         💬
     </button>
@@ -544,7 +622,8 @@ $conn->close();
         </div>
     </div>
 
-     <script src="components/js/chatbot.js"></script>
+    <script src="components/js/chatbot.js"></script>
+    <script src="components/js/logout.js"></script>
 
     <!-- Embed transactions data directly in JavaScript -->
     <script>
@@ -562,6 +641,7 @@ $conn->close();
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
     <script>
+        // Theme toggle functionality
         const themeToggle = document.getElementById('theme-toggle');
         const setTheme = (theme) => {
             document.documentElement.setAttribute('data-theme', theme);
@@ -576,23 +656,22 @@ $conn->close();
 
         setTheme(localStorage.getItem('theme') || 'light');
 
-        // Pagination and filtering settings
-        const itemsPerPage = 10;
+        // Pagination configuration
+        let itemsPerPage = 10;
         let currentPage = 1;
+        let filteredTransactions = [];
 
         // Initial render
-        renderTransactions();
+        applyFilters();
 
-        function renderTransactions() {
-            const tbody = document.getElementById('transactionTableBody');
-            tbody.innerHTML = '';
-
+        // Function to filter and sort transactions
+        function applyFilters() {
             const searchTerm = document.getElementById('searchInput').value.toLowerCase();
             const typeFilter = document.getElementById('typeFilter').value;
             const sortFilter = document.getElementById('sortFilter').value;
 
             // Filter transactions
-            let filtered = transactions.filter(tx => {
+            filteredTransactions = transactions.filter(tx => {
                 const matchesType = typeFilter === 'all' || tx.type.toLowerCase().replace(' ', '_') === typeFilter;
                 const matchesSearch = 
                     (tx.description && tx.description.toLowerCase().includes(searchTerm)) || 
@@ -602,7 +681,7 @@ $conn->close();
             });
 
             // Sort transactions
-            filtered.sort((a, b) => {
+            filteredTransactions.sort((a, b) => {
                 if (sortFilter === 'date-desc') return new Date(b.date) - new Date(a.date);
                 if (sortFilter === 'date-asc') return new Date(a.date) - new Date(b.date);
                 if (sortFilter === 'amount-desc') return Math.abs(b.amount) - Math.abs(a.amount);
@@ -610,15 +689,38 @@ $conn->close();
                 return 0;
             });
 
-            // Paginate
-            const start = (currentPage - 1) * itemsPerPage;
-            const paginated = filtered.slice(start, start + itemsPerPage);
+            // Reset to first page when filters change
+            currentPage = 1;
+            renderTransactions();
+        }
 
-            if (paginated.length === 0 && filtered.length === 0) {
+        // Function to render transactions for current page
+        function renderTransactions() {
+            const tbody = document.getElementById('transactionTableBody');
+            tbody.innerHTML = '';
+
+            // Calculate pagination
+            const totalPages = Math.ceil(filteredTransactions.length / itemsPerPage);
+            const start = (currentPage - 1) * itemsPerPage;
+            const end = Math.min(start + itemsPerPage, filteredTransactions.length);
+            const paginated = filteredTransactions.slice(start, end);
+
+            // Update pagination info
+            document.getElementById('showingStart').textContent = filteredTransactions.length > 0 ? start + 1 : 0;
+            document.getElementById('showingEnd').textContent = end;
+            document.getElementById('totalItems').textContent = filteredTransactions.length;
+            document.getElementById('currentPageDisplay').textContent = filteredTransactions.length > 0 ? currentPage : 0;
+            document.getElementById('totalPagesDisplay').textContent = totalPages || 1;
+
+            // Update button states
+            document.getElementById('prevBtn').disabled = currentPage === 1;
+            document.getElementById('nextBtn').disabled = currentPage >= totalPages;
+
+            // Handle empty states
+            if (paginated.length === 0 && filteredTransactions.length === 0) {
                 tbody.innerHTML = `<tr><td colspan="6" class="text-center text-muted">
                     <i class="bi bi-search me-2"></i>No transactions match your filters
                 </td></tr>`;
-                document.getElementById('pagination').innerHTML = '';
                 return;
             }
 
@@ -676,68 +778,35 @@ $conn->close();
                 `;
                 tbody.appendChild(tr);
             }
-            
-            renderPagination(filtered.length);
         }
 
-        function renderPagination(totalItems) {
-            const pageCount = Math.ceil(totalItems / itemsPerPage);
-            const pagination = document.getElementById('pagination');
-            pagination.innerHTML = '';
-
-            if (pageCount <= 1) return;
-
-            const prevLi = document.createElement('li');
-            prevLi.className = 'page-item ' + (currentPage === 1 ? 'disabled' : '');
-            prevLi.innerHTML = `<button class="page-link" onclick="goToPage(${currentPage - 1})">
-                <i class="bi bi-chevron-left"></i>
-            </button>`;
-            pagination.appendChild(prevLi);
-
-            let startPage = Math.max(1, currentPage - 2);
-            let endPage = Math.min(pageCount, startPage + 4);
-            
-            if (endPage - startPage < 4) {
-                startPage = Math.max(1, endPage - 4);
+        // Pagination functions
+        function nextPage() {
+            const totalPages = Math.ceil(filteredTransactions.length / itemsPerPage);
+            if (currentPage < totalPages) {
+                currentPage++;
+                renderTransactions();
+                scrollToTable();
             }
-
-            for (let i = startPage; i <= endPage; i++) {
-                const li = document.createElement('li');
-                li.className = 'page-item ' + (i === currentPage ? 'active' : '');
-                li.innerHTML = `<button class="page-link" onclick="goToPage(${i})">${i}</button>`;
-                pagination.appendChild(li);
-            }
-
-            const nextLi = document.createElement('li');
-            nextLi.className = 'page-item ' + (currentPage === pageCount ? 'disabled' : '');
-            nextLi.innerHTML = `<button class="page-link" onclick="goToPage(${currentPage + 1})">
-                <i class="bi bi-chevron-right"></i>
-            </button>`;
-            pagination.appendChild(nextLi);
         }
 
-        function goToPage(page) {
-            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
-            const typeFilter = document.getElementById('typeFilter').value;
-            
-            let filtered = transactions.filter(tx => {
-                const matchesType = typeFilter === 'all' || tx.type.toLowerCase().replace(' ', '_') === typeFilter;
-                const matchesSearch = 
-                    (tx.description && tx.description.toLowerCase().includes(searchTerm)) || 
-                    (tx.category && tx.category.toLowerCase().includes(searchTerm)) ||
-                    (tx.tags && tx.tags.toLowerCase().includes(searchTerm));
-                return matchesType && matchesSearch;
+        function previousPage() {
+            if (currentPage > 1) {
+                currentPage--;
+                renderTransactions();
+                scrollToTable();
+            }
+        }
+
+        // Smooth scroll to table
+        function scrollToTable() {
+            document.querySelector('.table-responsive').scrollIntoView({ 
+                behavior: 'smooth', 
+                block: 'start' 
             });
-            
-            const totalPages = Math.ceil(filtered.length / itemsPerPage);
-            if (page < 1 || page > totalPages) return;
-            
-            currentPage = page;
-            renderTransactions();
-            
-            document.querySelector('.table-responsive').scrollIntoView({ behavior: 'smooth', block: 'start' });
         }
 
+        // Delete transaction function
         function deleteTransaction(id, description) {
             if (!confirm(`Are you sure you want to delete "${description}"?`)) return;
             
@@ -764,18 +833,14 @@ $conn->close();
         }
 
         // Event listeners for filters
-        document.getElementById('searchInput').addEventListener('input', () => {
-            currentPage = 1;
-            renderTransactions();
-        });
+        document.getElementById('searchInput').addEventListener('input', applyFilters);
+        document.getElementById('typeFilter').addEventListener('change', applyFilters);
+        document.getElementById('sortFilter').addEventListener('change', applyFilters);
         
-        document.getElementById('typeFilter').addEventListener('change', () => {
-            currentPage = 1;
-            renderTransactions();
-        });
-        
-        document.getElementById('sortFilter').addEventListener('change', () => {
-            currentPage = 1;
+        // Event listener for items per page
+        document.getElementById('itemsPerPageSelect').addEventListener('change', function() {
+            itemsPerPage = parseInt(this.value);
+            currentPage = 1; // Reset to first page
             renderTransactions();
         });
     </script>

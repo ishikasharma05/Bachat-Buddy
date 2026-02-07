@@ -572,10 +572,11 @@ $conn->close();
                         </div>
                         <div class="stat-box">
                             <h4 class="fw-bold text-success mb-0"><?= round($savingsProgress) ?>%</h4>
-                            <p class="text-muted small mb-0">Savings Reached</p>
+                            <p class="text-muted small mb-0">Savings Goal Progress</p>
                             <div class="progress-custom">
                                 <div class="bg-success h-100" style="width: <?= round($savingsProgress) ?>%"></div>
                             </div>
+                            <small class="text-muted d-block mt-2">₹<?= number_format($totalSavings, 2) ?> / ₹<?= number_format($savingsGoal, 2) ?></small>
                         </div>
                     </div>
 
@@ -619,6 +620,10 @@ $conn->close();
                 </div>
 
                 <div class="modal-body px-4">
+                    <div class="alert alert-info">
+                        <i class="bi bi-info-circle me-2"></i>
+                        Set your monthly expense limit. You'll receive alerts when you approach or exceed this amount.
+                    </div>
                     <div class="mb-3">
                         <label class="form-label small fw-bold">Monthly Budget (₹)</label>
                         <input
@@ -626,7 +631,8 @@ $conn->close();
                             step="0.01"
                             id="editBudget"
                             class="form-control rounded-3 p-2"
-                            value="<?= $user['monthly_budget'] ?>">
+                            value="<?= $user['monthly_budget'] ?>"
+                            placeholder="Enter your monthly budget">
                     </div>
                 </div>
 
