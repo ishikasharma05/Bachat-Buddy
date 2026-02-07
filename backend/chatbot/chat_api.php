@@ -1,5 +1,5 @@
 <?php
-// chat_api.php - Enhanced Chatbot API with Conversation Context
+// chat_api.php - Enhanced Chatbot API with Agreement/Disagreement Handling
 session_start();
 require_once '../../config/db.php';
 require_once 'detect_intent.php';
@@ -72,6 +72,9 @@ function processConversation($message, &$chatContext, $financialContext, $impuls
         
         case 'awaiting_purchase_impact':
             return handlePurchaseImpact($message, $chatContext, $financialContext);
+        
+        case 'awaiting_user_decision':
+            return handleUserDecision($message, $chatContext, $financialContext);
         
         default:
             // New conversation - detect intent
@@ -182,15 +185,135 @@ function handlePurchaseImpact($message, &$chatContext, $context) {
     // Generate personalized advice
     $advice = generatePurchaseAdvice($price, $necessity, $remaining, $savings, $percentOfRemaining, $percentOfSavings);
     
+    // Store advice for agreement/disagreement handling
+    $chatContext['data']['advice'] = $advice;
+    $chatContext['data']['recommendation'] = getRecommendationType($necessity, $percentOfRemaining);
+    $chatContext['state'] = 'awaiting_user_decision';
+    
+    return [
+        "reply" => $advice['message'] . "\n\n💭 Do you agree with my advice, or would you like to go ahead anyway?",
+        "followup" => [],
+        "soft_popup" => null
+    ];
+}
+
+/**
+ * Handle user agreement or disagreement with advice
+ */
+function handleUserDecision($message, &$chatContext, $context) {
+    $messageLower = strtolower(trim($message));
+    
+    // Check for agreement
+    $agrees = preg_match('/\b(agree|yes|yeah|right|correct|true|ok|okay|makes sense|you\'re right|i understand)\b/i', $messageLower);
+    
+    // Check for disagreement
+    $disagrees = preg_match('/\b(disagree|no|nope|but|still want|going to buy|will buy|don\'t care|anyway)\b/i', $messageLower);
+    
+    $recommendation = $chatContext['data']['recommendation'] ?? 'neutral';
+    $price = $chatContext['data']['price'] ?? 0;
+    
     // Reset conversation state
     $chatContext['state'] = 'idle';
     $chatContext['data'] = [];
     
+    if ($agrees) {
+        // User agrees with the advice
+        return handleAgreement($recommendation, $price);
+    } elseif ($disagrees) {
+        // User disagrees with the advice
+        return handleDisagreement($recommendation, $price);
+    } else {
+        // Unclear response
+        return [
+            "reply" => "I'm not sure if you agree or not. 🤔\n\nDo you want to follow my advice, or are you planning to go ahead with the purchase anyway? Just let me know! 😊",
+            "followup" => [],
+            "soft_popup" => null
+        ];
+    }
+}
+
+/**
+ * Handle when user agrees with advice
+ */
+function handleAgreement($recommendation, $price) {
+    $responses = [
+        'go_ahead' => [
+            "🎉 Awesome! I'm happy you feel confident about this purchase!",
+            "That's great! Enjoy your new item! 😊 You've thought it through carefully.",
+            "Wonderful! Go ahead and treat yourself - you deserve it! 💛"
+        ],
+        'caution' => [
+            "👍 Smart thinking! Taking it slow is always a good idea.",
+            "Great decision! Being careful with money shows maturity. 💪",
+            "I'm glad you're being thoughtful about this! That's wise. 😊"
+        ],
+        'skip' => [
+            "🌟 I'm so proud of you! That takes real discipline!",
+            "Excellent choice! Future-you is going to thank you for this! 💪",
+            "That's amazing self-control! You're on the path to financial freedom! 🎯",
+            "Wonderful! Your savings account will love you for this! 💰"
+        ]
+    ];
+    
+    $messages = $responses[$recommendation] ?? $responses['caution'];
+    $reply = $messages[array_rand($messages)];
+    
+    $reply .= "\n\nRemember, I'm always here if you need help with any financial decisions! Is there anything else you'd like to know? 😊";
+    
     return [
-        "reply" => $advice,
+        "reply" => $reply,
         "followup" => [],
         "soft_popup" => null
     ];
+}
+
+/**
+ * Handle when user disagrees with advice
+ */
+function handleDisagreement($recommendation, $price) {
+    $priceFormatted = "₹" . number_format($price, 0);
+    
+    if ($recommendation === 'skip' || $recommendation === 'caution') {
+        // Bot recommended caution/skip, but user wants to buy anyway
+        $reply = "I totally understand! 😊 Sometimes we really want something, and that's okay!\n\n";
+        $reply .= "Here are a few tips if you're going ahead:\n\n";
+        $reply .= "💡 See if you can find a better deal or discount\n";
+        $reply .= "💡 Consider buying it next month when you have more budget\n";
+        $reply .= "💡 Maybe set aside a little each week until you can afford it comfortably\n";
+        $reply .= "💡 Make sure you have an emergency fund first\n\n";
+        $reply .= "At the end of the day, it's your money and your decision! I just want to make sure you're making an informed choice. 💛\n\n";
+        $reply .= "Whatever you decide, I'm here to support you! Is there anything else I can help with?";
+    } else {
+        // Bot said go ahead, but user is reconsidering
+        $reply = "Oh! That's actually really thoughtful of you to reconsider! 🤔\n\n";
+        $reply .= "It shows great financial awareness to pause and think, even when something seems affordable. Here's what you could do:\n\n";
+        $reply .= "💡 Wait 24-48 hours before buying (the 'cooling off' period)\n";
+        $reply .= "💡 Check if you really need it or if it's an impulse\n";
+        $reply .= "💡 See if there's something you already own that serves the same purpose\n\n";
+        $reply .= "Taking time to think is never a bad idea! Your future self might thank you. 😊\n\n";
+        $reply .= "Let me know if you want to discuss anything else!";
+    }
+    
+    return [
+        "reply" => $reply,
+        "followup" => [],
+        "soft_popup" => null
+    ];
+}
+
+/**
+ * Determine recommendation type
+ */
+function getRecommendationType($necessity, $percentOfRemaining) {
+    if ($necessity === 'need') {
+        if ($percentOfRemaining <= 30) return 'go_ahead';
+        if ($percentOfRemaining <= 60) return 'caution';
+        return 'skip';
+    } else {
+        if ($percentOfRemaining <= 15) return 'go_ahead';
+        if ($percentOfRemaining <= 40) return 'caution';
+        return 'skip';
+    }
 }
 
 /**
@@ -222,46 +345,51 @@ function generatePurchaseAdvice($price, $necessity, $remaining, $savings, $perce
     
     if ($percentOfRemaining > 0) {
         $advice .= "• This is " . round($percentOfRemaining, 1) . "% of your remaining budget\n\n";
+    } else {
+        $advice .= "\n";
     }
+    
+    $recommendation = '';
     
     // Decision logic
     if ($necessity === 'need') {
         if ($percentOfRemaining <= 30) {
-            $advice .= "✅ My Recommendation: Go for it!\n\n";
-            $advice .= "Since this is something you need and it's only " . round($percentOfRemaining, 1) . "% of your remaining budget, it seems reasonable. Just make sure you have enough for other essentials this month! 😊";
+            $recommendation = "✅ My Recommendation: Go for it!\n\n";
+            $recommendation .= "Since this is something you need and it's only " . round($percentOfRemaining, 1) . "% of your remaining budget, it seems reasonable. Just make sure you have enough for other essentials this month! 😊";
         } elseif ($percentOfRemaining <= 60) {
-            $advice .= "⚠️ My Recommendation: Proceed with caution\n\n";
-            $advice .= "This will take " . round($percentOfRemaining, 1) . "% of your remaining budget. Since it's a need, you might have to buy it, but consider:\n";
-            $advice .= "• Can you find it cheaper elsewhere?\n";
-            $advice .= "• Do you have enough for other monthly expenses?\n";
-            $advice .= "• Could you wait for a sale?";
+            $recommendation = "⚠️ My Recommendation: Proceed with caution\n\n";
+            $recommendation .= "This will take " . round($percentOfRemaining, 1) . "% of your remaining budget. Since it's a need, you might have to buy it, but consider:\n";
+            $recommendation .= "• Can you find it cheaper elsewhere?\n";
+            $recommendation .= "• Do you have enough for other monthly expenses?\n";
+            $recommendation .= "• Could you wait for a sale?";
         } else {
-            $advice .= "🛑 My Recommendation: Think carefully!\n\n";
-            $advice .= "This will take most of your remaining budget (" . round($percentOfRemaining, 1) . "%). Even though it's a need, consider:\n";
-            $advice .= "• Can you spread the payment?\n";
-            $advice .= "• Is there a cheaper alternative?\n";
-            $advice .= "• Will you have enough for emergencies?";
+            $recommendation = "🛑 My Recommendation: Think carefully!\n\n";
+            $recommendation .= "This will take most of your remaining budget (" . round($percentOfRemaining, 1) . "%). Even though it's a need, consider:\n";
+            $recommendation .= "• Can you spread the payment?\n";
+            $recommendation .= "• Is there a cheaper alternative?\n";
+            $recommendation .= "• Will you have enough for emergencies?";
         }
     } else { // want
         if ($percentOfRemaining <= 15) {
-            $advice .= "✅ My Recommendation: Treat yourself!\n\n";
-            $advice .= "This is only " . round($percentOfRemaining, 1) . "% of your remaining budget, and it's okay to enjoy life sometimes! Just make sure all your needs are covered first. 😊";
+            $recommendation = "✅ My Recommendation: Treat yourself!\n\n";
+            $recommendation .= "This is only " . round($percentOfRemaining, 1) . "% of your remaining budget, and it's okay to enjoy life sometimes! Just make sure all your needs are covered first. 😊";
         } elseif ($percentOfRemaining <= 40) {
-            $advice .= "⚠️ My Recommendation: Maybe wait a bit?\n\n";
-            $advice .= "This will take " . round($percentOfRemaining, 1) . "% of your remaining budget. Since it's a want, consider:\n";
-            $advice .= "• Could you save up for it next month?\n";
-            $advice .= "• Will you still want it in 2-3 days?\n";
-            $advice .= "• Are there more important priorities?";
+            $recommendation = "⚠️ My Recommendation: Maybe wait a bit?\n\n";
+            $recommendation .= "This will take " . round($percentOfRemaining, 1) . "% of your remaining budget. Since it's a want, consider:\n";
+            $recommendation .= "• Could you save up for it next month?\n";
+            $recommendation .= "• Will you still want it in 2-3 days?\n";
+            $recommendation .= "• Are there more important priorities?";
         } else {
-            $advice .= "🛑 My Recommendation: Better to skip for now\n\n";
-            $advice .= "This is " . round($percentOfRemaining, 1) . "% of your remaining budget for something you want (not need). My friendly advice:\n";
-            $advice .= "• Wait until next month\n";
-            $advice .= "• Start saving for it gradually\n";
-            $advice .= "• Future-you will thank present-you! 💪";
+            $recommendation = "🛑 My Recommendation: Better to skip for now\n\n";
+            $recommendation .= "This is " . round($percentOfRemaining, 1) . "% of your remaining budget for something you want (not need). My friendly advice:\n";
+            $recommendation .= "• Wait until next month\n";
+            $recommendation .= "• Start saving for it gradually\n";
+            $recommendation .= "• Future-you will thank present-you! 💪";
         }
     }
     
-    $advice .= "\n\nRemember, I'm here to help you make smart choices, not to stop you from living! 💛";
-    
-    return $advice;
+    return [
+        'message' => $advice . $recommendation,
+        'type' => getRecommendationType($necessity, $percentOfRemaining)
+    ];
 }

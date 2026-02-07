@@ -1,5 +1,5 @@
-<?php 
-require_once 'components/auth_check.php'; 
+<?php
+require_once 'components/auth_check.php';
 require_once 'config/db.php';
 
 // First, check and add missing columns if needed
@@ -8,7 +8,7 @@ try {
     if ($checkProfileImage->num_rows == 0) {
         $conn->query("ALTER TABLE users ADD COLUMN profile_image VARCHAR(255) DEFAULT 'uploads/default.png' AFTER password");
     }
-    
+
     $checkBudget = $conn->query("SHOW COLUMNS FROM users LIKE 'monthly_budget'");
     if ($checkBudget->num_rows == 0) {
         $conn->query("ALTER TABLE users ADD COLUMN monthly_budget DECIMAL(10,2) DEFAULT 0.00 AFTER mobile");
@@ -79,7 +79,7 @@ $conn->close();
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <link rel="stylesheet" href="components/styles.css">
+    <link rel="stylesheet" href="components/style.css">
     <style>
         body {
             margin: 0;
@@ -639,8 +639,39 @@ $conn->close();
             </div>
         </div>
     </div>
+    <!-- Enhanced Chatbot Button -->
+    <button id="bbChatToggle" class="btn btn-primary bb-chat-btn" aria-label="Open Bachat Buddy Chat">
+        💬
+    </button>
+
+    <!-- Enhanced Chatbot Box -->
+    <div id="bbChatBox" class="card bb-chat-box d-none">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <span>💛 Bachat Buddy</span>
+            <button class="btn btn-sm" onclick="toggleChat()" aria-label="Close chat">✖</button>
+        </div>
+
+        <div class="card-body bb-chat-body" id="bbChatBody">
+            <div class="bb-bot-msg">
+                <strong>Buddy:</strong> Hey there! 😄 I'm Bachat Buddy, your friendly money helper. Ask me about your spending, savings, or if you should make a purchase!
+            </div>
+        </div>
+
+        <div class="card-footer p-2">
+            <div class="input-group">
+                <input type="text" id="bbChatInput" class="form-control" placeholder="Type your message..." aria-label="Chat message">
+                <button class="btn btn-success" onclick="sendMessage()">Send</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Soft popup for notifications -->
+    <div id="bbSoftPopup" class="alert bb-soft-popup d-none"></div>
 
 
+    <script src="components/js/chatbot.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    
     <script>
         function toggleMenu() {
             document.getElementById("mobileSidebar").classList.toggle("active");
@@ -649,7 +680,6 @@ $conn->close();
         }
     </script>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
     <script>
         // Theme Toggle Logic with smooth transition
         const themeToggleBtn = document.getElementById('theme-toggle');

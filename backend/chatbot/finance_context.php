@@ -1,5 +1,5 @@
 <?php
-// finance_context.php - Fetch Financial Context
+// finance_context.php - FIXED - Proper Savings Detection
 // Gets the user's current financial status for the chatbot
 
 function fetchFinancialContext($conn, $user_id) {
@@ -30,26 +30,37 @@ function fetchFinancialContext($conn, $user_id) {
     $expense = $q2->get_result()->fetch_row()[0];
     $q2->close();
 
-    // Total savings balance (all time)
+    // FIXED: Total savings balance (all time) - checking both 'savings' and 'saving' types
+    // Also handling withdraw_savings to subtract withdrawals
     $q3 = $conn->prepare("
-        SELECT IFNULL(
-            SUM(CASE 
-                WHEN type = 'savings' THEN amount
-                WHEN type = 'withdraw_savings' THEN -amount
-                ELSE 0 
-            END), 0)
+        SELECT IFNULL(SUM(amount), 0)
         FROM transactions
-        WHERE user_id = ?
+        WHERE user_id = ? 
+        AND type IN ('savings', 'saving')
     ");
     $q3->bind_param("i", $user_id);
     $q3->execute();
     $savings = $q3->get_result()->fetch_row()[0];
     $q3->close();
+    
+    // Subtract any savings withdrawals
+    $q4 = $conn->prepare("
+        SELECT IFNULL(SUM(amount), 0)
+        FROM transactions
+        WHERE user_id = ? 
+        AND type IN ('withdraw_savings', 'withdrawal')
+    ");
+    $q4->bind_param("i", $user_id);
+    $q4->execute();
+    $withdrawals = $q4->get_result()->fetch_row()[0];
+    $q4->close();
+    
+    $totalSavings = $savings - $withdrawals;
 
     return [
         "income" => (float)$income,
         "expense" => (float)$expense,
-        "savings" => (float)$savings,
+        "savings" => (float)$totalSavings,
         "remaining" => (float)$income - (float)$expense
     ];
 }
