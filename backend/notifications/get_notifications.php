@@ -1,5 +1,7 @@
 <?php
 session_start();
+
+// Fix the path - go up two levels from backend/notifications to root
 require_once __DIR__ . '/../../config/db.php';
 
 header('Content-Type: application/json');
@@ -31,7 +33,55 @@ try {
     $stmt->close();
     
     // =====================================================
-    // 2. GET CURRENT MONTH'S TOTAL EXPENSE
+    // 2. GET TOTAL INCOME (ALL TIME)
+    // =====================================================
+    $stmt = $conn->prepare("
+        SELECT COALESCE(SUM(amount), 0) as total 
+        FROM transactions 
+        WHERE user_id = ? AND type = 'income'
+    ");
+    $stmt->bind_param("i", $user_id);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    $totalIncome = floatval($result->fetch_assoc()['total']);
+    $stmt->close();
+    
+    // =====================================================
+    // 3. GET TOTAL EXPENSES (ALL TIME)
+    // =====================================================
+    $stmt = $conn->prepare("
+        SELECT COALESCE(SUM(amount), 0) as total 
+        FROM transactions 
+        WHERE user_id = ? AND type = 'expense'
+    ");
+    $stmt->bind_param("i", $user_id);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    $totalExpenses = floatval($result->fetch_assoc()['total']);
+    $stmt->close();
+    
+    // =====================================================
+    // 4. GET TOTAL SAVINGS (ALL TIME)
+    // =====================================================
+    $stmt = $conn->prepare("
+        SELECT COALESCE(SUM(amount), 0) as total 
+        FROM transactions 
+        WHERE user_id = ? AND type = 'savings'
+    ");
+    $stmt->bind_param("i", $user_id);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    $totalSavings = floatval($result->fetch_assoc()['total']);
+    $stmt->close();
+    
+    // =====================================================
+    // 5. CALCULATE ACTUAL BALANCE
+    // Balance = Income - Expenses - Savings
+    // =====================================================
+    $actualBalance = $totalIncome - $totalExpenses - $totalSavings;
+    
+    // =====================================================
+    // 6. GET CURRENT MONTH'S DATA
     // =====================================================
     $stmt = $conn->prepare("
         SELECT COALESCE(SUM(amount), 0) as total 
@@ -45,22 +95,50 @@ try {
     $monthlyExpense = floatval($result->fetch_assoc()['total']);
     $stmt->close();
     
+    $stmt = $conn->prepare("
+        SELECT COALESCE(SUM(amount), 0) as total 
+        FROM transactions 
+        WHERE user_id = ? AND type = 'income'
+        AND YEAR(date) = ? AND MONTH(date) = ?
+    ");
+    $stmt->bind_param("iii", $user_id, $currentYear, $currentMonth);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    $monthlyIncome = floatval($result->fetch_assoc()['total']);
+    $stmt->close();
+    
+    $stmt = $conn->prepare("
+        SELECT COALESCE(SUM(amount), 0) as total 
+        FROM transactions 
+        WHERE user_id = ? AND type = 'savings'
+        AND YEAR(date) = ? AND MONTH(date) = ?
+    ");
+    $stmt->bind_param("iii", $user_id, $currentYear, $currentMonth);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    $monthlySavings = floatval($result->fetch_assoc()['total']);
+    $stmt->close();
+    
+    // Calculate budget remaining for THIS MONTH
+    $budgetRemaining = $monthlyBudget - $monthlyExpense;
+    
     // =====================================================
     // ALERT A: Monthly Budget Cross Alert
     // =====================================================
     if ($monthlyBudget > 0 && $monthlyExpense > $monthlyBudget) {
         $overBy = $monthlyExpense - $monthlyBudget;
         $notifications[] = [
-            'icon' => '👀',
-            'title' => 'Budget Check',
-            'message' => "Hey! This month's spending (₹" . number_format($monthlyExpense, 0) . ") crossed your planned budget of ₹" . number_format($monthlyBudget, 0) . ". Want to review it together?",
-            'time_ago' => 'Now',
-            'type' => 'budget_cross'
+            'icon' => '⚠️',
+            'title' => 'Budget Alert',
+            'message' => "This month's spending (₹" . number_format($monthlyExpense, 0) . ") crossed your budget of ₹" . number_format($monthlyBudget, 0) . " by ₹" . number_format($overBy, 0) . ". Want to review together?",
+            'time_ago' => 'This month',
+            'type' => 'budget_cross',
+            'priority' => 1
         ];
     }
     
     // =====================================================
-    // 3. GET TODAY'S EXPENSES
+    // 7. GET TODAY'S EXPENSES
     // =====================================================
     $stmt = $conn->prepare("
         SELECT COUNT(*) as txn_count, COALESCE(SUM(amount), 0) as today_total
@@ -76,7 +154,7 @@ try {
     $stmt->close();
     
     // =====================================================
-    // 4. GET AVERAGE DAILY EXPENSE (last 30 days, excluding today)
+    // 8. GET AVERAGE DAILY EXPENSE
     // =====================================================
     $stmt = $conn->prepare("
         SELECT AVG(daily_total) as avg_daily
@@ -96,32 +174,34 @@ try {
     $stmt->close();
     
     // =====================================================
-    // ALERT B: Impulsive Spending Alert
+    // ALERT B: Impulsive Spending Alerts
     // =====================================================
     
     // Rule 1: More than 5 transactions in one day
     if ($todayTxnCount >= 5) {
         $notifications[] = [
-            'icon' => '🙂',
-            'title' => 'Quick Check',
-            'message' => "You've made {$todayTxnCount} purchases today. Just making sure everything's intentional! Want to look at them together?",
+            'icon' => '🛒',
+            'title' => 'Shopping Spree',
+            'message' => "You've made {$todayTxnCount} purchases today! Just checking - was this planned shopping?",
             'time_ago' => 'Today',
-            'type' => 'impulsive_count'
+            'type' => 'impulsive_count',
+            'priority' => 3
         ];
     }
     
-    // Rule 2: Today's spending is 2x higher than daily average
+    // Rule 2: Today's spending 2x higher than average
     if ($avgDaily > 0 && $todayExpenses > ($avgDaily * 2)) {
         $notifications[] = [
-            'icon' => '🙂',
-            'title' => 'Spending Pattern',
-            'message' => "Today's spending (₹" . number_format($todayExpenses, 0) . ") is higher than your usual daily average. Everything okay?",
+            'icon' => '📈',
+            'title' => 'High Spending Day',
+            'message' => "Today's spending (₹" . number_format($todayExpenses, 0) . ") is much higher than your usual ₹" . number_format($avgDaily, 0) . " daily average. Everything okay?",
             'time_ago' => 'Today',
-            'type' => 'impulsive_amount'
+            'type' => 'impulsive_amount',
+            'priority' => 3
         ];
     }
     
-    // Rule 3: Check for rapid transactions (3+ within 2 hours)
+    // Rule 3: Rapid transactions (3+ within 2 hours)
     $stmt = $conn->prepare("
         SELECT COUNT(*) as rapid_count
         FROM transactions
@@ -139,94 +219,83 @@ try {
         $notifications[] = [
             'icon' => '⚡',
             'title' => 'Quick Spending',
-            'message' => "You've made {$rapidCount} purchases in the last 2 hours. Quick check - was this planned shopping or impulse buying?",
+            'message' => "{$rapidCount} purchases in 2 hours! Take a breath - was this impulse buying or planned?",
             'time_ago' => 'Just now',
-            'type' => 'impulsive_rapid'
+            'type' => 'impulsive_rapid',
+            'priority' => 2
         ];
     }
     
     // =====================================================
-    // 5. GET SAVINGS DATA
+    // ALERT C: Low Balance Alert (Focus on saving)
     // =====================================================
-    $stmt = $conn->prepare("
-        SELECT COALESCE(SUM(amount), 0) as total 
-        FROM transactions 
-        WHERE user_id = ? AND type = 'savings'
-        AND YEAR(date) = ? AND MONTH(date) = ?
-    ");
-    $stmt->bind_param("iii", $user_id, $currentYear, $currentMonth);
-    $stmt->execute();
-    $result = $stmt->get_result();
-    $monthlySavings = floatval($result->fetch_assoc()['total']);
-    $stmt->close();
+    if ($actualBalance > 0 && $actualBalance < 1000) {
+        $notifications[] = [
+            'icon' => '💛',
+            'title' => 'Balance Check',
+            'message' => "Your balance is running low. Time to focus on saving and reducing spending!",
+            'time_ago' => 'Now',
+            'type' => 'low_balance',
+            'priority' => 2
+        ];
+    }
     
     // =====================================================
-    // ALERT C1: Low Savings Alert
+    // ALERT D: Low Savings Alert
     // =====================================================
-    $stmt = $conn->prepare("
-        SELECT COALESCE(SUM(amount), 0) as total 
-        FROM transactions 
-        WHERE user_id = ? AND type = 'income'
-        AND YEAR(date) = ? AND MONTH(date) = ?
-    ");
-    $stmt->bind_param("iii", $user_id, $currentYear, $currentMonth);
-    $stmt->execute();
-    $result = $stmt->get_result();
-    $monthlyIncome = floatval($result->fetch_assoc()['total']);
-    $stmt->close();
-    
     if ($monthlyIncome > 0) {
         $savingsRate = ($monthlySavings / $monthlyIncome) * 100;
         
-        // If savings rate is less than 5% and we're past mid-month
-        if ($savingsRate < 5 && date('d') > 15) {
+        if ($savingsRate < 10 && date('d') > 15 && $monthlyIncome > 1000) {
             $notifications[] = [
                 'icon' => '💙',
                 'title' => 'Savings Reminder',
-                'message' => "You've saved " . number_format($savingsRate, 1) . "% this month. Even small amounts add up! Want to set a savings goal?",
+                'message' => "You've saved only " . number_format($savingsRate, 1) . "% this month (₹" . number_format($monthlySavings, 0) . "). Try to save at least 10-20%!",
                 'time_ago' => 'This month',
-                'type' => 'low_savings'
+                'type' => 'low_savings',
+                'priority' => 4
             ];
         }
     }
     
     // =====================================================
-    // ALERT C2: Balance Running Low
-    // =====================================================
-    $balance = $monthlyIncome - $monthlyExpense;
-    if ($balance > 0 && $balance < ($monthlyBudget * 0.15) && $monthlyBudget > 0) {
-        $notifications[] = [
-            'icon' => '💛',
-            'title' => 'Balance Check',
-            'message' => "Your remaining budget for this month is getting low (₹" . number_format($balance, 0) . "). Let's plan the rest of the month wisely!",
-            'time_ago' => 'Now',
-            'type' => 'low_balance'
-        ];
-    }
-    
-    // =====================================================
-    // ALERT C3: Spending Velocity Alert
+    // ALERT E: Spending Velocity
     // =====================================================
     $dayOfMonth = intval(date('d'));
-    if ($dayOfMonth >= 10 && $monthlyBudget > 0) {
+    if ($dayOfMonth >= 10 && $monthlyBudget > 0 && $monthlyExpense > 0) {
         $daysInMonth = intval(date('t'));
         $percentMonthPassed = ($dayOfMonth / $daysInMonth) * 100;
         $percentBudgetUsed = ($monthlyExpense / $monthlyBudget) * 100;
         
-        // If we've used more budget % than month % passed (e.g., 60% budget used but only 40% month passed)
-        if ($percentBudgetUsed > ($percentMonthPassed + 20)) {
+        if ($percentBudgetUsed > ($percentMonthPassed + 25)) {
             $notifications[] = [
                 'icon' => '📊',
-                'title' => 'Spending Pace',
-                'message' => "You've used " . number_format($percentBudgetUsed, 0) . "% of your monthly budget, but we're only " . number_format($percentMonthPassed, 0) . "% through the month. Might want to slow down a bit!",
+                'title' => 'Spending Too Fast',
+                'message' => "You've used " . number_format($percentBudgetUsed, 0) . "% of your budget but only " . number_format($percentMonthPassed, 0) . "% of the month is over. Slow down!",
                 'time_ago' => 'This month',
-                'type' => 'spending_velocity'
+                'type' => 'spending_velocity',
+                'priority' => 3
             ];
         }
     }
     
     // =====================================================
-    // Remove duplicates by type (keep only the first of each type)
+    // ALERT F: Negative Balance
+    // =====================================================
+    if ($actualBalance < 0) {
+        $deficit = abs($actualBalance);
+        $notifications[] = [
+            'icon' => '🚨',
+            'title' => 'Deficit Alert',
+            'message' => "You're in deficit by ₹" . number_format($deficit, 0) . "! Your expenses exceed your income. Need help planning?",
+            'time_ago' => 'Now',
+            'type' => 'negative_balance',
+            'priority' => 1
+        ];
+    }
+    
+    // =====================================================
+    // Remove duplicates and sort
     // =====================================================
     $uniqueNotifications = [];
     $seenTypes = [];
@@ -237,20 +306,35 @@ try {
         }
     }
     
-    // Limit to 5 most important notifications
+    // Sort by priority
+    usort($uniqueNotifications, function($a, $b) {
+        return ($a['priority'] ?? 99) - ($b['priority'] ?? 99);
+    });
+    
+    // Limit to top 5
     $uniqueNotifications = array_slice($uniqueNotifications, 0, 5);
     
     echo json_encode([
         'success' => true,
         'notifications' => $uniqueNotifications,
-        'count' => count($uniqueNotifications)
+        'count' => count($uniqueNotifications),
+        'debug' => [
+            'total_income' => $totalIncome,
+            'total_expenses' => $totalExpenses,
+            'total_savings' => $totalSavings,
+            'actual_balance' => $actualBalance,
+            'monthly_income' => $monthlyIncome,
+            'monthly_expense' => $monthlyExpense,
+            'monthly_budget' => $monthlyBudget,
+            'budget_remaining' => $budgetRemaining
+        ]
     ]);
     
 } catch (Exception $e) {
     error_log("Notification Error: " . $e->getMessage());
     echo json_encode([
         'success' => false,
-        'message' => 'Error loading notifications',
+        'message' => 'Error: ' . $e->getMessage(),
         'notifications' => [],
         'count' => 0
     ]);
