@@ -1,8 +1,22 @@
 <?php
+// ============================================
+// SESSION AND LOGOUT HANDLING
+// ============================================
 session_start();
+
+// Handle logout action
+if (isset($_GET['action']) && $_GET['action'] === 'logout') {
+    // Destroy all session data
+    session_destroy();
+    
+    // Redirect to login page
+    header("Location: login-pages/login.php");
+    exit();
+}
 
 // Check if user is logged in
 if (!isset($_SESSION['user_id'])) {
+    // Redirect to login if not logged in
     header("Location: login-pages/login.php");
     exit();
 }
@@ -14,13 +28,29 @@ if (!isset($_SESSION['user_id'])) {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Bachat-Buddy | Goals</title>
+    
+    <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <!-- Bootstrap Icons -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
+    
+    <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <link rel="stylesheet" href="components/style.css">
+    
+    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <!-- Custom Styles -->
+    <link rel="stylesheet" href="components/style.css">
+    
     <style>
+        /* ============================================
+           CSS VARIABLES FOR THEME SUPPORT
+           ============================================ */
         :root {
             --bg-main: #f2f6f9;
             --bg-card: #ffffff;
@@ -33,6 +63,7 @@ if (!isset($_SESSION['user_id'])) {
             --label-color: #495057;
         }
 
+        /* Dark theme colors */
         [data-theme="dark"] {
             --bg-main: #0f172a;
             --bg-card: #1e293b;
@@ -45,6 +76,9 @@ if (!isset($_SESSION['user_id'])) {
             --label-color: #ffffff;
         }
 
+        /* ============================================
+           GENERAL STYLES
+           ============================================ */
         body {
             margin: 0;
             font-family: 'Segoe UI', sans-serif;
@@ -53,12 +87,16 @@ if (!isset($_SESSION['user_id'])) {
             transition: all 0.3s ease;
         }
 
+        /* Main layout container */
         .layout {
             display: flex;
             height: 100vh;
             overflow: hidden;
         }
 
+        /* ============================================
+           SIDEBAR STYLES
+           ============================================ */
         .sidebar {
             width: 250px;
             background-color: var(--sidebar-bg);
@@ -98,6 +136,9 @@ if (!isset($_SESSION['user_id'])) {
             margin-bottom: 2rem;
         }
 
+        /* ============================================
+           HEADER STYLES
+           ============================================ */
         .main-content {
             flex: 1;
             display: flex;
@@ -151,6 +192,9 @@ if (!isset($_SESSION['user_id'])) {
             border-radius: 20px;
         }
 
+        /* ============================================
+           MAIN BODY STYLES
+           ============================================ */
         .main-body {
             padding: 2rem;
             overflow-y: auto;
@@ -172,36 +216,14 @@ if (!isset($_SESSION['user_id'])) {
             color: #fff;
         }
 
+        /* ============================================
+           FORM STYLES
+           ============================================ */
         .form-label,
         .text-muted,
         small.d-block {
             color: var(--label-color) !important;
             opacity: 1;
-        }
-
-        .goal-card {
-            background: var(--bg-card);
-            border-radius: 20px;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
-            padding: 20px;
-            margin-bottom: 20px;
-            transition: transform 0.2s, background 0.3s;
-            border: 1px solid var(--border-color);
-        }
-
-        .goal-card:hover {
-            transform: translateY(-5px);
-        }
-
-        .modal-content {
-            background-color: var(--bg-card);
-            color: var(--text-main);
-            border: 1px solid var(--border-color);
-            border-radius: 20px;
-        }
-
-        [data-theme="dark"] .btn-close {
-            filter: invert(1) grayscale(100%) brightness(200%);
         }
 
         .form-control {
@@ -222,16 +244,40 @@ if (!isset($_SESSION['user_id'])) {
             opacity: 0.7;
         }
 
-        .footer {
-            background: linear-gradient(135deg, #2a9d8f, #4cafef);
-            border-radius: 20px 20px 0 0;
+        /* ============================================
+           GOAL CARD STYLES
+           ============================================ */
+        .goal-card {
+            background: var(--bg-card);
+            border-radius: 20px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            margin-bottom: 20px;
+            transition: transform 0.2s, background 0.3s;
+            border: 1px solid var(--border-color);
         }
 
-        .badge.bg-success {
-            background-color: #059669 !important;
-            color: #ecfdf5;
+        .goal-card:hover {
+            transform: translateY(-5px);
         }
 
+        /* ============================================
+           MODAL STYLES
+           ============================================ */
+        .modal-content {
+            background-color: var(--bg-card);
+            color: var(--text-main);
+            border: 1px solid var(--border-color);
+            border-radius: 20px;
+        }
+
+        [data-theme="dark"] .btn-close {
+            filter: invert(1) grayscale(100%) brightness(200%);
+        }
+
+        /* ============================================
+           MOBILE SIDEBAR STYLES
+           ============================================ */
         @media (max-width: 992px) {
             .mobile-sidebar {
                 position: fixed;
@@ -273,36 +319,17 @@ if (!isset($_SESSION['user_id'])) {
 
             .header {
                 padding: 0.75rem 1rem;
-                justify-content: space-between;
-            }
-
-            .header h5 {
-                font-size: 1rem;
             }
 
             .search-box {
                 width: 100%;
                 max-width: 200px;
             }
-
-            .hamburger {
-                display: block;
-                font-size: 1.75rem;
-                cursor: pointer;
-                color: var(--text-main);
-            }
-
-            .btn-close {
-                font-size: 1.5rem;
-                color: var(--text-main);
-                opacity: 1;
-            }
-
-            [data-theme="dark"] .btn-close {
-                filter: invert(1) grayscale(100%) brightness(200%);
-            }
         }
 
+        /* ============================================
+           RESPONSIVE STYLES
+           ============================================ */
         @media (max-width: 768px) {
             .main-body {
                 padding: 1rem;
@@ -318,10 +345,6 @@ if (!isset($_SESSION['user_id'])) {
                 padding: 15px;
                 margin-bottom: 15px;
             }
-
-            .search-box {
-                max-width: 150px;
-            }
         }
 
         @media (max-width: 576px) {
@@ -330,35 +353,27 @@ if (!isset($_SESSION['user_id'])) {
                 gap: 8px;
             }
 
-            .profile-info {
-                flex: 1 1 100%;
-                justify-content: flex-end;
-            }
-
             .goal-card {
                 padding: 12px;
                 margin-bottom: 12px;
             }
-
-            .search-box {
-                width: 100%;
-            }
         }
 
-        .header .btn i.bi-list {
-            color: var(--text-main);
-            transition: color 0.3s ease;
-        }
-
-        [data-theme="dark"] .header .btn i.bi-list {
-            color: var(--text-main);
-            filter: invert(0);
+        /* ============================================
+           BADGE STYLES
+           ============================================ */
+        .badge.bg-success {
+            background-color: #059669 !important;
+            color: #ecfdf5;
         }
     </style>
 </head>
 
 <body>
     <div class="layout">
+        <!-- ============================================
+             DESKTOP SIDEBAR
+             ============================================ -->
         <div class="sidebar d-none d-lg-block">
             <div>
                 <div class="brand d-flex align-items-center mb-4">
@@ -374,6 +389,9 @@ if (!isset($_SESSION['user_id'])) {
             </div>
         </div>
 
+        <!-- ============================================
+             MOBILE SIDEBAR
+             ============================================ -->
         <div id="mobileSidebar" class="mobile-sidebar d-lg-none">
             <div class="p-4">
                 <div class="brand d-flex align-items-center justify-content-between mb-4">
@@ -391,11 +409,66 @@ if (!isset($_SESSION['user_id'])) {
                 </ul>
             </div>
         </div>
+        
+        <!-- Sidebar overlay for mobile -->
         <div id="sidebarOverlay" class="sidebar-overlay d-lg-none" onclick="toggleMenu()"></div>
 
+        <!-- ============================================
+             MAIN CONTENT AREA
+             ============================================ -->
         <div class="main-content">
-            <?php include 'components/header.php'; ?>
+            <!-- ============================================
+                 HEADER
+                 ============================================ -->
+            <div class="header">
+                <div class="d-flex align-items-center gap-2">
+                    <!-- Mobile menu toggle button -->
+                    <button class="btn d-lg-none border-0 p-0 me-2" onclick="toggleMenu()">
+                        <i class="bi bi-list fs-2"></i>
+                    </button>
+                    <h5 class="mb-0 fw-bold">Goals</h5>
+                </div>
+                
+                <div class="d-flex align-items-center gap-3">
+                    <!-- Notification dropdown -->
+                    <div class="relative inline-block text-left">
+                        <div id="notificationBtn" class="notification p-2 rounded-full cursor-pointer hover:bg-gray-200 transition-colors relative">
+                            <i class="bi bi-bell"></i>
+                            <span id="notificationBadge" class="absolute top-0 right-0 inline-flex items-center justify-center px-1.5 py-0.5 text-[10px] font-bold leading-none text-white transform translate-x-1/2 -translate-y-1/2 bg-red-500 rounded-full">
+                                3
+                            </span>
+                        </div>
+                        <div id="notificationDropdown" class="hidden absolute right-0 mt-3 w-80 bg-white border border-gray-200 rounded-xl shadow-xl z-[1000] overflow-hidden">
+                            <div class="p-3 border-b border-gray-100 flex justify-content-between align-items-center bg-white">
+                                <span class="font-semibold text-gray-700">Notifications</span>
+                                <button onclick="clearNotifications()" class="text-xs text-blue-600 hover:underline">Clear all</button>
+                            </div>
+                            <div class="max-h-64 overflow-y-auto bg-white" id="notificationList">
+                                <div class="p-3 border-b border-gray-50 hover:bg-gray-50 cursor-pointer">
+                                    <p class="text-sm text-gray-800 mb-0"><strong>Budget Alert:</strong> You've spent 80% of your Food budget.</p>
+                                    <span class="text-[11px] text-gray-400">5 mins ago</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Theme toggle button -->
+                    <button id="theme-toggle" class="p-2 rounded-full border-0">
+                        <i class="fas fa-moon"></i>
+                    </button>
+
+                    <!-- Logout button -->
+                    <button id="logout-btn" class="notification p-2 rounded-full border-0" title="Logout">
+                        <i class="fas fa-sign-out-alt"></i>
+                    </button>
+                </div>
+            </div>
+            
+            <!-- ============================================
+                 MAIN BODY
+                 ============================================ -->
             <div class="main-body">
+                <!-- Page header -->
                 <div class="page-header">
                     <h2>🎯 My Savings Goals</h2>
                     <p class="opacity-75">Track your progress and achieve your financial dreams</p>
@@ -404,10 +477,14 @@ if (!isset($_SESSION['user_id'])) {
                     </button>
                 </div>
 
+                <!-- Goals list container -->
                 <div class="container" id="goalList">
-                    <!-- Goals will be loaded here dynamically -->
+                    <p class="text-center text-muted mt-4">Loading goals...</p>
                 </div>
 
+                <!-- ============================================
+                     MODAL: ADD/EDIT GOAL
+                     ============================================ -->
                 <div class="modal fade" id="goalModal" tabindex="-1">
                     <div class="modal-dialog modal-dialog-centered">
                         <div class="modal-content shadow-lg">
@@ -417,18 +494,25 @@ if (!isset($_SESSION['user_id'])) {
                             </div>
                             <div class="modal-body p-4">
                                 <form id="goalForm">
+                                    <!-- Hidden field for edit goal ID -->
                                     <input type="hidden" id="editGoalId">
+                                    
+                                    <!-- Goal Name -->
                                     <div class="mb-3">
                                         <label class="form-label small fw-bold">Goal Name</label>
-                                        <input type="text" id="goalName" class="form-control rounded-3" placeholder="e.g. Dream Vacation">
+                                        <input type="text" id="goalName" class="form-control rounded-3" placeholder="e.g. Dream Vacation" required>
                                     </div>
+                                    
+                                    <!-- Target Amount -->
                                     <div class="mb-3">
                                         <label class="form-label small fw-bold">Target Amount (₹)</label>
-                                        <input type="number" id="goalTarget" class="form-control rounded-3" placeholder="0.00">
+                                        <input type="number" id="goalTarget" class="form-control rounded-3" placeholder="0.00" required>
                                     </div>
+                                    
+                                    <!-- Initial Saved Amount -->
                                     <div class="mb-3">
                                         <label class="form-label small fw-bold">Initial Saved Amount (₹)</label>
-                                        <input type="number" id="goalSaved" class="form-control rounded-3" placeholder="0.00">
+                                        <input type="number" id="goalSaved" class="form-control rounded-3" placeholder="0.00" value="0">
                                     </div>
                                 </form>
                             </div>
@@ -440,17 +524,19 @@ if (!isset($_SESSION['user_id'])) {
                     </div>
                 </div>
 
+                <!-- Footer -->
                 <?php include 'components/footer.php'; ?>
             </div>
         </div>
     </div>
 
-        <!-- Enhanced Chatbot Button -->
+    <!-- ============================================
+         CHATBOT
+         ============================================ -->
     <button id="bbChatToggle" class="btn btn-primary bb-chat-btn" aria-label="Open Bachat Buddy Chat">
         💬
     </button>
 
-    <!-- Enhanced Chatbot Box -->
     <div id="bbChatBox" class="card bb-chat-box d-none">
         <div class="card-header d-flex justify-content-between align-items-center">
             <span>💛 Bachat Buddy</span>
@@ -471,71 +557,99 @@ if (!isset($_SESSION['user_id'])) {
         </div>
     </div>
 
-     <script src="components/js/chatbot.js"></script>
+    <!-- ============================================
+         JAVASCRIPT LIBRARIES
+         ============================================ -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="components/js/chatbot.js"></script>
+    
     <script>
+        // ============================================
+        // MOBILE MENU TOGGLE
+        // ============================================
         function toggleMenu() {
             document.getElementById("mobileSidebar").classList.toggle("active");
             document.getElementById("sidebarOverlay").classList.toggle("active");
             document.body.classList.toggle("sidebar-open");
         }
-    </script>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-    <script>
+        // ============================================
+        // THEME TOGGLE
+        // ============================================
         const themeToggle = document.getElementById('theme-toggle');
+        
+        // Function to set theme
         const setTheme = (theme) => {
             document.documentElement.setAttribute('data-theme', theme);
             themeToggle.innerHTML = theme === 'dark' ? '<i class="fas fa-sun text-warning"></i>' : '<i class="fas fa-moon"></i>';
             localStorage.setItem('theme', theme);
         };
 
+        // Toggle theme on button click
         themeToggle.addEventListener('click', () => {
             const currentTheme = document.documentElement.getAttribute('data-theme');
             setTheme(currentTheme === 'dark' ? 'light' : 'dark');
         });
 
+        // Load saved theme on page load
         setTheme(localStorage.getItem('theme') || 'dark');
 
+        // ============================================
+        // GLOBAL VARIABLES
+        // ============================================
         let currentEditGoalId = null;
 
-        // Load goals on page load
+        // ============================================
+        // LOAD GOALS ON PAGE LOAD
+        // ============================================
         window.addEventListener('DOMContentLoaded', function() {
             loadGoals();
         });
 
-        // Load all goals from database
+        // ============================================
+        // FUNCTION: Load all goals from backend
+        // ============================================
         function loadGoals() {
-            fetch('fetch_goals.php')
+            fetch('backend/goals/goals_backend.php?action=fetch')
                 .then(response => response.json())
                 .then(data => {
                     if (data.success) {
                         displayGoals(data.goals);
                     } else {
-                        console.error(data.message);
+                        document.getElementById('goalList').innerHTML = 
+                            '<p class="text-center text-danger mt-4">Error: ' + data.message + '</p>';
                     }
                 })
                 .catch(error => {
                     console.error('Error loading goals:', error);
+                    document.getElementById('goalList').innerHTML = 
+                        '<p class="text-center text-danger mt-4">Failed to load goals. Please refresh.</p>';
                 });
         }
 
-        // Display goals in the UI
+        // ============================================
+        // FUNCTION: Display goals on page
+        // ============================================
         function displayGoals(goals) {
             const goalList = document.getElementById('goalList');
             goalList.innerHTML = '';
 
+            // Check if there are any goals
             if (goals.length === 0) {
                 goalList.innerHTML = '<p class="text-center text-muted mt-4">No goals yet. Create your first goal!</p>';
                 return;
             }
 
+            // Loop through each goal and create card
             goals.forEach(goal => {
                 const goalCard = createGoalCard(goal);
                 goalList.innerHTML += goalCard;
             });
         }
 
-        // Create goal card HTML
+        // ============================================
+        // FUNCTION: Create HTML for single goal card
+        // ============================================
         function createGoalCard(goal) {
             const progress = goal.progress;
             const status = goal.status;
@@ -550,34 +664,42 @@ if (!isset($_SESSION['user_id'])) {
                     </div>
                     <p class="text-muted mb-2">Target: ₹${goal.targetAmount.toLocaleString()} | Saved: ₹${goal.savedAmount.toLocaleString()}</p>
                     <div class="progress mb-2" style="height: 10px; background-color: var(--input-bg);">
-                        <div class="progress-bar ${progressBarClass}" style="width: ${progress}%"></div>
+                        <div class="progress-bar ${progressBarClass}" style="width: ${Math.min(progress, 100)}%"></div>
                     </div>
+                    <small class="text-muted">${progress.toFixed(1)}% Complete</small>
                     <div class="d-flex justify-content-between align-items-center mt-3">
-                        <button class="btn btn-sm btn-outline-primary rounded-pill px-3" onclick="updateGoalFunds(${goal.id})">Add Funds</button>
+                        <button class="btn btn-sm btn-outline-primary rounded-pill px-3" onclick="updateGoalFunds(${goal.id})">
+                            <i class="bi bi-plus-circle me-1"></i> Add Funds
+                        </button>
                         <div>
-                            <i class="bi bi-pencil text-muted me-2" style="cursor:pointer" onclick="editGoal(${goal.id})"></i>
-                            <i class="bi bi-trash text-danger" style="cursor:pointer" onclick="deleteGoal(${goal.id})"></i>
+                            <i class="bi bi-pencil text-muted me-3" style="cursor:pointer" onclick="editGoal(${goal.id})" title="Edit"></i>
+                            <i class="bi bi-trash text-danger" style="cursor:pointer" onclick="deleteGoal(${goal.id})" title="Delete"></i>
                         </div>
                     </div>
                 </div>
             `;
         }
 
-        // Prepare add goal modal
+        // ============================================
+        // FUNCTION: Prepare modal for new goal
+        // ============================================
         function prepareAddGoal() {
             currentEditGoalId = null;
             document.getElementById("modalTitle").innerText = "Add New Goal";
             document.getElementById("goalForm").reset();
-            document.getElementById("editGoalId").value = "";
             document.getElementById("saveGoalBtn").innerText = "Save Goal";
         }
 
-        // Save goal (add or edit)
+        // ============================================
+        // FUNCTION: Save goal (add or edit)
+        // ============================================
         function saveGoal() {
+            // Get form values
             const goalName = document.getElementById("goalName").value.trim();
             const goalTarget = parseFloat(document.getElementById("goalTarget").value);
             const goalSaved = parseFloat(document.getElementById("goalSaved").value) || 0;
 
+            // Validation
             if (!goalName || !goalTarget) {
                 alert("Please fill in all required fields");
                 return;
@@ -593,86 +715,38 @@ if (!isset($_SESSION['user_id'])) {
                 return;
             }
 
+            // Prepare form data
             const formData = new FormData();
+            formData.append('goalName', goalName);
+            formData.append('targetAmount', goalTarget);
+            formData.append('savedAmount', goalSaved);
 
+            // Determine if adding new or editing
+            let url = 'backend/goals/goals_backend.php?action=add';
+            
             if (currentEditGoalId) {
-                // Edit existing goal
-                formData.append('action', 'edit_goal');
+                url = 'backend/goals/goals_backend.php?action=edit';
                 formData.append('goalId', currentEditGoalId);
-                formData.append('goalName', goalName);
-                formData.append('targetAmount', goalTarget);
-                formData.append('savedAmount', goalSaved);
-
-                fetch('update_goals.php', {
-                    method: 'POST',
-                    body: formData
-                })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        bootstrap.Modal.getInstance(document.getElementById("goalModal")).hide();
-                        loadGoals();
-                        alert('Goal updated successfully!');
-                    } else {
-                        alert(data.message);
-                    }
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                    alert('An error occurred');
-                });
-
-            } else {
-                // Add new goal
-                formData.append('goalName', goalName);
-                formData.append('targetAmount', goalTarget);
-                formData.append('savedAmount', goalSaved);
-
-                fetch('add_goals.php', {
-                    method: 'POST',
-                    body: formData
-                })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        bootstrap.Modal.getInstance(document.getElementById("goalModal")).hide();
-                        loadGoals();
-                        alert('Goal added successfully!');
-                    } else {
-                        alert(data.message);
-                    }
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                    alert('An error occurred');
-                });
-            }
-        }
-
-        // Update goal funds
-        function updateGoalFunds(goalId) {
-            const addMore = prompt("Enter amount to add to savings:");
-            if (!addMore || isNaN(addMore) || parseFloat(addMore) <= 0) {
-                alert("Please enter a valid amount");
-                return;
             }
 
-            const formData = new FormData();
-            formData.append('action', 'add_funds');
-            formData.append('goalId', goalId);
-            formData.append('additionalAmount', parseFloat(addMore));
-
-            fetch('update_goals.php', {
+            // Send request to backend
+            fetch(url, {
                 method: 'POST',
                 body: formData
             })
             .then(response => response.json())
             .then(data => {
                 if (data.success) {
+                    // Close modal
+                    bootstrap.Modal.getInstance(document.getElementById("goalModal")).hide();
+                    
+                    // Reload goals
                     loadGoals();
-                    alert('Funds added successfully!');
-                } else {
+                    
+                    // Show success message
                     alert(data.message);
+                } else {
+                    alert('Error: ' + data.message);
                 }
             })
             .catch(error => {
@@ -681,20 +755,70 @@ if (!isset($_SESSION['user_id'])) {
             });
         }
 
-        // Edit goal
+        // ============================================
+        // FUNCTION: Add funds to goal
+        // ============================================
+        function updateGoalFunds(goalId) {
+            // Prompt user for amount
+            const addMore = prompt("Enter amount to add:");
+            
+            // Validation
+            if (!addMore || isNaN(addMore) || parseFloat(addMore) <= 0) {
+                alert("Please enter a valid amount");
+                return;
+            }
+
+            // Prepare form data
+            const formData = new FormData();
+            formData.append('goalId', goalId);
+            formData.append('additionalAmount', parseFloat(addMore));
+
+            // Send request to backend
+            fetch('backend/goals/goals_backend.php?action=add_funds', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    loadGoals();
+                    alert(data.message);
+                } else {
+                    alert('Error: ' + data.message);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('An error occurred');
+            });
+        }
+
+        // ============================================
+        // FUNCTION: Edit goal
+        // ============================================
         function editGoal(goalId) {
-            fetch('Bachat-Buddy/Bachat-Buddy/Bachat-Buddy/backend/goals/fetch_goals.php')
+            // Fetch goal data
+            fetch('backend/goals/goals_backend.php?action=fetch')
                 .then(response => response.json())
                 .then(data => {
                     if (data.success) {
+                        // Find the specific goal
                         const goal = data.goals.find(g => g.id === goalId);
+                        
                         if (goal) {
+                            // Set edit mode
                             currentEditGoalId = goalId;
-                            document.getElementById("goalName").value = goal.goal_name;
-                            document.getElementById("goalTarget").value = goal.target_amount;
-                            document.getElementById("goalSaved").value = goal.saved_amount;
+                            
+                            // Populate form
+                            document.getElementById("goalName").value = goal.goalName;
+                            document.getElementById("goalTarget").value = goal.targetAmount;
+                            document.getElementById("goalSaved").value = goal.savedAmount;
+                            
+                            // Update modal title
                             document.getElementById("modalTitle").innerText = "Edit Goal";
                             document.getElementById("saveGoalBtn").innerText = "Update Goal";
+                            
+                            // Show modal
                             const modal = new bootstrap.Modal(document.getElementById('goalModal'));
                             modal.show();
                         }
@@ -702,20 +826,25 @@ if (!isset($_SESSION['user_id'])) {
                 })
                 .catch(error => {
                     console.error('Error:', error);
+                    alert('Failed to load goal');
                 });
         }
 
-        // Delete goal
+        // ============================================
+        // FUNCTION: Delete goal
+        // ============================================
         function deleteGoal(goalId) {
+            // Confirm deletion
             if (!confirm("Are you sure you want to delete this goal?")) {
                 return;
             }
 
+            // Prepare form data
             const formData = new FormData();
-            formData.append('action', 'delete_goal');
             formData.append('goalId', goalId);
 
-            fetch('update_goals.php', {
+            // Send delete request
+            fetch('backend/goals/goals_backend.php?action=delete', {
                 method: 'POST',
                 body: formData
             })
@@ -723,9 +852,9 @@ if (!isset($_SESSION['user_id'])) {
             .then(data => {
                 if (data.success) {
                     loadGoals();
-                    alert('Goal deleted successfully!');
-                } else {
                     alert(data.message);
+                } else {
+                    alert('Error: ' + data.message);
                 }
             })
             .catch(error => {
@@ -734,47 +863,46 @@ if (!isset($_SESSION['user_id'])) {
             });
         }
 
-        // Notification logic
+        // ============================================
+        // NOTIFICATIONS
+        // ============================================
         const notificationBtn = document.getElementById('notificationBtn');
         const notificationDropdown = document.getElementById('notificationDropdown');
-        const notificationBadge = document.getElementById('notificationBadge');
 
-        notificationBtn.addEventListener('click', (e) => {
-            e.stopPropagation();
-            notificationDropdown.classList.toggle('hidden');
-        });
+        if (notificationBtn) {
+            notificationBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                notificationDropdown.classList.toggle('hidden');
+            });
+        }
 
+        // Close dropdown when clicking outside
         window.addEventListener('click', (e) => {
-            if (!notificationBtn.contains(e.target) && !notificationDropdown.contains(e.target)) {
+            if (notificationBtn && !notificationBtn.contains(e.target) && !notificationDropdown.contains(e.target)) {
                 notificationDropdown.classList.add('hidden');
             }
         });
 
+        // Clear notifications function
         function clearNotifications() {
-            const list = document.getElementById('notificationList');
-            list.innerHTML = `
+            document.getElementById('notificationList').innerHTML = `
                 <div class="p-4 text-center text-sm text-gray-500">
                     <i class="bi bi-check2-all text-success d-block fs-4 mb-2"></i>
                     All caught up!
                 </div>
             `;
-            notificationBadge.style.display = 'none';
+            const badge = document.getElementById('notificationBadge');
+            if (badge) badge.style.display = 'none';
         }
 
-        function updateNotificationCount(count) {
-            if (count > 0) {
-                notificationBadge.innerText = count;
-                notificationBadge.style.display = 'inline-flex';
-            } else {
-                notificationBadge.style.display = 'none';
-            }
-        }
-
-        // Logout
+        // ============================================
+        // LOGOUT BUTTON
+        // ============================================
         document.getElementById("logout-btn").addEventListener("click", function() {
-            const confirmLogout = confirm("Are you sure you want to logout?");
-            if (confirmLogout) {
-                window.location.href = "login-pages/login.php";
+            // Confirm logout
+            if (confirm("Are you sure you want to logout?")) {
+                // Redirect to goals.php with logout action
+                window.location.href = "goals.php?action=logout";
             }
         });
     </script>
