@@ -2,6 +2,13 @@
 require_once 'components/auth_check.php';
 require_once 'config/db.php';
 
+// Handle logout action
+if (isset($_GET['action']) && $_GET['action'] === 'logout') {
+    session_destroy();
+    header("Location: login-pages/login.php");
+    exit();
+}
+
 // First, check and add missing columns if needed
 try {
     $checkProfileImage = $conn->query("SHOW COLUMNS FROM users LIKE 'profile_image'");
@@ -684,6 +691,18 @@ $conn->close();
             document.getElementById("sidebarOverlay").classList.toggle("active");
             document.body.classList.toggle("sidebar-open");
         }
+
+        // Logout button functionality
+        document.addEventListener('DOMContentLoaded', function() {
+            const logoutBtn = document.getElementById('logout-btn');
+            if (logoutBtn) {
+                logoutBtn.addEventListener('click', function() {
+                    if (confirm('Are you sure you want to logout?')) {
+                        window.location.href = 'profile.php?action=logout';
+                    }
+                });
+            }
+        });
     </script>
 
     <script>

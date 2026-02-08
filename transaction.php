@@ -460,7 +460,6 @@ $conn->close();
                     <li><a class="nav-link" href="transaction.php" style="background: #3b82f6; color: #fff;"><i class="bi bi-arrow-left-right"></i> Transactions</a></li>
                     <li><a class="nav-link" href="add-entry.php"><i class="bi bi-journal-plus"></i> Add Entry</a></li>
                     <li><a class="nav-link" href="goals.php"><i class="bi bi-bullseye"></i> Goals</a></li>
-                    <li><a class="nav-link" href="login-pages/login.php"><i class="bi bi-box-arrow-right"></i> Logout</a></li>
                 </ul>
             </div>
         </div>
@@ -479,7 +478,6 @@ $conn->close();
                     <li><a class="nav-link" href="transaction.php" style="background: #3b82f6; color: #fff;"><i class="bi bi-arrow-left-right"></i> Transactions</a></li>
                     <li><a class="nav-link" href="add-entry.php"><i class="bi bi-journal-plus"></i> Add Entry</a></li>
                     <li><a class="nav-link" href="goals.php"><i class="bi bi-bullseye"></i> Goals</a></li>
-                    <li><a class="nav-link" href="login-pages/login.php"><i class="bi bi-box-arrow-right"></i> Logout</a></li>
                 </ul>
             </div>
         </div>
@@ -623,7 +621,6 @@ $conn->close();
     </div>
 
     <script src="components/js/chatbot.js"></script>
-    <script src="components/js/logout.js"></script>
 
     <!-- Embed transactions data directly in JavaScript -->
     <script>
@@ -633,6 +630,22 @@ $conn->close();
     </script>
 
     <script>
+        // Logout functionality
+        document.addEventListener('DOMContentLoaded', function() {
+            const logoutBtn = document.getElementById('logout-btn');
+            
+            if (logoutBtn) {
+                logoutBtn.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    
+                    if (confirm('Are you sure you want to logout?')) {
+                        // Redirect to login page (session will be destroyed there)
+                        window.location.href = 'login-pages/login.php';
+                    }
+                });
+            }
+        });
+        
         function toggleMenu() {
             document.getElementById("mobileSidebar").classList.toggle("active");
             document.getElementById("sidebarOverlay").classList.toggle("active");
