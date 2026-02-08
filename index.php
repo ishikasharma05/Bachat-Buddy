@@ -543,6 +543,40 @@ function formatAmount($amount) {
             margin-right: 8px;
         }
 
+        /* Chart Insights Styling */
+        .chart-insight-box {
+            background: #f0f9ff;
+            border-left: 4px solid #3b82f6;
+            padding: 12px 16px;
+            border-radius: 8px;
+            margin-top: 16px;
+        }
+
+        [data-theme="dark"] .chart-insight-box {
+            background: #1e3a5f;
+            border-left-color: #60a5fa;
+        }
+
+        .chart-insight-box small {
+            display: block;
+            margin-bottom: 6px;
+            color: #64748b;
+        }
+
+        [data-theme="dark"] .chart-insight-box small {
+            color: #94a3b8;
+        }
+
+        .chart-insight-text {
+            font-weight: 500;
+            font-size: 0.9rem;
+            color: #1e293b;
+        }
+
+        [data-theme="dark"] .chart-insight-text {
+            color: #e2e8f0;
+        }
+
         @media (max-width: 768px) {
             .summary-row {
                 grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -627,6 +661,11 @@ function formatAmount($amount) {
                         <div style="height: 300px;">
                             <canvas id="monthlyChart"></canvas>
                         </div>
+                        <!-- AUTO-GENERATED CHART INSIGHTS -->
+                        <div id="monthlyInsights" class="chart-insight-box">
+                            <small><i class="bi bi-lightbulb-fill"></i> Chart Insights</small>
+                            <div id="monthlyInsightText" class="chart-insight-text"></div>
+                        </div>
                     </div>
 
                     <div class="card-custom">
@@ -663,6 +702,11 @@ function formatAmount($amount) {
                                 <div class="mb-2"><span class="legend-dot" style="background:#FDD9C1"></span>House: <strong>₹<span class="legend-value"><?= formatAmount($donutData[4]) ?></span></strong></div>
                                 <div class="mb-2"><span class="legend-dot" style="background:#C6F8D5"></span>Insure: <strong>₹<span class="legend-value"><?= formatAmount($donutData[5]) ?></span></strong></div>
                             </div>
+                        </div>
+                        <!-- AUTO-GENERATED DONUT INSIGHTS -->
+                        <div id="donutInsights" class="chart-insight-box" style="background: #fef3c7; border-left-color: #f59e0b;">
+                            <small><i class="bi bi-pie-chart-fill"></i> Expense Breakdown Insights</small>
+                            <div id="donutInsightText" class="chart-insight-text" style="color: #92400e;"></div>
                         </div>
                     </div>
                 </div>
@@ -806,6 +850,87 @@ function formatAmount($amount) {
             return amount.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
         }
 
+        // Generate insights for Monthly Chart
+        function generateMonthlyInsights() {
+            const data = currentChartType === 'income' ? incomeData : expenseData;
+            const monthNames = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+            const currentMonthIndex = new Date().getMonth();
+            
+            let insights = [];
+            
+            // Find highest and lowest months
+            const max = Math.max(...data);
+            const maxIndex = data.indexOf(max);
+            const nonZeroData = data.filter(v => v > 0);
+            const min = nonZeroData.length > 0 ? Math.min(...nonZeroData) : 0;
+            const minIndex = data.indexOf(min);
+            
+            if (max > 0) {
+                insights.push(`📊 Highest ${currentChartType}: ₹${formatAmount(max)} in ${monthNames[maxIndex]}`);
+            }
+            
+            // Compare current month with previous month
+            if (currentMonthIndex > 0 && data[currentMonthIndex] > 0) {
+                const current = data[currentMonthIndex];
+                const previous = data[currentMonthIndex - 1];
+                if (previous > 0) {
+                    const change = ((current - previous) / previous * 100).toFixed(1);
+                    const direction = current > previous ? 'increased' : 'decreased';
+                    const emoji = currentChartType === 'income' 
+                        ? (current > previous ? '📈' : '📉')
+                        : (current > previous ? '⚠️' : '✅');
+                    insights.push(`${emoji} ${currentChartType.charAt(0).toUpperCase() + currentChartType.slice(1)} ${direction} by ${Math.abs(change)}% from last month`);
+                }
+            }
+            
+            // Calculate average
+            const avg = nonZeroData.length > 0 ? nonZeroData.reduce((a, b) => a + b, 0) / nonZeroData.length : 0;
+            if (avg > 0) {
+                insights.push(`💰 Average monthly ${currentChartType}: ₹${formatAmount(avg)}`);
+            }
+            
+            // Year-to-date total
+            const ytdTotal = data.slice(0, currentMonthIndex + 1).reduce((a, b) => a + b, 0);
+            if (ytdTotal > 0) {
+                insights.push(`📅 Year-to-date total: ₹${formatAmount(ytdTotal)}`);
+            }
+            
+            return insights.join(' • ');
+        }
+
+        // Generate insights for Donut Chart
+        function generateDonutInsights() {
+            const total = donutData.reduce((a, b) => a + b, 0);
+            if (total === 0) return 'No expenses recorded for this month';
+            
+            let insights = [];
+            const maxExpense = Math.max(...donutData);
+            const maxIndex = donutData.indexOf(maxExpense);
+            const percentage = ((maxExpense / total) * 100).toFixed(1);
+            
+            insights.push(`📌 ${categoryLabels[maxIndex]} dominates at ${percentage}% (₹${formatAmount(maxExpense)})`);
+            
+            // Count active categories
+            const activeCategories = donutData.filter(v => v > 0).length;
+            insights.push(`${activeCategories} out of ${categoryLabels.length} categories active`);
+            
+            // Find second highest
+            const sorted = [...donutData].sort((a, b) => b - a);
+            if (sorted[1] > 0) {
+                const secondIndex = donutData.indexOf(sorted[1]);
+                const secondPercentage = ((sorted[1] / total) * 100).toFixed(1);
+                insights.push(`${categoryLabels[secondIndex]} follows at ${secondPercentage}%`);
+            }
+            
+            return insights.join(' • ');
+        }
+
+        // Update chart insights
+        function updateChartInsights() {
+            document.getElementById('monthlyInsightText').innerHTML = generateMonthlyInsights();
+            document.getElementById('donutInsightText').innerHTML = generateDonutInsights();
+        }
+
         function toggleMenu() {
             document.getElementById("mobileSidebar").classList.toggle("active");
             document.getElementById("sidebarOverlay").classList.toggle("active");
@@ -915,7 +1040,6 @@ function formatAmount($amount) {
                 logoutBtn.addEventListener('click', function(e) {
                     e.preventDefault();
                     if (confirm('Are you sure you want to logout?')) {
-                        // Redirect to logout script
                         window.location.href = 'backend/auth/logout.php';
                     }
                 });
@@ -932,6 +1056,7 @@ function formatAmount($amount) {
                 monthlyChart.data.datasets[0].label = 'Income';
                 monthlyChart.data.datasets[0].backgroundColor = '#a8c6ff';
                 monthlyChart.update();
+                updateChartInsights();
             }
         }
 
@@ -945,6 +1070,7 @@ function formatAmount($amount) {
                 monthlyChart.data.datasets[0].label = 'Expenses';
                 monthlyChart.data.datasets[0].backgroundColor = '#f8d7da';
                 monthlyChart.update();
+                updateChartInsights();
             }
         }
 
@@ -988,6 +1114,9 @@ function formatAmount($amount) {
                     } else {
                         document.getElementById('categoryBreakdown').innerHTML = '<p class="text-muted">No expenses this month</p>';
                     }
+
+                    // Update donut insights after data refresh
+                    updateChartInsights();
                 })
                 .catch(error => {
                     console.error('Fetch error:', error);
@@ -1081,7 +1210,10 @@ function formatAmount($amount) {
                     }
                 });
 
-                console.log('🎉 Dashboard fully loaded!');
+                // Initialize insights after charts are created
+                updateChartInsights();
+
+                console.log('🎉 Dashboard fully loaded with auto-generated insights!');
             } catch (error) {
                 console.error('❌ Chart error:', error);
             }

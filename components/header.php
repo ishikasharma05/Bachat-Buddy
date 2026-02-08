@@ -10,7 +10,7 @@ $user_id = $_SESSION['user_id'] ?? null;
         <button class="btn d-lg-none border-0 p-0 me-2" onclick="toggleMenu()">
             <i class="bi bi-list fs-2"></i>
         </button>
-        <h5 class="mb-0 fw-bold">Dashboard</h5>
+        <h5 class="mb-0 fw-bold"></h5>
     </div>
     
     <div class="d-flex align-items-center gap-3">
