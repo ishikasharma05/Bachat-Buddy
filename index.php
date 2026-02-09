@@ -1,5 +1,5 @@
 <?php
-// index.php - Dashboard with Enhanced Chatbot
+// index.php - Dashboard with Enhanced UI/UX
 require_once 'components/auth_check.php';
 require_once 'config/db.php';
 
@@ -107,7 +107,7 @@ try {
     while ($row = $result->fetch_assoc()) {
         $category = $row['category'];
         $amount = floatval($row['amount']);
-        
+
         // Add to donut data based on category mapping
         if (isset($categoryMapping[$category])) {
             $donutData[$categoryMapping[$category]] += $amount;
@@ -170,7 +170,8 @@ $monthsWithExpenses = count(array_filter($expenseData, function ($val) {
 $monthlyAvg = $monthsWithExpenses > 0 ? $totalExpense / $monthsWithExpenses : 0;
 
 // Helper function to format amount (remove .00 if whole number)
-function formatAmount($amount) {
+function formatAmount($amount)
+{
     if (floor($amount) == $amount) {
         return number_format($amount, 0);
     }
@@ -187,275 +188,319 @@ function formatAmount($amount) {
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="components/style.css">
     <link rel="stylesheet" href="assets/css/chatbot-style.css">
     <style>
-        /* Keep all your existing styles here - I'm only adding chatbot enhancement */
-        
-        /* Your existing dashboard styles... */
+        /* ===================================================================
+           ENHANCED DESIGN SYSTEM - MATCHING TRANSACTION.PHP
+           ================================================================ */
         * {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
             scrollbar-width: auto;
             scrollbar-color: auto;
         }
 
         ::-webkit-scrollbar {
-            width: auto;
-            height: auto;
+            width: 10px;
+            height: 10px;
         }
 
         ::-webkit-scrollbar-track {
-            background: transparent;
+            background: var(--bg-main);
         }
 
         ::-webkit-scrollbar-thumb {
-            background: auto;
+            background: var(--border-medium);
+            border-radius: 5px;
         }
 
-        @media (min-width: 992px) {
-            .header .menu-btn,
-            .header button.btn.d-lg-none {
-                display: none !important;
-            }
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--text-muted);
         }
 
-        .header button,
-        .header .notification,
-        #theme-toggle {
-            width: 40px !important;
-            height: 40px !important;
-            border-radius: 50% !important;
-            display: inline-flex !important;
-            align-items: center !important;
-            justify-content: center !important;
-            border: none !important;
-            background-color: #f3f4f6 !important;
-            color: #374151 !important;
-            cursor: pointer !important;
-            transition: background-color 0.2s ease !important;
-            padding: 0 !important;
-            position: relative !important;
+        :root {
+            /* Primary Colors */
+            --color-primary-500: #00bcd4;
+            --color-primary-600: #00acc1;
+            --color-primary-700: #0097a7;
+            
+            /* Semantic Colors */
+            --color-success-500: #4caf50;
+            --color-success-600: #43a047;
+            --color-danger-500: #f44336;
+            --color-danger-600: #e53935;
+            
+            /* Neutral Colors */
+            --bg-main: #f8fafb;
+            --bg-card: #ffffff;
+            --bg-elevated: #ffffff;
+            --text-primary: #1a202c;
+            --text-secondary: #4a5568;
+            --text-muted: #718096;
+            --border-light: #e2e8f0;
+            --border-medium: #cbd5e0;
+            --sidebar-bg: #ffffff;
+            --header-bg: #ffffff;
+            --input-bg: #f7fafc;
+            
+            /* Shadows */
+            --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+            --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
         }
 
-        .header button:hover,
-        .header .notification:hover,
-        #theme-toggle:hover {
-            background-color: #e5e7eb !important;
-        }
-
-        .header button i,
-        .header .notification i,
-        #theme-toggle i {
-            font-size: 18px !important;
-        }
-
-        #notificationBtn {
-            position: relative !important;
-        }
-
-        .notification-badge,
-        #notificationBadge,
-        #notificationBtn .notification-badge,
-        #notificationBtn span {
-            position: absolute !important;
-            top: -2px !important;
-            right: -2px !important;
-            background: #ef4444 !important;
-            color: white !important;
-            border-radius: 50% !important;
-            width: 18px !important;
-            height: 18px !important;
-            font-size: 11px !important;
-            display: flex !important;
-            align-items: center !important;
-            justify-content: center !important;
-            font-weight: 600 !important;
-            z-index: 10 !important;
-            line-height: 1 !important;
-        }
-
-        #notificationDropdown.hidden {
-            display: none !important;
-        }
-
-        #notificationDropdown:not(.hidden) {
-            display: block !important;
-        }
-
-        /* Dark Mode Improvements */
         [data-theme="dark"] {
-            background-color: #0f172a;
-            color: #e2e8f0;
+            --bg-main: #0f172a;
+            --bg-card: #1e293b;
+            --bg-elevated: #334155;
+            --text-primary: #f1f5f9;
+            --text-secondary: #cbd5e1;
+            --text-muted: #94a3b8;
+            --border-light: #334155;
+            --border-medium: #475569;
+            --sidebar-bg: #1e293b;
+            --header-bg: #1e293b;
+            --input-bg: #334155;
         }
 
-        [data-theme="dark"] body {
-            background-color: #0f172a;
-            color: #e2e8f0;
+        body {
+            margin: 0;
+            background-color: var(--bg-main);
+            color: var(--text-primary);
+            transition: background-color 0.3s ease, color 0.3s ease;
+            font-size: 15px;
+            line-height: 1.6;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
         }
 
-        [data-theme="dark"] .layout {
-            background-color: #0f172a;
+        .layout {
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
         }
 
-        [data-theme="dark"] .main-body {
-            background-color: #0f172a !important;
+        /* ===================================================================
+           ENHANCED SIDEBAR - MATCHING TRANSACTION.PHP
+           ================================================================ */
+        .sidebar {
+            width: 260px;
+            background-color: var(--sidebar-bg);
+            border-right: 1px solid var(--border-light);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            padding: 1.5rem 1rem;
+            transition: all 0.3s ease;
         }
 
-        /* Sidebar & Divider Dark Mode Fix */
-        [data-theme="dark"] .sidebar {
-            background-color: #1e293b !important;
-            color: #e2e8f0 !important;
-            border-right: 1px solid #475569 !important; /* Soft grey divider */
+        .sidebar .nav-link {
+            display: flex;
+            align-items: center;
+            padding: 0.75rem 1rem;
+            border-radius: 12px;
+            color: var(--text-secondary);
+            font-weight: 500;
+            font-size: 0.9375rem;
+            transition: all 0.2s ease;
+            text-decoration: none;
+            margin-bottom: 0.25rem;
         }
 
-        [data-theme="dark"] .sidebar .brand {
-            color: #e2e8f0 !important;
+        .sidebar .nav-link:hover {
+            background: linear-gradient(135deg, var(--color-primary-500), var(--color-primary-600));
+            color: white;
+            transform: translateX(4px);
         }
 
-        [data-theme="dark"] .sidebar .nav-link {
-            color: #94a3b8 !important;
+        .sidebar .nav-link.active {
+            background: linear-gradient(135deg, var(--color-primary-500), var(--color-primary-600));
+            color: white;
+            box-shadow: 0 4px 12px rgba(0, 188, 212, 0.25);
         }
 
-        [data-theme="dark"] .sidebar .nav-link:hover {
-            background-color: #334155 !important;
-            color: #e2e8f0 !important;
+        .sidebar .nav-link i {
+            margin-right: 0.875rem;
+            font-size: 1.25rem;
+            width: 24px;
+            text-align: center;
         }
 
-        [data-theme="dark"] .sidebar .nav-link[style*="background"] {
-            background: #3b82f6 !important;
-            color: #fff !important;
+        .brand {
+            font-weight: 800;
+            font-size: 1.375rem;
+            padding: 0.75rem 1rem;
+            margin-bottom: 2rem;
+            color: var(--text-primary);
+            display: flex;
+            align-items: center;
+            gap: 0.625rem;
         }
 
-        [data-theme="dark"] .header {
-            background-color: #1e293b !important;
-            border-bottom-color: #334155 !important;
+        .brand i {
+            color: var(--color-success-500);
+            font-size: 1.75rem;
         }
 
-        /* Header font size consistency fix */
-        .header h5 {
-            font-size: 1.1rem !important;
-            font-weight: 600 !important;
+        /* ===================================================================
+           ENHANCED HEADER - MATCHING TRANSACTION.PHP
+           ================================================================ */
+        .header {
+            background-color: var(--header-bg);
+            padding: 1rem 2rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-bottom: 1px solid var(--border-light);
+            transition: all 0.3s ease;
+            box-shadow: var(--shadow-sm);
         }
 
-        [data-theme="dark"] .header h5 {
-            color: #e2e8f0 !important;
+        .notification,
+        #theme-toggle {
+            background: var(--input-bg);
+            padding: 0.625rem;
+            border-radius: 12px;
+            border: 2px solid var(--border-light);
+            cursor: pointer;
+            color: var(--text-secondary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+            width: 42px;
+            height: 42px;
         }
 
-        [data-theme="dark"] .header button,
-        [data-theme="dark"] .header .notification,
-        [data-theme="dark"] #theme-toggle {
-            background-color: #334155 !important;
-            color: #e2e8f0 !important;
+        .notification:hover,
+        #theme-toggle:hover {
+            background: var(--bg-elevated);
+            border-color: var(--color-primary-400);
+            color: var(--color-primary-600);
+            transform: scale(1.05);
         }
 
-        [data-theme="dark"] .header button:hover,
-        [data-theme="dark"] .header .notification:hover,
-        [data-theme="dark"] #theme-toggle:hover {
-            background-color: #475569 !important;
+        .profile-info {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            background: var(--input-bg);
+            padding: 0.5rem 1rem;
+            border-radius: 50px;
+            border: 2px solid var(--border-light);
+            transition: all 0.2s ease;
+            cursor: pointer;
         }
 
-        [data-theme="dark"] .summary-card {
-            background-color: #1e293b !important;
-            color: #e2e8f0 !important;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3) !important;
+        .profile-info:hover {
+            background: var(--bg-elevated);
+            border-color: var(--color-primary-400);
         }
 
-        [data-theme="dark"] .card-custom {
-            background-color: #1e293b !important;
-            color: #e2e8f0 !important;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3) !important;
+        .profile-info img {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            object-fit: cover;
         }
 
-        [data-theme="dark"] .card {
-            background-color: #1e293b !important;
-            color: #e2e8f0 !important;
+        .profile-text {
+            color: var(--text-primary);
+            font-weight: 600;
+            font-size: 0.9375rem;
         }
 
-        [data-theme="dark"] .card-body {
-            background-color: #1e293b !important;
+        /* Mobile Sidebar */
+        .mobile-sidebar {
+            position: fixed;
+            top: 0;
+            left: -300px;
+            width: 260px;
+            height: 100vh;
+            background-color: var(--sidebar-bg);
+            z-index: 1050;
+            transition: left 0.3s ease;
+            overflow-y: auto;
+            box-shadow: var(--shadow-xl);
         }
 
-        [data-theme="dark"] .text-muted {
-            color: #94a3b8 !important;
+        .mobile-sidebar.active {
+            left: 0;
         }
 
-        [data-theme="dark"] h4,
-        [data-theme="dark"] h5,
-        [data-theme="dark"] h6 {
-            color: #e2e8f0 !important;
+        .sidebar-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 1040;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease;
+            backdrop-filter: blur(4px);
         }
 
-        /* Monthly Details Chart - Improved Brightness in Dark Mode */
-        [data-theme="dark"] #monthlyChart {
-            filter: brightness(1.2) !important;
+        .sidebar-overlay.active {
+            opacity: 1;
+            visibility: visible;
         }
 
-        /* Month labels and values brightness improvement */
-        [data-theme="dark"] .tabs span {
-            color: #cbd5e1 !important; /* Brighter grey */
-        }
-
-        [data-theme="dark"] .tabs span.active {
-            color: #f1f5f9 !important; /* Even brighter when active */
-        }
-
-        /* Recent Transactions Box Dark Mode Fix */
-        [data-theme="dark"] .rounded-3[style*="background:#f8fafc"] {
-            background-color: #334155 !important;
-        }
-
-        [data-theme="dark"] #notificationDropdown {
-            background-color: #1e293b !important;
-            border-color: #334155 !important;
-            color: #e2e8f0 !important;
-        }
-
-        [data-theme="dark"] #notificationDropdown .p-3 {
-            background-color: #1e293b !important;
-            border-bottom-color: #334155 !important;
-        }
-
-        [data-theme="dark"] .notification-item,
-        [data-theme="dark"] #notificationDropdown .p-3.border-b {
-            border-bottom-color: #334155 !important;
-            background-color: #1e293b !important;
-        }
-
-        [data-theme="dark"] #notificationDropdown .hover\:bg-gray-50:hover {
-            background-color: #334155 !important;
-        }
-
-        .insight-pill {
-            background: #fef3c7 !important;
-            border-left: 4px solid #fbbf24 !important;
-            padding: 12px;
-            border-radius: 8px;
-            margin-bottom: 10px;
-            font-size: 0.9rem;
-            color: #92400e !important;
-        }
-
-        [data-theme="dark"] .insight-pill {
-            background-color: #451a03 !important;
-            border-left-color: #fbbf24 !important;
-            color: #fde68a !important;
-        }
-
-        [data-theme="dark"] input,
-        [data-theme="dark"] select,
-        [data-theme="dark"] .form-select {
-            background-color: #334155 !important;
-            border-color: #475569 !important;
-            color: #e2e8f0 !important;
-        }
-
-        [data-theme="dark"] .form-select option {
-            background-color: #1e293b !important;
+        .main-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            overflow: hidden;
         }
 
         .main-body {
             padding: 2rem;
             overflow-y: auto;
-            background-color: #f2f6f9;
+            background-color: var(--bg-main);
+        }
+
+        /* ===================================================================
+           DASHBOARD SPECIFIC STYLES
+           ================================================================ */
+        .welcome-banner {
+            background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+            border-radius: 20px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            color: white;
+            box-shadow: 0 10px 30px rgba(59, 130, 246, 0.3);
+            animation: slideDown 0.6s ease-out;
+        }
+
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .welcome-banner h2 {
+            font-size: 1.75rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+
+        .welcome-banner p {
+            font-size: 1.1rem;
+            opacity: 0.95;
+        }
+
+        [data-theme="dark"] .welcome-banner {
+            background: linear-gradient(135deg, #1e40af 0%, #1e3a8a 100%);
         }
 
         .summary-row {
@@ -468,15 +513,33 @@ function formatAmount($amount) {
         .summary-card {
             position: relative;
             border-radius: 16px;
-            background: #fff;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.04);
+            background: var(--bg-card);
+            box-shadow: var(--shadow-sm);
             padding: 1.25rem 1.5rem;
-            transition: transform 0.2s;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            animation: scaleIn 0.5s ease-out backwards;
+            border: 1px solid var(--border-light);
+        }
+
+        .summary-card:nth-child(1) { animation-delay: 0.1s; }
+        .summary-card:nth-child(2) { animation-delay: 0.2s; }
+        .summary-card:nth-child(3) { animation-delay: 0.3s; }
+        .summary-card:nth-child(4) { animation-delay: 0.4s; }
+
+        @keyframes scaleIn {
+            from {
+                opacity: 0;
+                transform: scale(0.9);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
         }
 
         .summary-card:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+            transform: translateY(-4px);
+            box-shadow: var(--shadow-lg);
         }
 
         .summary-card-accent {
@@ -488,6 +551,63 @@ function formatAmount($amount) {
             border-radius: 16px 0 0 16px;
         }
 
+        .summary-card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+        }
+
+        .stat-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            flex-shrink: 0;
+        }
+
+        .income-icon {
+            background: #dcfce7;
+            color: #16a34a;
+        }
+
+        .expense-icon {
+            background: #fee2e2;
+            color: #dc2626;
+        }
+
+        .savings-icon {
+            background: #dbeafe;
+            color: #2563eb;
+        }
+
+        .balance-icon {
+            background: #f3e8ff;
+            color: #8b5cf6;
+        }
+
+        [data-theme="dark"] .income-icon {
+            background: #14532d;
+            color: #86efac;
+        }
+
+        [data-theme="dark"] .expense-icon {
+            background: #450a0a;
+            color: #fca5a5;
+        }
+
+        [data-theme="dark"] .savings-icon {
+            background: #1e3a8a;
+            color: #93c5fd;
+        }
+
+        [data-theme="dark"] .balance-icon {
+            background: #581c87;
+            color: #d8b4fe;
+        }
+
         .dashboard-two-cols {
             display: grid;
             grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -497,8 +617,22 @@ function formatAmount($amount) {
         .card-custom {
             border-radius: 16px;
             padding: 1.5rem;
-            background: #fff;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.04);
+            background: var(--bg-card);
+            box-shadow: var(--shadow-sm);
+            animation: slideUp 0.6s ease-out backwards;
+            animation-delay: 0.5s;
+            border: 1px solid var(--border-light);
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
 
         .tab-header {
@@ -512,12 +646,20 @@ function formatAmount($amount) {
             margin-left: 1rem;
             font-weight: 500;
             cursor: pointer;
-            color: #999;
+            color: var(--text-muted);
             transition: color 0.3s;
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
         }
 
         .tabs .active {
-            color: #000;
+            color: var(--text-primary);
+            background: #f0f9ff;
+        }
+
+        [data-theme="dark"] .tabs .active {
+            color: var(--text-primary);
+            background: var(--bg-elevated);
         }
 
         .donut-container {
@@ -543,7 +685,6 @@ function formatAmount($amount) {
             margin-right: 8px;
         }
 
-        /* Chart Insights Styling */
         .chart-insight-box {
             background: #f0f9ff;
             border-left: 4px solid #3b82f6;
@@ -561,6 +702,10 @@ function formatAmount($amount) {
             display: block;
             margin-bottom: 6px;
             color: #64748b;
+            font-weight: 600;
+            text-transform: uppercase;
+            font-size: 0.75rem;
+            letter-spacing: 0.5px;
         }
 
         [data-theme="dark"] .chart-insight-box small {
@@ -571,10 +716,37 @@ function formatAmount($amount) {
             font-weight: 500;
             font-size: 0.9rem;
             color: #1e293b;
+            line-height: 1.6;
         }
 
         [data-theme="dark"] .chart-insight-text {
             color: #e2e8f0;
+        }
+
+        .insight-pill {
+            background: #fef3c7 !important;
+            border-left: 4px solid #fbbf24 !important;
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            font-size: 0.9rem;
+            color: #92400e !important;
+        }
+
+        [data-theme="dark"] .insight-pill {
+            background-color: #451a03 !important;
+            border-left-color: #fbbf24 !important;
+            color: #fde68a !important;
+        }
+
+        @media (max-width: 991px) {
+            .sidebar.d-lg-block {
+                display: none !important;
+            }
+
+            .main-body {
+                padding: 1.5rem 1rem;
+            }
         }
 
         @media (max-width: 768px) {
@@ -585,6 +757,26 @@ function formatAmount($amount) {
             .dashboard-two-cols {
                 grid-template-columns: 1fr;
             }
+
+            .welcome-banner h2 {
+                font-size: 1.5rem;
+            }
+
+            .welcome-banner p {
+                font-size: 1rem;
+            }
+        }
+
+        /* Dark mode card fixes */
+        [data-theme="dark"] .card,
+        [data-theme="dark"] .card-body,
+        [data-theme="dark"] .card-custom {
+            background-color: var(--bg-card) !important;
+            color: var(--text-primary) !important;
+        }
+
+        [data-theme="dark"] .text-muted {
+            color: var(--text-muted) !important;
         }
     </style>
 </head>
@@ -594,10 +786,11 @@ function formatAmount($amount) {
         <div class="sidebar d-none d-lg-block">
             <div>
                 <div class="brand d-flex align-items-center mb-4">
-                    <i class="bi bi-piggy-bank me-2 text-success"></i> Bachat-Buddy
+                    <i class="bi bi-piggy-bank-fill"></i>
+                    <span>Bachat Buddy</span>
                 </div>
                 <ul class="nav flex-column gap-2">
-                    <li><a class="nav-link" href="index.php" style="background: #3b82f6; color: #fff;"><i class="bi bi-speedometer2"></i> Dashboard</a></li>
+                    <li><a class="nav-link active" href="index.php"><i class="bi bi-speedometer2"></i> Dashboard</a></li>
                     <li><a class="nav-link" href="profile.php"><i class="bi bi-person-circle"></i> Profile</a></li>
                     <li><a class="nav-link" href="transaction.php"><i class="bi bi-arrow-left-right"></i> Transactions</a></li>
                     <li><a class="nav-link" href="add-entry.php"><i class="bi bi-journal-plus"></i> Add Entry</a></li>
@@ -609,11 +802,11 @@ function formatAmount($amount) {
         <div id="mobileSidebar" class="mobile-sidebar d-lg-none">
             <div class="p-4">
                 <div class="brand d-flex align-items-center justify-content-between mb-4">
-                    <span><i class="bi bi-piggy-bank me-2 text-success"></i> Bachat-Buddy</span>
+                    <span><i class="bi bi-piggy-bank-fill"></i> Bachat Buddy</span>
                     <button onclick="toggleMenu()" class="btn-close"></button>
                 </div>
                 <ul class="nav flex-column gap-2">
-                    <li><a class="nav-link" href="index.php" style="background: #3b82f6; color: #fff;"><i class="bi bi-speedometer2"></i> Dashboard</a></li>
+                    <li><a class="nav-link active" href="index.php"><i class="bi bi-speedometer2"></i> Dashboard</a></li>
                     <li><a class="nav-link" href="profile.php"><i class="bi bi-person-circle"></i> Profile</a></li>
                     <li><a class="nav-link" href="transaction.php"><i class="bi bi-arrow-left-right"></i> Transactions</a></li>
                     <li><a class="nav-link" href="add-entry.php"><i class="bi bi-journal-plus"></i> Add Entry</a></li>
@@ -626,26 +819,60 @@ function formatAmount($amount) {
         <div class="main-content">
             <?php include 'components/header.php'; ?>
             <div class="main-body">
+                <!-- Welcome Banner -->
+                <div class="welcome-banner">
+                    <h2>👋 Welcome back, <?= htmlspecialchars($_SESSION['user_name'] ?? 'User') ?>!</h2>
+                    <p class="mb-0">Here's your financial overview for <?= date('F Y') ?></p>
+                </div>
+
                 <div class="summary-row">
                     <div class="summary-card">
                         <div class="summary-card-accent" style="background:#c6f8d5;"></div>
-                        <p class="mb-1 text-muted">Income</p>
-                        <h4 style="color:#16a34a;">₹<?= formatAmount($totalIncome) ?></h4>
+                        <div class="summary-card-header">
+                            <div>
+                                <p class="mb-1 text-muted small text-uppercase" style="font-weight: 600; letter-spacing: 0.5px;">Total Income</p>
+                                <h4 style="color:#16a34a; font-weight: 700;">₹<?= formatAmount($totalIncome) ?></h4>
+                            </div>
+                            <div class="stat-icon income-icon">
+                                <i class="bi bi-arrow-down-circle-fill"></i>
+                            </div>
+                        </div>
                     </div>
                     <div class="summary-card">
                         <div class="summary-card-accent" style="background:#f8d7da;"></div>
-                        <p class="mb-1 text-muted">Expenses</p>
-                        <h4 style="color:#dc2626;">₹<?= formatAmount($totalExpense) ?></h4>
+                        <div class="summary-card-header">
+                            <div>
+                                <p class="mb-1 text-muted small text-uppercase" style="font-weight: 600; letter-spacing: 0.5px;">Total Expenses</p>
+                                <h4 style="color:#dc2626; font-weight: 700;">₹<?= formatAmount($totalExpense) ?></h4>
+                            </div>
+                            <div class="stat-icon expense-icon">
+                                <i class="bi bi-arrow-up-circle-fill"></i>
+                            </div>
+                        </div>
                     </div>
                     <div class="summary-card">
                         <div class="summary-card-accent" style="background:#a8c6ff;"></div>
-                        <p class="mb-1 text-muted">Savings</p>
-                        <h4 style="color:#2563eb;">₹<?= formatAmount($totalSavings) ?></h4>
+                        <div class="summary-card-header">
+                            <div>
+                                <p class="mb-1 text-muted small text-uppercase" style="font-weight: 600; letter-spacing: 0.5px;">Total Savings</p>
+                                <h4 style="color:#2563eb; font-weight: 700;">₹<?= formatAmount($totalSavings) ?></h4>
+                            </div>
+                            <div class="stat-icon savings-icon">
+                                <i class="bi bi-piggy-bank-fill"></i>
+                            </div>
+                        </div>
                     </div>
                     <div class="summary-card">
                         <div class="summary-card-accent" style="background:#f4ab6a;"></div>
-                        <p class="mb-1 text-muted">Balance</p>
-                        <h4 style="color:#2563eb;">₹<?= formatAmount($balance) ?></h4>
+                        <div class="summary-card-header">
+                            <div>
+                                <p class="mb-1 text-muted small text-uppercase" style="font-weight: 600; letter-spacing: 0.5px;">Balance</p>
+                                <h4 style="color:#8b5cf6; font-weight: 700;">₹<?= formatAmount($balance) ?></h4>
+                            </div>
+                            <div class="stat-icon balance-icon">
+                                <i class="bi bi-wallet2"></i>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
@@ -661,7 +888,6 @@ function formatAmount($amount) {
                         <div style="height: 300px;">
                             <canvas id="monthlyChart"></canvas>
                         </div>
-                        <!-- AUTO-GENERATED CHART INSIGHTS -->
                         <div id="monthlyInsights" class="chart-insight-box">
                             <small><i class="bi bi-lightbulb-fill"></i> Chart Insights</small>
                             <div id="monthlyInsightText" class="chart-insight-text"></div>
@@ -676,7 +902,6 @@ function formatAmount($amount) {
                                 $months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
                                 for ($i = 1; $i <= 12; $i++) {
                                     $monthVal = str_pad($i, 2, '0', STR_PAD_LEFT);
-                                    // Disable future months
                                     $disabled = ($i > intval($currentMonth)) ? 'disabled' : '';
                                     $selected = ($monthVal == $selectedMonth) ? 'selected' : '';
                                     echo "<option value='$monthVal' $selected $disabled>{$months[$i - 1]}</option>";
@@ -703,7 +928,6 @@ function formatAmount($amount) {
                                 <div class="mb-2"><span class="legend-dot" style="background:#C6F8D5"></span>Insure: <strong>₹<span class="legend-value"><?= formatAmount($donutData[5]) ?></span></strong></div>
                             </div>
                         </div>
-                        <!-- AUTO-GENERATED DONUT INSIGHTS -->
                         <div id="donutInsights" class="chart-insight-box" style="background: #fef3c7; border-left-color: #f59e0b;">
                             <small><i class="bi bi-pie-chart-fill"></i> Expense Breakdown Insights</small>
                             <div id="donutInsightText" class="chart-insight-text" style="color: #92400e;"></div>
@@ -737,7 +961,7 @@ function formatAmount($amount) {
                                             <p class="text-muted mb-2">Recent Transactions</p>
                                             <?php if (count($recentTransactions) > 0): ?>
                                                 <?php foreach ($recentTransactions as $txn): ?>
-                                                    <div class="d-flex justify-content-between mb-2 px-3 py-2 rounded-3 recent-txn-box" style="background:#f8fafc;">
+                                                    <div class="d-flex justify-content-between mb-2 px-3 py-2 rounded-3 recent-txn-box" style="background:var(--input-bg);">
                                                         <span><?= htmlspecialchars($txn['category'] ?: $txn['description']) ?></span>
                                                         <span class="<?= $txn['type'] == 'income' ? 'text-success' : 'text-danger' ?> fw-semibold">
                                                             <?= $txn['type'] == 'income' ? '+' : '-' ?>₹<?= formatAmount($txn['amount']) ?>
@@ -797,12 +1021,10 @@ function formatAmount($amount) {
         </div>
     </div>
 
-    <!-- Enhanced Chatbot Button -->
     <button id="bbChatToggle" class="btn btn-primary bb-chat-btn" aria-label="Open Bachat Buddy Chat">
         💬
     </button>
 
-    <!-- Enhanced Chatbot Box -->
     <div id="bbChatBox" class="card bb-chat-box d-none">
         <div class="card-header d-flex justify-content-between align-items-center">
             <span>💛 Bachat Buddy</span>
@@ -823,16 +1045,12 @@ function formatAmount($amount) {
         </div>
     </div>
 
-    <!-- Soft popup for notifications -->
     <div id="bbSoftPopup" class="alert bb-soft-popup d-none"></div>
 
-    <!-- Scripts -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
     <script src="components/js/chatbot.js"></script>
-    
-    <script>
-        console.log('🔄 Initializing dashboard...');
 
+    <script>
         const incomeData = <?= json_encode($incomeData) ?>;
         const expenseData = <?= json_encode($expenseData) ?>;
         let donutData = <?= json_encode($donutData) ?>;
@@ -842,7 +1060,6 @@ function formatAmount($amount) {
         let expenseDonut = null;
         let currentChartType = 'income';
 
-        // Helper function to format amounts (remove .00 if whole number)
         function formatAmount(amount) {
             if (Math.floor(amount) === amount) {
                 return amount.toLocaleString('en-IN', { maximumFractionDigits: 0 });
@@ -850,82 +1067,73 @@ function formatAmount($amount) {
             return amount.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
         }
 
-        // Generate insights for Monthly Chart
         function generateMonthlyInsights() {
             const data = currentChartType === 'income' ? incomeData : expenseData;
             const monthNames = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
             const currentMonthIndex = new Date().getMonth();
-            
+
             let insights = [];
-            
-            // Find highest and lowest months
+
             const max = Math.max(...data);
             const maxIndex = data.indexOf(max);
             const nonZeroData = data.filter(v => v > 0);
             const min = nonZeroData.length > 0 ? Math.min(...nonZeroData) : 0;
             const minIndex = data.indexOf(min);
-            
+
             if (max > 0) {
                 insights.push(`📊 Highest ${currentChartType}: ₹${formatAmount(max)} in ${monthNames[maxIndex]}`);
             }
-            
-            // Compare current month with previous month
+
             if (currentMonthIndex > 0 && data[currentMonthIndex] > 0) {
                 const current = data[currentMonthIndex];
                 const previous = data[currentMonthIndex - 1];
                 if (previous > 0) {
                     const change = ((current - previous) / previous * 100).toFixed(1);
                     const direction = current > previous ? 'increased' : 'decreased';
-                    const emoji = currentChartType === 'income' 
-                        ? (current > previous ? '📈' : '📉')
-                        : (current > previous ? '⚠️' : '✅');
+                    const emoji = currentChartType === 'income' ?
+                        (current > previous ? '📈' : '📉') :
+                        (current > previous ? '⚠️' : '✅');
                     insights.push(`${emoji} ${currentChartType.charAt(0).toUpperCase() + currentChartType.slice(1)} ${direction} by ${Math.abs(change)}% from last month`);
                 }
             }
-            
-            // Calculate average
+
             const avg = nonZeroData.length > 0 ? nonZeroData.reduce((a, b) => a + b, 0) / nonZeroData.length : 0;
             if (avg > 0) {
                 insights.push(`💰 Average monthly ${currentChartType}: ₹${formatAmount(avg)}`);
             }
-            
-            // Year-to-date total
+
             const ytdTotal = data.slice(0, currentMonthIndex + 1).reduce((a, b) => a + b, 0);
             if (ytdTotal > 0) {
                 insights.push(`📅 Year-to-date total: ₹${formatAmount(ytdTotal)}`);
             }
-            
+
             return insights.join(' • ');
         }
 
-        // Generate insights for Donut Chart
         function generateDonutInsights() {
             const total = donutData.reduce((a, b) => a + b, 0);
             if (total === 0) return 'No expenses recorded for this month';
-            
+
             let insights = [];
             const maxExpense = Math.max(...donutData);
             const maxIndex = donutData.indexOf(maxExpense);
             const percentage = ((maxExpense / total) * 100).toFixed(1);
-            
+
             insights.push(`📌 ${categoryLabels[maxIndex]} dominates at ${percentage}% (₹${formatAmount(maxExpense)})`);
-            
-            // Count active categories
+
             const activeCategories = donutData.filter(v => v > 0).length;
             insights.push(`${activeCategories} out of ${categoryLabels.length} categories active`);
-            
-            // Find second highest
+
             const sorted = [...donutData].sort((a, b) => b - a);
             if (sorted[1] > 0) {
                 const secondIndex = donutData.indexOf(sorted[1]);
                 const secondPercentage = ((sorted[1] / total) * 100).toFixed(1);
                 insights.push(`${categoryLabels[secondIndex]} follows at ${secondPercentage}%`);
             }
-            
+
             return insights.join(' • ');
         }
 
-        // Update chart insights
         function updateChartInsights() {
             document.getElementById('monthlyInsightText').innerHTML = generateMonthlyInsights();
             document.getElementById('donutInsightText').innerHTML = generateDonutInsights();
@@ -935,115 +1143,6 @@ function formatAmount($amount) {
             document.getElementById("mobileSidebar").classList.toggle("active");
             document.getElementById("sidebarOverlay").classList.toggle("active");
             document.body.classList.toggle("sidebar-open");
-        }
-
-        function initThemeToggle() {
-            let themeToggle = document.getElementById('theme-toggle') ||
-                document.querySelector('[id*="theme"]') ||
-                document.querySelector('button .fa-moon')?.parentElement ||
-                document.querySelector('button .bi-moon')?.parentElement;
-
-            const htmlElement = document.documentElement;
-            const bodyElement = document.body;
-
-            if (!themeToggle) return;
-
-            const themeIcon = themeToggle.querySelector('i');
-            const savedTheme = localStorage.getItem('theme') || 'light';
-            
-            htmlElement.setAttribute('data-theme', savedTheme);
-            if (bodyElement) bodyElement.setAttribute('data-theme', savedTheme);
-
-            if (themeIcon) {
-                if (savedTheme === 'dark') {
-                    themeIcon.className = themeIcon.className.includes('fa-') ? 'fas fa-sun' : 'bi bi-sun-fill';
-                } else {
-                    themeIcon.className = themeIcon.className.includes('fa-') ? 'fas fa-moon' : 'bi bi-moon-fill';
-                }
-            }
-
-            themeToggle.addEventListener('click', function(e) {
-                e.preventDefault();
-                e.stopPropagation();
-
-                const currentTheme = htmlElement.getAttribute('data-theme') || 'light';
-                const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
-
-                htmlElement.setAttribute('data-theme', newTheme);
-                if (bodyElement) bodyElement.setAttribute('data-theme', newTheme);
-                localStorage.setItem('theme', newTheme);
-
-                if (themeIcon) {
-                    if (newTheme === 'dark') {
-                        themeIcon.className = themeIcon.className.includes('fa-') ? 'fas fa-sun' : 'bi bi-sun-fill';
-                    } else {
-                        themeIcon.className = themeIcon.className.includes('fa-') ? 'fas fa-moon' : 'bi bi-moon-fill';
-                    }
-                }
-            });
-        }
-
-        function initNotifications() {
-            const notificationBtn = document.getElementById("notificationBtn");
-            const notificationDropdown = document.getElementById("notificationDropdown");
-
-            if (!notificationBtn || !notificationDropdown) return;
-
-            notificationDropdown.classList.add("hidden");
-            notificationDropdown.style.display = "none";
-
-            notificationBtn.addEventListener("click", function(e) {
-                e.preventDefault();
-                e.stopPropagation();
-
-                const isHidden = notificationDropdown.classList.contains('hidden');
-
-                if (isHidden) {
-                    notificationDropdown.classList.remove("hidden");
-                    notificationDropdown.style.display = "block";
-                } else {
-                    notificationDropdown.classList.add("hidden");
-                    notificationDropdown.style.display = "none";
-                }
-            });
-
-            document.addEventListener("click", function(e) {
-                if (!notificationDropdown.classList.contains("hidden")) {
-                    if (!notificationDropdown.contains(e.target) && e.target !== notificationBtn && !notificationBtn.contains(e.target)) {
-                        notificationDropdown.classList.add("hidden");
-                        notificationDropdown.style.display = "none";
-                    }
-                }
-            });
-
-            notificationDropdown.addEventListener("click", function(e) {
-                e.stopPropagation();
-            });
-        }
-
-        function clearNotifications() {
-            const notificationList = document.getElementById("notificationList");
-            const notificationBadge = document.getElementById("notificationBadge");
-
-            if (notificationList) {
-                notificationList.innerHTML = '<div class="p-3 text-center text-gray-500">No notifications</div>';
-            }
-
-            if (notificationBadge) {
-                notificationBadge.style.display = "none";
-            }
-        }
-
-        function initLogout() {
-            const logoutBtn = document.getElementById('logout-btn');
-            if (logoutBtn) {
-                logoutBtn.addEventListener('click', function(e) {
-                    e.preventDefault();
-                    if (confirm('Are you sure you want to logout?')) {
-                        window.location.href = 'backend/auth/logout.php';
-                    }
-                });
-            }
         }
 
         function switchToIncome() {
@@ -1115,7 +1214,6 @@ function formatAmount($amount) {
                         document.getElementById('categoryBreakdown').innerHTML = '<p class="text-muted">No expenses this month</p>';
                     }
 
-                    // Update donut insights after data refresh
                     updateChartInsights();
                 })
                 .catch(error => {
@@ -1123,12 +1221,36 @@ function formatAmount($amount) {
                 });
         }
 
+        // Theme toggle
+        const themeToggle = document.getElementById('theme-toggle');
+        const setTheme = (theme) => {
+            document.documentElement.setAttribute('data-theme', theme);
+            themeToggle.innerHTML = theme === 'dark' 
+                ? '<i class="fas fa-sun"></i>' 
+                : '<i class="fas fa-moon"></i>';
+            localStorage.setItem('theme', theme);
+        };
+
+        if (themeToggle) {
+            themeToggle.addEventListener('click', () => {
+                const currentTheme = document.documentElement.getAttribute('data-theme');
+                setTheme(currentTheme === 'dark' ? 'light' : 'dark');
+            });
+
+            setTheme(localStorage.getItem('theme') || 'light');
+        }
+
+        // Logout
         document.addEventListener('DOMContentLoaded', function() {
-            setTimeout(function() {
-                initThemeToggle();
-                initNotifications();
-                initLogout();
-            }, 100);
+            const logoutBtn = document.getElementById('logout-btn');
+            if (logoutBtn) {
+                logoutBtn.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    if (confirm('Are you sure you want to logout?')) {
+                        window.location.href = 'backend/auth/logout.php';
+                    }
+                });
+            }
         });
 
         window.addEventListener('load', function() {
@@ -1150,9 +1272,7 @@ function formatAmount($amount) {
                         responsive: true,
                         maintainAspectRatio: false,
                         plugins: {
-                            legend: {
-                                display: false
-                            },
+                            legend: { display: false },
                             tooltip: {
                                 callbacks: {
                                     label: ctx => ctx.dataset.label + ': ₹' + formatAmount(ctx.parsed.y)
@@ -1198,9 +1318,7 @@ function formatAmount($amount) {
                         responsive: true,
                         maintainAspectRatio: true,
                         plugins: {
-                            legend: {
-                                display: false
-                            },
+                            legend: { display: false },
                             tooltip: {
                                 callbacks: {
                                     label: ctx => ctx.label + ': ₹' + formatAmount(ctx.parsed)
@@ -1210,12 +1328,9 @@ function formatAmount($amount) {
                     }
                 });
 
-                // Initialize insights after charts are created
                 updateChartInsights();
-
-                console.log('🎉 Dashboard fully loaded with auto-generated insights!');
             } catch (error) {
-                console.error('❌ Chart error:', error);
+                console.error('Chart error:', error);
             }
         });
     </script>

@@ -6,17 +6,13 @@ session_start();
 
 // Handle logout action
 if (isset($_GET['action']) && $_GET['action'] === 'logout') {
-    // Destroy all session data
     session_destroy();
-    
-    // Redirect to login page
     header("Location: login-pages/login.php");
     exit();
 }
 
 // Check if user is logged in
 if (!isset($_SESSION['user_id'])) {
-    // Redirect to login if not logged in
     header("Location: login-pages/login.php");
     exit();
 }
@@ -27,123 +23,266 @@ if (!isset($_SESSION['user_id'])) {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Bachat-Buddy | Goals</title>
-    
+    <title>Bachat Buddy | Goals</title>
+
     <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    
+
     <!-- Bootstrap Icons -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
-    
+
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    
-    <!-- Tailwind CSS -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    
-    <!-- Chart.js -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="assets/css/chatbot-style.css">
     <!-- Custom Styles -->
     <link rel="stylesheet" href="components/style.css">
-    
+    <script src="components/js/chatbot.js"></script>
+
     <style>
-        /* ============================================
-           CSS VARIABLES FOR THEME SUPPORT
-           ============================================ */
+        /* ===================================================================
+           COMPREHENSIVE DESIGN SYSTEM
+           ================================================================ */
+
         :root {
-            --bg-main: #f2f6f9;
+            /* Primary Colors - Professional Teal */
+            --color-primary-50: #e0f7fa;
+            --color-primary-100: #b2ebf2;
+            --color-primary-200: #80deea;
+            --color-primary-300: #4dd0e1;
+            --color-primary-400: #26c6da;
+            --color-primary-500: #00bcd4;
+            --color-primary-600: #00acc1;
+            --color-primary-700: #0097a7;
+            --color-primary-800: #00838f;
+            --color-primary-900: #006064;
+
+            /* Success Colors - Achievement Green */
+            --color-success-50: #e8f5e9;
+            --color-success-100: #c8e6c9;
+            --color-success-200: #a5d6a7;
+            --color-success-300: #81c784;
+            --color-success-400: #66bb6a;
+            --color-success-500: #4caf50;
+            --color-success-600: #43a047;
+            --color-success-700: #388e3c;
+            --color-success-800: #2e7d32;
+            --color-success-900: #1b5e20;
+
+            /* Warning Colors - Progress Amber */
+            --color-warning-50: #fff8e1;
+            --color-warning-100: #ffecb3;
+            --color-warning-200: #ffe082;
+            --color-warning-300: #ffd54f;
+            --color-warning-400: #ffca28;
+            --color-warning-500: #ffc107;
+            --color-warning-600: #ffb300;
+            --color-warning-700: #ffa000;
+            --color-warning-800: #ff8f00;
+            --color-warning-900: #ff6f00;
+
+            /* Danger Colors - Alert Red */
+            --color-danger-50: #ffebee;
+            --color-danger-100: #ffcdd2;
+            --color-danger-200: #ef9a9a;
+            --color-danger-300: #e57373;
+            --color-danger-400: #ef5350;
+            --color-danger-500: #f44336;
+            --color-danger-600: #e53935;
+            --color-danger-700: #d32f2f;
+            --color-danger-800: #c62828;
+            --color-danger-900: #b71c1c;
+
+            /* Neutral Colors (Light Theme) */
+            --bg-main: #f8fafb;
             --bg-card: #ffffff;
-            --text-main: #333333;
-            --text-muted: #6c757d;
-            --border-color: #eeeeee;
+            --bg-elevated: #ffffff;
+            --text-primary: #1a202c;
+            --text-secondary: #4a5568;
+            --text-muted: #718096;
+            --border-light: #e2e8f0;
+            --border-medium: #cbd5e0;
             --sidebar-bg: #ffffff;
             --header-bg: #ffffff;
-            --input-bg: #f5f5f5;
-            --label-color: #495057;
+            --input-bg: #f7fafc;
+
+            /* Shadows - Depth perception */
+            --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+            --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+            --shadow-2xl: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
         }
 
-        /* Dark theme colors */
+        /* Dark Theme Colors */
         [data-theme="dark"] {
             --bg-main: #0f172a;
             --bg-card: #1e293b;
-            --text-main: #f8fafc;
+            --bg-elevated: #334155;
+            --text-primary: #f1f5f9;
+            --text-secondary: #cbd5e1;
             --text-muted: #94a3b8;
-            --border-color: #334155;
+            --border-light: #334155;
+            --border-medium: #475569;
             --sidebar-bg: #1e293b;
             --header-bg: #1e293b;
             --input-bg: #334155;
-            --label-color: #ffffff;
+            --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.3);
+            --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.4), 0 2px 4px -1px rgba(0, 0, 0, 0.3);
+            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.5), 0 4px 6px -2px rgba(0, 0, 0, 0.4);
+            --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.6), 0 10px 10px -5px rgba(0, 0, 0, 0.5);
         }
 
-        /* ============================================
-           GENERAL STYLES
-           ============================================ */
+        * {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            scrollbar-width: auto;
+            scrollbar-color: auto;
+        }
+
+        ::-webkit-scrollbar {
+            width: 10px;
+            height: 10px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--bg-main);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--border-medium);
+            border-radius: 5px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--text-muted);
+        }
+
         body {
             margin: 0;
-            font-family: 'Segoe UI', sans-serif;
             background-color: var(--bg-main);
-            color: var(--text-main);
-            transition: all 0.3s ease;
+            color: var(--text-primary);
+            transition: background-color 0.3s ease, color 0.3s ease;
+            font-size: 15px;
+            line-height: 1.6;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
         }
 
-        /* Main layout container */
+        /* Layout System */
         .layout {
             display: flex;
             height: 100vh;
             overflow: hidden;
         }
 
-        /* ============================================
-           SIDEBAR STYLES
-           ============================================ */
+        /* Sidebar */
         .sidebar {
-            width: 250px;
+            width: 260px;
             background-color: var(--sidebar-bg);
-            border-right: 1px solid var(--border-color);
+            border-right: 1px solid var(--border-light);
             display: flex;
             flex-direction: column;
             justify-content: space-between;
-            padding: 2rem 1rem;
+            padding: 1.5rem 1rem;
             transition: all 0.3s ease;
         }
 
         .sidebar .nav-link {
             display: flex;
             align-items: center;
-            padding: 10px 15px;
-            border-radius: 10px;
-            color: var(--text-main);
+            padding: 0.75rem 1rem;
+            border-radius: 12px;
+            color: var(--text-secondary);
             font-weight: 500;
+            font-size: 0.9375rem;
+            transition: all 0.2s ease;
             text-decoration: none;
-            transition: 0.3s ease;
+            margin-bottom: 0.25rem;
         }
 
         .sidebar .nav-link:hover {
-            background-color: #000;
-            color: #fff;
+            background: linear-gradient(135deg, var(--color-primary-500), var(--color-primary-600));
+            color: white;
+            transform: translateX(4px);
+        }
+
+        .sidebar .nav-link.active {
+            background: linear-gradient(135deg, var(--color-primary-500), var(--color-primary-600));
+            color: white;
+            box-shadow: 0 4px 12px rgba(0, 188, 212, 0.25);
         }
 
         .sidebar .nav-link i {
-            margin-right: 12px;
-            font-size: 1.1rem;
+            margin-right: 0.875rem;
+            font-size: 1.25rem;
+            width: 24px;
+            text-align: center;
         }
 
         .brand {
-            font-weight: bold;
-            font-size: 1.2rem;
-            padding-left: 15px;
+            font-weight: 800;
+            font-size: 1.375rem;
+            padding: 0.75rem 1rem;
             margin-bottom: 2rem;
+            color: var(--text-primary);
+            display: flex;
+            align-items: center;
+            gap: 0.625rem;
         }
 
-        /* ============================================
-           HEADER STYLES
-           ============================================ */
+        .brand i {
+            color: var(--color-success-500);
+            font-size: 1.75rem;
+        }
+
+        /* Mobile Sidebar */
+        .mobile-sidebar {
+            position: fixed;
+            top: 0;
+            left: -300px;
+            width: 260px;
+            height: 100vh;
+            background-color: var(--sidebar-bg);
+            z-index: 1050;
+            transition: left 0.3s ease;
+            overflow-y: auto;
+            box-shadow: var(--shadow-xl);
+        }
+
+        .mobile-sidebar.active {
+            left: 0;
+        }
+
+        .sidebar-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 1040;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease;
+            backdrop-filter: blur(4px);
+        }
+
+        .sidebar-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        /* Main Content */
         .main-content {
             flex: 1;
             display: flex;
             flex-direction: column;
             height: 100vh;
+            overflow: hidden;
         }
 
         .header {
@@ -152,49 +291,65 @@ if (!isset($_SESSION['user_id'])) {
             display: flex;
             align-items: center;
             justify-content: space-between;
-            border-bottom: 1px solid var(--border-color);
+            border-bottom: 1px solid var(--border-light);
             transition: all 0.3s ease;
-        }
-
-        .search-box {
-            background: var(--input-bg);
-            border-radius: 10px;
-            padding: 5px 15px;
-            width: 300px;
-            display: flex;
-            align-items: center;
-        }
-
-        .search-box input {
-            border: none;
-            background: transparent;
-            outline: none;
-            width: 100%;
-            color: var(--text-main);
+            box-shadow: var(--shadow-sm);
         }
 
         .notification,
         #theme-toggle {
             background: var(--input-bg);
-            padding: 8px;
-            border-radius: 10px;
+            padding: 0.625rem;
+            border-radius: 12px;
+            border: 2px solid var(--border-light);
             cursor: pointer;
-            border: none;
-            color: var(--text-main);
+            color: var(--text-secondary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+            width: 42px;
+            height: 42px;
+        }
+
+        .notification:hover,
+        #theme-toggle:hover {
+            background: var(--bg-elevated);
+            border-color: var(--color-primary-400);
+            color: var(--color-primary-600);
+            transform: scale(1.05);
         }
 
         .profile-info {
             display: flex;
             align-items: center;
-            gap: 10px;
+            gap: 0.75rem;
             background: var(--input-bg);
-            padding: 6px 12px;
-            border-radius: 20px;
+            padding: 0.5rem 1rem;
+            border-radius: 50px;
+            border: 2px solid var(--border-light);
+            transition: all 0.2s ease;
+            cursor: pointer;
         }
 
-        /* ============================================
-           MAIN BODY STYLES
-           ============================================ */
+        .profile-info:hover {
+            background: var(--bg-elevated);
+            border-color: var(--color-primary-400);
+        }
+
+        .profile-info img {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+
+        .profile-text {
+            color: var(--text-primary);
+            font-weight: 600;
+            font-size: 0.9375rem;
+        }
+
         .main-body {
             padding: 2rem;
             overflow-y: auto;
@@ -202,323 +357,441 @@ if (!isset($_SESSION['user_id'])) {
             transition: all 0.3s ease;
         }
 
+        /* Page Header */
         .page-header {
-            background: linear-gradient(135deg, #a8edea, #fed6e3);
-            padding: 40px 20px;
-            border-radius: 0 0 30px 30px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 2rem;
+            border-radius: 16px;
             text-align: center;
-            margin-bottom: 30px;
-            color: #333;
+            margin-bottom: 2rem;
+            color: white;
+            box-shadow: var(--shadow-lg);
         }
 
-        [data-theme="dark"] .page-header {
-            background: linear-gradient(135deg, #1e3a8a, #4c1d95);
-            color: #fff;
+        .page-header h2 {
+            font-size: 2rem;
+            font-weight: 800;
+            margin-bottom: 0.5rem;
         }
 
-        /* ============================================
-           FORM STYLES
-           ============================================ */
-        .form-label,
-        .text-muted,
-        small.d-block {
-            color: var(--label-color) !important;
-            opacity: 1;
+        .page-header p {
+            font-size: 1rem;
+            opacity: 0.95;
+            margin-bottom: 1.5rem;
         }
 
-        .form-control {
-            background-color: var(--input-bg);
-            border-color: var(--border-color);
-            color: var(--text-main);
-        }
-
-        .form-control:focus {
-            background-color: var(--input-bg);
-            color: var(--text-main);
-            border-color: #3b82f6;
-            box-shadow: 0 0 0 0.25rem rgba(59, 130, 246, 0.25);
-        }
-
-        .form-control::placeholder {
-            color: var(--text-muted);
-            opacity: 0.7;
-        }
-
-        /* ============================================
-           GOAL CARD STYLES
-           ============================================ */
+        /* ===================================================================
+           UPDATED: SMALLER GOAL CARDS
+           Reduced padding, margins, and font sizes
+           ================================================================ */
         .goal-card {
             background: var(--bg-card);
-            border-radius: 20px;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
-            padding: 20px;
-            margin-bottom: 20px;
-            transition: transform 0.2s, background 0.3s;
-            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            border: 1px solid var(--border-light);
+            padding: 1.25rem;
+            margin-bottom: 1rem;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: var(--shadow-sm);
+            position: relative;
+            overflow: hidden;
         }
 
         .goal-card:hover {
-            transform: translateY(-5px);
+            transform: translateY(-4px);
+            box-shadow: var(--shadow-lg);
+            border-color: var(--color-primary-300);
         }
 
-        /* ============================================
-           MODAL STYLES
-           ============================================ */
-        .modal-content {
-            background-color: var(--bg-card);
-            color: var(--text-main);
-            border: 1px solid var(--border-color);
-            border-radius: 20px;
+        .goal-card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
         }
 
-        [data-theme="dark"] .btn-close {
-            filter: invert(1) grayscale(100%) brightness(200%);
+        .goal-title {
+            font-size: 1.125rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin: 0;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
         }
 
-        /* ============================================
-           MOBILE SIDEBAR STYLES
-           ============================================ */
-        @media (max-width: 992px) {
-            .mobile-sidebar {
-                position: fixed;
-                top: 0;
-                left: -300px;
-                width: 250px;
-                height: 100%;
-                background-color: var(--sidebar-bg);
-                z-index: 1050;
-                transition: all 0.3s ease;
-                box-shadow: 5px 0 15px rgba(0, 0, 0, 0.2);
-                overflow-y: auto;
-                padding: 2rem 1rem;
-            }
+        .goal-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+            background: linear-gradient(135deg, var(--color-primary-100), var(--color-primary-200));
+            color: var(--color-primary-700);
+            margin-right: 0.75rem;
+        }
 
-            .mobile-sidebar.active {
-                left: 0;
-            }
+        /* Status Badges - Smaller */
+        .status-badge {
+            padding: 0.375rem 1rem;
+            border-radius: 50px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.375rem;
+        }
 
-            .sidebar-overlay {
-                display: none;
-                position: fixed;
-                top: 0;
-                left: 0;
-                width: 100%;
-                height: 100%;
-                background-color: rgba(0, 0, 0, 0.4);
-                z-index: 1040;
-                transition: all 0.3s ease;
-            }
+        .status-badge.completed {
+            background: var(--color-success-100);
+            color: var(--color-success-800);
+        }
 
-            .sidebar-overlay.active {
-                display: block;
-            }
+        .status-badge.in-progress {
+            background: var(--color-warning-100);
+            color: var(--color-warning-800);
+        }
 
+        .status-badge.not-started {
+            background: var(--border-light);
+            color: var(--text-muted);
+        }
+
+        [data-theme="dark"] .status-badge.completed {
+            background: var(--color-success-900);
+            color: var(--color-success-100);
+        }
+
+        [data-theme="dark"] .status-badge.in-progress {
+            background: var(--color-warning-900);
+            color: var(--color-warning-100);
+        }
+
+        /* Goal Stats - Smaller */
+        .goal-stats {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 0.75rem;
+            margin-bottom: 1rem;
+        }
+
+        .stat-label {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            font-weight: 600;
+        }
+
+        .stat-value {
+            font-size: 1.125rem;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+
+        /* Progress Bar - Smaller */
+        .progress-container {
+            margin: 1rem 0;
+        }
+
+        .progress-bar-wrapper {
+            height: 12px;
+            background: var(--border-light);
+            border-radius: 50px;
+            overflow: hidden;
+            margin-bottom: 0.5rem;
+        }
+
+        .progress-bar-fill {
+            height: 100%;
+            border-radius: 50px;
+            transition: width 0.6s ease;
+        }
+
+        .progress-bar-fill.completed {
+            background: linear-gradient(90deg, var(--color-success-500), var(--color-success-600));
+        }
+
+        .progress-bar-fill.in-progress {
+            background: linear-gradient(90deg, var(--color-primary-500), var(--color-primary-600));
+        }
+
+        .progress-bar-fill.not-started {
+            background: var(--border-medium);
+        }
+
+        .progress-info {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.8125rem;
+        }
+
+        .progress-percentage {
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .progress-amount {
+            color: var(--text-muted);
+        }
+
+        /* Goal Actions - Smaller */
+        .goal-actions {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 1rem;
+            padding-top: 1rem;
+            border-top: 1px solid var(--border-light);
+        }
+
+        .btn-modern {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 0.875rem;
+            border: 2px solid transparent;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            cursor: pointer;
+            text-decoration: none;
+        }
+
+        .btn-primary-modern {
+            background: linear-gradient(135deg, var(--color-primary-500), var(--color-primary-600));
+            color: white;
+        }
+
+        .btn-primary-modern:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 188, 212, 0.3);
+        }
+
+        /* Button System */
+        .btn-icon {
+            width: 32px;
+            height: 32px;
+            padding: 0;
+            border-radius: 6px;
+            border: 1px solid var(--border-light);
+            background: var(--input-bg);
+            color: var(--text-secondary);
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .btn-icon:hover {
+            background: var(--bg-elevated);
+            border-color: var(--color-primary-400);
+            color: var(--color-primary-600);
+            transform: scale(1.05);
+        }
+
+        .btn-icon.danger:hover {
+            background: var(--color-danger-50);
+            border-color: var(--color-danger-400);
+            color: var(--color-danger-600);
+        }
+
+        /* Grid Layout for Goals */
+        .goals-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 1rem;
+        }
+
+        /* Empty State */
+        .empty-state {
+            text-align: center;
+            padding: 3rem 2rem;
+        }
+
+        .empty-state-icon {
+            font-size: 4rem;
+            color: var(--text-muted);
+            opacity: 0.3;
+            margin-bottom: 1.5rem;
+        }
+
+        .empty-state-title {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 0.75rem;
+        }
+
+        .empty-state-text {
+            color: var(--text-muted);
+            margin-bottom: 1rem;
+        }
+
+        /* Dark mode card fixes */
+        [data-theme="dark"] .card,
+        [data-theme="dark"] .card-body,
+        [data-theme="dark"] .modal-content {
+            background-color: var(--bg-card) !important;
+            color: var(--text-primary) !important;
+        }
+
+        [data-theme="dark"] .text-muted {
+            color: var(--text-muted) !important;
+        }
+
+        [data-theme="dark"] .modal-header {
+            border-bottom-color: var(--border-light);
+        }
+
+        [data-theme="dark"] .modal-footer {
+            border-top-color: var(--border-light);
+        }
+
+        @media (max-width: 991px) {
             .sidebar.d-lg-block {
-                display: none;
+                display: none !important;
             }
 
-            .header {
-                padding: 0.75rem 1rem;
-            }
-
-            .search-box {
-                width: 100%;
-                max-width: 200px;
+            .main-body {
+                padding: 1.5rem 1rem;
             }
         }
 
-        /* ============================================
-           RESPONSIVE STYLES
-           ============================================ */
         @media (max-width: 768px) {
-            .main-body {
+            .goals-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .goal-card {
                 padding: 1rem;
             }
 
+            .goal-stats {
+                grid-template-columns: 1fr;
+                gap: 0.5rem;
+            }
+
             .page-header {
-                padding: 30px 15px;
-                border-radius: 0 0 20px 20px;
-                font-size: 0.95rem;
+                padding: 1.5rem;
             }
 
-            .goal-card {
-                padding: 15px;
-                margin-bottom: 15px;
+            .page-header h2 {
+                font-size: 1.75rem;
             }
-        }
-
-        @media (max-width: 576px) {
-            .header {
-                flex-wrap: wrap;
-                gap: 8px;
-            }
-
-            .goal-card {
-                padding: 12px;
-                margin-bottom: 12px;
-            }
-        }
-
-        /* ============================================
-           BADGE STYLES
-           ============================================ */
-        .badge.bg-success {
-            background-color: #059669 !important;
-            color: #ecfdf5;
         }
     </style>
 </head>
 
 <body>
     <div class="layout">
-        <!-- ============================================
-             DESKTOP SIDEBAR
-             ============================================ -->
+        <!-- Desktop Sidebar -->
         <div class="sidebar d-none d-lg-block">
             <div>
-                <div class="brand d-flex align-items-center mb-4">
-                    <i class="bi bi-piggy-bank me-2 text-success"></i> Bachat-Buddy
+                <div class="brand">
+                    <i class="bi bi-piggy-bank-fill"></i>
+                    <span>Bachat Buddy</span>
                 </div>
-                <ul class="nav flex-column gap-2">
+                <ul class="nav flex-column">
                     <li><a class="nav-link" href="index.php"><i class="bi bi-speedometer2"></i> Dashboard</a></li>
                     <li><a class="nav-link" href="profile.php"><i class="bi bi-person-circle"></i> Profile</a></li>
                     <li><a class="nav-link" href="transaction.php"><i class="bi bi-arrow-left-right"></i> Transactions</a></li>
                     <li><a class="nav-link" href="add-entry.php"><i class="bi bi-journal-plus"></i> Add Entry</a></li>
-                    <li><a class="nav-link" href="goals.php" style="background: #3b82f6; color: #fff;"><i class="bi bi-bullseye"></i> Goals</a></li>
+                    <li><a class="nav-link active" href="goals.php"><i class="bi bi-bullseye"></i> Goals</a></li>
                 </ul>
             </div>
         </div>
 
-        <!-- ============================================
-             MOBILE SIDEBAR
-             ============================================ -->
+        <!-- Mobile Sidebar -->
         <div id="mobileSidebar" class="mobile-sidebar d-lg-none">
             <div class="p-4">
                 <div class="brand d-flex align-items-center justify-content-between mb-4">
-                    <span><i class="bi bi-piggy-bank me-2 text-success"></i> Bachat-Buddy</span>
-                    <button onclick="toggleMenu()" class="btn-close border-0 bg-transparent text-muted fs-4">
-                        <i class="bi bi-x-lg"></i>
-                    </button>
+                    <span><i class="bi bi-piggy-bank-fill"></i> Bachat Buddy</span>
+                    <button onclick="toggleMenu()" class="btn-close"></button>
                 </div>
                 <ul class="nav flex-column gap-2">
                     <li><a class="nav-link" href="index.php"><i class="bi bi-speedometer2"></i> Dashboard</a></li>
                     <li><a class="nav-link" href="profile.php"><i class="bi bi-person-circle"></i> Profile</a></li>
                     <li><a class="nav-link" href="transaction.php"><i class="bi bi-arrow-left-right"></i> Transactions</a></li>
                     <li><a class="nav-link" href="add-entry.php"><i class="bi bi-journal-plus"></i> Add Entry</a></li>
-                    <li><a class="nav-link" href="goals.php" style="background: #3b82f6; color: #fff;"><i class="bi bi-bullseye"></i> Goals</a></li>
+                    <li><a class="nav-link active" href="goals.php"><i class="bi bi-bullseye"></i> Goals</a></li>
                 </ul>
             </div>
         </div>
-        
-        <!-- Sidebar overlay for mobile -->
         <div id="sidebarOverlay" class="sidebar-overlay d-lg-none" onclick="toggleMenu()"></div>
 
-        <!-- ============================================
-             MAIN CONTENT AREA
-             ============================================ -->
+        <!-- Main Content -->
         <div class="main-content">
-            <!-- ============================================
-                 HEADER
-                 ============================================ -->
-            <div class="header">
-                <div class="d-flex align-items-center gap-2">
-                    <!-- Mobile menu toggle button -->
-                    <button class="btn d-lg-none border-0 p-0 me-2" onclick="toggleMenu()">
-                        <i class="bi bi-list fs-2"></i>
-                    </button>
-                    <h5 class="mb-0 fw-bold">Goals</h5>
-                </div>
-                
-                <div class="d-flex align-items-center gap-3">
-                    <!-- Notification dropdown -->
-                    <div class="relative inline-block text-left">
-                        <div id="notificationBtn" class="notification p-2 rounded-full cursor-pointer hover:bg-gray-200 transition-colors relative">
-                            <i class="bi bi-bell"></i>
-                            <span id="notificationBadge" class="absolute top-0 right-0 inline-flex items-center justify-center px-1.5 py-0.5 text-[10px] font-bold leading-none text-white transform translate-x-1/2 -translate-y-1/2 bg-red-500 rounded-full">
-                                3
-                            </span>
-                        </div>
-                        <div id="notificationDropdown" class="hidden absolute right-0 mt-3 w-80 bg-white border border-gray-200 rounded-xl shadow-xl z-[1000] overflow-hidden">
-                            <div class="p-3 border-b border-gray-100 flex justify-content-between align-items-center bg-white">
-                                <span class="font-semibold text-gray-700">Notifications</span>
-                                <button onclick="clearNotifications()" class="text-xs text-blue-600 hover:underline">Clear all</button>
-                            </div>
-                            <div class="max-h-64 overflow-y-auto bg-white" id="notificationList">
-                                <div class="p-3 border-b border-gray-50 hover:bg-gray-50 cursor-pointer">
-                                    <p class="text-sm text-gray-800 mb-0"><strong>Budget Alert:</strong> You've spent 80% of your Food budget.</p>
-                                    <span class="text-[11px] text-gray-400">5 mins ago</span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+            <!-- Header -->
+            <?php include 'components/header.php'; ?>
 
-                    <!-- Theme toggle button -->
-                    <button id="theme-toggle" class="p-2 rounded-full border-0">
-                        <i class="fas fa-moon"></i>
-                    </button>
-
-                    <!-- Logout button -->
-                    <button id="logout-btn" class="notification p-2 rounded-full border-0" title="Logout">
-                        <i class="fas fa-sign-out-alt"></i>
-                    </button>
-                </div>
-            </div>
-            
-            <!-- ============================================
-                 MAIN BODY
-                 ============================================ -->
+            <!-- Main Body -->
             <div class="main-body">
-                <!-- Page header -->
+                <!-- Motivational Header -->
                 <div class="page-header">
                     <h2>🎯 My Savings Goals</h2>
-                    <p class="opacity-75">Track your progress and achieve your financial dreams</p>
-                    <button class="btn btn-primary rounded-pill px-4 mt-2" data-bs-toggle="modal" data-bs-target="#goalModal" onclick="prepareAddGoal()">
-                        <i class="bi bi-plus-circle me-1"></i> Add New Goal
+                    <p>Every penny saved brings you closer to your dreams. Keep going!</p>
+                    <button class="btn btn-light rounded-pill px-4 py-2 fw-bold mt-2" data-bs-toggle="modal" data-bs-target="#goalModal" onclick="resetGoalForm()">
+                        <i class="bi bi-plus-circle me-2"></i> Create New Goal
                     </button>
                 </div>
 
-                <!-- Goals list container -->
-                <div class="container" id="goalList">
-                    <p class="text-center text-muted mt-4">Loading goals...</p>
+                <!-- Goals Container - Updated with grid layout -->
+                <div class="goals-grid" id="goalList">
+                    <div class="empty-state">
+                        <div class="empty-state-icon">
+                            <i class="bi bi-hourglass-split"></i>
+                        </div>
+                        <div class="empty-state-title">Loading your goals...</div>
+                        <div class="empty-state-text">Please wait while we fetch your financial aspirations</div>
+                    </div>
                 </div>
 
-                <!-- ============================================
-                     MODAL: ADD/EDIT GOAL
-                     ============================================ -->
+                <!-- Goal Modal -->
                 <div class="modal fade" id="goalModal" tabindex="-1">
                     <div class="modal-dialog modal-dialog-centered">
-                        <div class="modal-content shadow-lg">
-                            <div class="modal-header border-0 pb-0">
-                                <h5 class="modal-title fw-bold" id="modalTitle">Add New Goal</h5>
-                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title fw-bold" id="modalTitle">
+                                    <i class="bi bi-flag-fill me-2" style="color: var(--color-primary-500);"></i>
+                                    Add New Goal
+                                </h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                             </div>
-                            <div class="modal-body p-4">
+                            <div class="modal-body">
                                 <form id="goalForm">
-                                    <!-- Hidden field for edit goal ID -->
                                     <input type="hidden" id="editGoalId">
-                                    
-                                    <!-- Goal Name -->
+
                                     <div class="mb-3">
-                                        <label class="form-label small fw-bold">Goal Name</label>
-                                        <input type="text" id="goalName" class="form-control rounded-3" placeholder="e.g. Dream Vacation" required>
+                                        <label class="form-label">Goal Name</label>
+                                        <input type="text" id="goalName" class="form-control" placeholder="e.g. Dream Vacation, New Car" required>
                                     </div>
-                                    
-                                    <!-- Target Amount -->
+
                                     <div class="mb-3">
-                                        <label class="form-label small fw-bold">Target Amount (₹)</label>
-                                        <input type="number" id="goalTarget" class="form-control rounded-3" placeholder="0.00" required>
+                                        <label class="form-label">Target Amount (₹)</label>
+                                        <input type="number" id="goalTarget" class="form-control" placeholder="50000" required>
                                     </div>
-                                    
-                                    <!-- Initial Saved Amount -->
+
                                     <div class="mb-3">
-                                        <label class="form-label small fw-bold">Initial Saved Amount (₹)</label>
-                                        <input type="number" id="goalSaved" class="form-control rounded-3" placeholder="0.00" value="0">
+                                        <label class="form-label">Initial Amount Saved (₹)</label>
+                                        <input type="number" id="goalSaved" class="form-control" placeholder="0" value="0">
+                                        <small class="text-muted">How much have you already saved towards this goal?</small>
                                     </div>
                                 </form>
                             </div>
-                            <div class="modal-footer border-0 pt-0 d-flex justify-content-center gap-3">
-                                <button class="btn btn-light rounded-pill px-4" data-bs-dismiss="modal">Cancel</button>
-                                <button class="btn btn-primary rounded-pill px-4" id="saveGoalBtn" onclick="saveGoal()">Save Goal</button>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                                <button type="button" class="btn btn-primary" id="saveGoalBtn" onclick="saveGoal()">
+                                    <i class="bi bi-check-circle me-1"></i>
+                                    Save Goal
+                                </button>
                             </div>
                         </div>
                     </div>
@@ -530,9 +803,6 @@ if (!isset($_SESSION['user_id'])) {
         </div>
     </div>
 
-    <!-- ============================================
-         CHATBOT
-         ============================================ -->
     <button id="bbChatToggle" class="btn btn-primary bb-chat-btn" aria-label="Open Bachat Buddy Chat">
         💬
     </button>
@@ -557,149 +827,211 @@ if (!isset($_SESSION['user_id'])) {
         </div>
     </div>
 
-    <!-- ============================================
-         JAVASCRIPT LIBRARIES
-         ============================================ -->
+    <div id="bbSoftPopup" class="alert bb-soft-popup d-none"></div>
+
+    <!-- JavaScript Libraries -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="components/js/chatbot.js"></script>
-    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+
     <script>
-        // ============================================
+        // ===================================================================
         // MOBILE MENU TOGGLE
-        // ============================================
+        // ===================================================================
         function toggleMenu() {
             document.getElementById("mobileSidebar").classList.toggle("active");
             document.getElementById("sidebarOverlay").classList.toggle("active");
             document.body.classList.toggle("sidebar-open");
         }
 
-        // ============================================
+        // ===================================================================
         // THEME TOGGLE
-        // ============================================
+        // ===================================================================
         const themeToggle = document.getElementById('theme-toggle');
-        
-        // Function to set theme
         const setTheme = (theme) => {
             document.documentElement.setAttribute('data-theme', theme);
-            themeToggle.innerHTML = theme === 'dark' ? '<i class="fas fa-sun text-warning"></i>' : '<i class="fas fa-moon"></i>';
+            if (themeToggle) {
+                themeToggle.innerHTML = theme === 'dark' ?
+                    '<i class="fas fa-sun"></i>' :
+                    '<i class="fas fa-moon"></i>';
+            }
             localStorage.setItem('theme', theme);
         };
 
-        // Toggle theme on button click
-        themeToggle.addEventListener('click', () => {
-            const currentTheme = document.documentElement.getAttribute('data-theme');
-            setTheme(currentTheme === 'dark' ? 'light' : 'dark');
+        if (themeToggle) {
+            themeToggle.addEventListener('click', () => {
+                const currentTheme = document.documentElement.getAttribute('data-theme');
+                setTheme(currentTheme === 'dark' ? 'light' : 'dark');
+            });
+
+            setTheme(localStorage.getItem('theme') || 'light');
+        }
+
+        // ===================================================================
+        // LOGOUT FUNCTIONALITY
+        // ===================================================================
+        document.addEventListener('DOMContentLoaded', function() {
+            const logoutBtn = document.getElementById('logout-btn');
+            if (logoutBtn) {
+                logoutBtn.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    if (confirm('Are you sure you want to logout?')) {
+                        window.location.href = 'backend/auth/logout.php';
+                    }
+                });
+            }
         });
 
-        // Load saved theme on page load
-        setTheme(localStorage.getItem('theme') || 'dark');
+        // ===================================================================
+        // GOALS MANAGEMENT
+        // ===================================================================
 
-        // ============================================
-        // GLOBAL VARIABLES
-        // ============================================
-        let currentEditGoalId = null;
+        // Load goals on page load
+        window.addEventListener('DOMContentLoaded', loadGoals);
 
-        // ============================================
-        // LOAD GOALS ON PAGE LOAD
-        // ============================================
-        window.addEventListener('DOMContentLoaded', function() {
-            loadGoals();
-        });
+        // Reset form for adding new goal
+        function resetGoalForm() {
+            document.getElementById('editGoalId').value = '';
+            document.getElementById('goalForm').reset();
+            document.getElementById('modalTitle').innerHTML =
+                '<i class="bi bi-flag-fill me-2" style="color: var(--color-primary-500);"></i>Add New Goal';
+            document.getElementById('saveGoalBtn').innerHTML =
+                '<i class="bi bi-check-circle me-1"></i>Save Goal';
+            document.getElementById('saveGoalBtn').setAttribute('onclick', 'saveGoal()');
+        }
 
-        // ============================================
-        // FUNCTION: Load all goals from backend
-        // ============================================
         function loadGoals() {
             fetch('backend/goals/goals_backend.php?action=fetch')
                 .then(response => response.json())
                 .then(data => {
                     if (data.success) {
                         displayGoals(data.goals);
+                        animateGoalCards();
                     } else {
-                        document.getElementById('goalList').innerHTML = 
-                            '<p class="text-center text-danger mt-4">Error: ' + data.message + '</p>';
+                        document.getElementById('goalList').innerHTML =
+                            `<div class="empty-state">
+                                <div class="empty-state-icon"><i class="bi bi-exclamation-triangle"></i></div>
+                                <div class="empty-state-title">Error Loading Goals</div>
+                                <div class="empty-state-text">${data.message}</div>
+                            </div>`;
                     }
                 })
                 .catch(error => {
-                    console.error('Error loading goals:', error);
-                    document.getElementById('goalList').innerHTML = 
-                        '<p class="text-center text-danger mt-4">Failed to load goals. Please refresh.</p>';
+                    console.error('Error:', error);
+                    document.getElementById('goalList').innerHTML =
+                        `<div class="empty-state">
+                            <div class="empty-state-icon"><i class="bi bi-wifi-off"></i></div>
+                            <div class="empty-state-title">Connection Error</div>
+                            <div class="empty-state-text">Failed to load goals. Please refresh the page.</div>
+                        </div>`;
                 });
         }
 
-        // ============================================
-        // FUNCTION: Display goals on page
-        // ============================================
         function displayGoals(goals) {
             const goalList = document.getElementById('goalList');
-            goalList.innerHTML = '';
 
-            // Check if there are any goals
-            if (goals.length === 0) {
-                goalList.innerHTML = '<p class="text-center text-muted mt-4">No goals yet. Create your first goal!</p>';
+            if (!goalList) {
+                console.error('Goal list container not found');
                 return;
             }
 
-            // Loop through each goal and create card
+            goalList.innerHTML = '';
+
+            if (goals.length === 0) {
+                goalList.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-state-icon"><i class="bi bi-bullseye"></i></div>
+                        <div class="empty-state-title">No Goals Yet</div>
+                        <div class="empty-state-text">Start your savings journey by creating your first financial goal!</div>
+                        <button class="btn btn-primary mt-3" data-bs-toggle="modal" data-bs-target="#goalModal" onclick="resetGoalForm()">
+                            <i class="bi bi-plus-circle me-2"></i>Create Your First Goal
+                        </button>
+                    </div>`;
+                return;
+            }
+
             goals.forEach(goal => {
-                const goalCard = createGoalCard(goal);
-                goalList.innerHTML += goalCard;
+                goalList.innerHTML += createGoalCard(goal);
             });
         }
 
-        // ============================================
-        // FUNCTION: Create HTML for single goal card
-        // ============================================
         function createGoalCard(goal) {
-            const progress = goal.progress;
-            const status = goal.status;
-            const badgeClass = progress >= 100 ? 'bg-primary' : 'bg-success';
-            const progressBarClass = progress >= 100 ? 'bg-primary' : 'bg-info';
+            const progress = parseFloat(goal.progress);
+            let statusClass, statusText, progressClass;
+
+            if (progress >= 100) {
+                statusClass = 'completed';
+                statusText = 'Achieved';
+                progressClass = 'completed';
+            } else if (progress > 0) {
+                statusClass = 'in-progress';
+                statusText = 'In Progress';
+                progressClass = 'in-progress';
+            } else {
+                statusClass = 'not-started';
+                statusText = 'Not Started';
+                progressClass = 'not-started';
+            }
 
             return `
                 <div class="goal-card" data-goal-id="${goal.id}">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <h5 class="fw-bold">${goal.goalName}</h5>
-                        <span class="badge ${badgeClass} rounded-pill px-3">${status}</span>
+                    <div class="goal-card-header">
+                        <div class="d-flex align-items-center">
+                            <div class="goal-icon">
+                                <i class="bi bi-${progress >= 100 ? 'trophy-fill' : 'flag-fill'}"></i>
+                            </div>
+                            <h3 class="goal-title">${goal.goalName}</h3>
+                        </div>
+                        <span class="status-badge ${statusClass}">
+                            <i class="bi bi-${progress >= 100 ? 'check-circle-fill' : 'clock-fill'}"></i>
+                            ${statusText}
+                        </span>
                     </div>
-                    <p class="text-muted mb-2">Target: ₹${goal.targetAmount.toLocaleString()} | Saved: ₹${goal.savedAmount.toLocaleString()}</p>
-                    <div class="progress mb-2" style="height: 10px; background-color: var(--input-bg);">
-                        <div class="progress-bar ${progressBarClass}" style="width: ${Math.min(progress, 100)}%"></div>
+
+                    <div class="goal-stats">
+                        <div class="stat-item">
+                            <span class="stat-label">Target</span>
+                            <span class="stat-value">₹${parseFloat(goal.targetAmount).toLocaleString('en-IN')}</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-label">Saved</span>
+                            <span class="stat-value" style="color: var(--color-success-600);">₹${parseFloat(goal.savedAmount).toLocaleString('en-IN')}</span>
+                        </div>
                     </div>
-                    <small class="text-muted">${progress.toFixed(1)}% Complete</small>
-                    <div class="d-flex justify-content-between align-items-center mt-3">
-                        <button class="btn btn-sm btn-outline-primary rounded-pill px-3" onclick="updateGoalFunds(${goal.id})">
-                            <i class="bi bi-plus-circle me-1"></i> Add Funds
+
+                    <div class="progress-container">
+                        <div class="progress-bar-wrapper">
+                            <div class="progress-bar-fill ${progressClass}" style="width: ${Math.min(progress, 100)}%"></div>
+                        </div>
+                        <div class="progress-info">
+                            <span class="progress-percentage">${progress.toFixed(1)}% Complete</span>
+                            <span class="progress-amount">₹${(parseFloat(goal.targetAmount) - parseFloat(goal.savedAmount)).toLocaleString('en-IN')} remaining</span>
+                        </div>
+                    </div>
+
+                    <div class="goal-actions">
+                        <button class="btn-modern btn-primary-modern" onclick="updateGoalFunds(${goal.id})">
+                            <i class="bi bi-plus-circle"></i>
+                            Add Funds
                         </button>
-                        <div>
-                            <i class="bi bi-pencil text-muted me-3" style="cursor:pointer" onclick="editGoal(${goal.id})" title="Edit"></i>
-                            <i class="bi bi-trash text-danger" style="cursor:pointer" onclick="deleteGoal(${goal.id})" title="Delete"></i>
+                        <div class="d-flex gap-2">
+                            <button class="btn-icon" onclick="editGoal(${goal.id})" title="Edit Goal">
+                                <i class="bi bi-pencil"></i>
+                            </button>
+                            <button class="btn-icon danger" onclick="deleteGoal(${goal.id})" title="Delete Goal">
+                                <i class="bi bi-trash"></i>
+                            </button>
                         </div>
                     </div>
                 </div>
             `;
         }
 
-        // ============================================
-        // FUNCTION: Prepare modal for new goal
-        // ============================================
-        function prepareAddGoal() {
-            currentEditGoalId = null;
-            document.getElementById("modalTitle").innerText = "Add New Goal";
-            document.getElementById("goalForm").reset();
-            document.getElementById("saveGoalBtn").innerText = "Save Goal";
-        }
-
-        // ============================================
-        // FUNCTION: Save goal (add or edit)
-        // ============================================
         function saveGoal() {
-            // Get form values
             const goalName = document.getElementById("goalName").value.trim();
             const goalTarget = parseFloat(document.getElementById("goalTarget").value);
             const goalSaved = parseFloat(document.getElementById("goalSaved").value) || 0;
+            const goalId = document.getElementById("editGoalId").value;
 
-            // Validation
             if (!goalName || !goalTarget) {
                 alert("Please fill in all required fields");
                 return;
@@ -715,110 +1047,91 @@ if (!isset($_SESSION['user_id'])) {
                 return;
             }
 
-            // Prepare form data
             const formData = new FormData();
             formData.append('goalName', goalName);
             formData.append('targetAmount', goalTarget);
             formData.append('savedAmount', goalSaved);
 
-            // Determine if adding new or editing
             let url = 'backend/goals/goals_backend.php?action=add';
-            
-            if (currentEditGoalId) {
+
+            if (goalId) {
                 url = 'backend/goals/goals_backend.php?action=edit';
-                formData.append('goalId', currentEditGoalId);
+                formData.append('goalId', goalId);
             }
 
-            // Send request to backend
             fetch(url, {
-                method: 'POST',
-                body: formData
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    // Close modal
-                    bootstrap.Modal.getInstance(document.getElementById("goalModal")).hide();
-                    
-                    // Reload goals
-                    loadGoals();
-                    
-                    // Show success message
-                    alert(data.message);
-                } else {
-                    alert('Error: ' + data.message);
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                alert('An error occurred');
-            });
+                    method: 'POST',
+                    body: formData
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        // Close modal
+                        const modal = bootstrap.Modal.getInstance(document.getElementById('goalModal'));
+                        modal.hide();
+
+                        // Reload goals
+                        loadGoals();
+
+                        // Show success message
+                        showToast('Goal saved successfully!', 'success');
+                    } else {
+                        alert('Error: ' + data.message);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('An error occurred while saving the goal');
+                });
         }
 
-        // ============================================
-        // FUNCTION: Add funds to goal
-        // ============================================
         function updateGoalFunds(goalId) {
-            // Prompt user for amount
-            const addMore = prompt("Enter amount to add:");
-            
-            // Validation
+            const addMore = prompt("Enter amount to add to your goal:");
+
             if (!addMore || isNaN(addMore) || parseFloat(addMore) <= 0) {
                 alert("Please enter a valid amount");
                 return;
             }
 
-            // Prepare form data
             const formData = new FormData();
             formData.append('goalId', goalId);
             formData.append('additionalAmount', parseFloat(addMore));
 
-            // Send request to backend
             fetch('backend/goals/goals_backend.php?action=add_funds', {
-                method: 'POST',
-                body: formData
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    loadGoals();
-                    alert(data.message);
-                } else {
-                    alert('Error: ' + data.message);
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                alert('An error occurred');
-            });
+                    method: 'POST',
+                    body: formData
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        loadGoals();
+                        showToast('Funds added successfully!', 'success');
+                    } else {
+                        alert('Error: ' + data.message);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('An error occurred');
+                });
         }
 
-        // ============================================
-        // FUNCTION: Edit goal
-        // ============================================
         function editGoal(goalId) {
-            // Fetch goal data
             fetch('backend/goals/goals_backend.php?action=fetch')
                 .then(response => response.json())
                 .then(data => {
                     if (data.success) {
-                        // Find the specific goal
-                        const goal = data.goals.find(g => g.id === goalId);
-                        
+                        const goal = data.goals.find(g => g.id == goalId);
+
                         if (goal) {
-                            // Set edit mode
-                            currentEditGoalId = goalId;
-                            
-                            // Populate form
-                            document.getElementById("goalName").value = goal.goalName;
-                            document.getElementById("goalTarget").value = goal.targetAmount;
-                            document.getElementById("goalSaved").value = goal.savedAmount;
-                            
-                            // Update modal title
-                            document.getElementById("modalTitle").innerText = "Edit Goal";
-                            document.getElementById("saveGoalBtn").innerText = "Update Goal";
-                            
-                            // Show modal
+                            document.getElementById('editGoalId').value = goalId;
+                            document.getElementById('goalName').value = goal.goalName;
+                            document.getElementById('goalTarget').value = goal.targetAmount;
+                            document.getElementById('goalSaved').value = goal.savedAmount;
+
+                            document.getElementById('modalTitle').innerHTML =
+                                '<i class="bi bi-pencil-fill me-2" style="color: var(--color-primary-500);"></i>Edit Goal';
+
                             const modal = new bootstrap.Modal(document.getElementById('goalModal'));
                             modal.show();
                         }
@@ -830,81 +1143,73 @@ if (!isset($_SESSION['user_id'])) {
                 });
         }
 
-        // ============================================
-        // FUNCTION: Delete goal
-        // ============================================
         function deleteGoal(goalId) {
-            // Confirm deletion
-            if (!confirm("Are you sure you want to delete this goal?")) {
+            if (!confirm("Are you sure you want to delete this goal? This action cannot be undone.")) {
                 return;
             }
 
-            // Prepare form data
             const formData = new FormData();
             formData.append('goalId', goalId);
 
-            // Send delete request
             fetch('backend/goals/goals_backend.php?action=delete', {
-                method: 'POST',
-                body: formData
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    loadGoals();
-                    alert(data.message);
-                } else {
-                    alert('Error: ' + data.message);
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                alert('An error occurred');
-            });
+                    method: 'POST',
+                    body: formData
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        loadGoals();
+                        showToast('Goal deleted successfully!', 'success');
+                    } else {
+                        alert('Error: ' + data.message);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('An error occurred');
+                });
         }
 
-        // ============================================
-        // NOTIFICATIONS
-        // ============================================
-        const notificationBtn = document.getElementById('notificationBtn');
-        const notificationDropdown = document.getElementById('notificationDropdown');
+        function showToast(message, type = 'success') {
+            // Create toast element
+            const toast = document.createElement('div');
+            toast.className = `toast align-items-center text-bg-${type} border-0`;
+            toast.setAttribute('role', 'alert');
+            toast.setAttribute('aria-live', 'assertive');
+            toast.setAttribute('aria-atomic', 'true');
 
-        if (notificationBtn) {
-            notificationBtn.addEventListener('click', (e) => {
-                e.stopPropagation();
-                notificationDropdown.classList.toggle('hidden');
-            });
-        }
-
-        // Close dropdown when clicking outside
-        window.addEventListener('click', (e) => {
-            if (notificationBtn && !notificationBtn.contains(e.target) && !notificationDropdown.contains(e.target)) {
-                notificationDropdown.classList.add('hidden');
-            }
-        });
-
-        // Clear notifications function
-        function clearNotifications() {
-            document.getElementById('notificationList').innerHTML = `
-                <div class="p-4 text-center text-sm text-gray-500">
-                    <i class="bi bi-check2-all text-success d-block fs-4 mb-2"></i>
-                    All caught up!
+            toast.innerHTML = `
+                <div class="d-flex">
+                    <div class="toast-body">
+                        <i class="bi bi-${type === 'success' ? 'check-circle' : 'exclamation-triangle'} me-2"></i>
+                        ${message}
+                    </div>
+                    <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
                 </div>
             `;
-            const badge = document.getElementById('notificationBadge');
-            if (badge) badge.style.display = 'none';
+
+            // Add to body
+            document.body.appendChild(toast);
+
+            // Initialize and show toast
+            const bsToast = new bootstrap.Toast(toast);
+            bsToast.show();
+
+            // Remove after hide
+            toast.addEventListener('hidden.bs.toast', function() {
+                document.body.removeChild(toast);
+            });
         }
 
-        // ============================================
-        // LOGOUT BUTTON
-        // ============================================
-        document.getElementById("logout-btn").addEventListener("click", function() {
-            // Confirm logout
-            if (confirm("Are you sure you want to logout?")) {
-                // Redirect to goals.php with logout action
-                window.location.href = "goals.php?action=logout";
-            }
-        });
+        function animateGoalCards() {
+            gsap.from('.goal-card', {
+                duration: 0.6,
+                y: 20,
+                opacity: 0,
+                stagger: 0.1,
+                ease: 'power3.out'
+            });
+        }
     </script>
 </body>
 
