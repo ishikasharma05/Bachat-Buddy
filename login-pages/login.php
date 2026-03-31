@@ -108,7 +108,6 @@
       <button type="submit" class="btn btn-primary w-100">Login</button>
 
       <div class="extra-links mt-3">
-        <a href="forget-password.php">Forgot Password?</a>
         <a href="sign-up.php">Create Account</a>
       </div>
     </form>
